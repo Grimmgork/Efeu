@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8</TargetFramework>
+  </PropertyGroup>
+
+	<PropertyGroup>
+		<LangVersion>12</LangVersion>
+	</PropertyGroup>
+
+  <ItemGroup>
+    <None Update="workflow.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
