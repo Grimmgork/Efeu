@@ -16,7 +16,7 @@ using Efeu.Runtime.Signal;
 
 class Program
 {
-    static async Task MainAsync(string[] args)
+    static async Task Main(string[] args)
     {
         WorkflowDefinition definition = new WorkflowDefinition("workflow", 1);
         definition.Method(1, "Print")

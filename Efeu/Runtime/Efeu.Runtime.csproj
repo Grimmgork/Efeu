@@ -8,6 +8,11 @@
 		<LangVersion>12</LangVersion>
 	</PropertyGroup>
 
+	<PropertyGroup>
+  <OutputType>Exe</OutputType>
+</PropertyGroup>
+
+
   <ItemGroup>
     <None Update="workflow.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

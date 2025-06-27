@@ -30,7 +30,7 @@ namespace Efeu.Runtime.Json
             Type targetType = implementations.First(i => i.Name == typeName);
 
             // TODO
-            return (TInterface)JsonSerializer.Deserialize(ref reader, targetType, options)!;
+            return (TInterface)JsonSerializer.Deserialize(root, targetType, options)!;
         }
 
         public override void Write(Utf8JsonWriter writer, TInterface value, JsonSerializerOptions options)
