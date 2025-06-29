@@ -23,29 +23,21 @@ namespace Efeu.Runtime.Method
 
         public SomeStruct Variables;
 
-        private Func<WorkflowSignal, Task> sendSignal;
 
-        public Task RaiseSignal(WorkflowSignal message)
-        {
-            return sendSignal(message);
-        }
-
-        public WorkflowMethodContext(SomeStruct variables, SomeStruct workflowOutput, SomeStruct input, Func<WorkflowSignal, Task> sendSignal)
+        public WorkflowMethodContext(SomeStruct variables, SomeStruct workflowOutput, SomeStruct input)
         {
             Variables = variables;
             Input = input;
-            this.sendSignal = sendSignal;
             Output = new SomeStruct();
             WorkflowOutput = workflowOutput;
         }
 
-        public WorkflowMethodContext(SomeStruct variables, SomeStruct workflowOutput, SomeStruct input, Func<WorkflowSignal, Task> sendSignal, SomeData data)
+        public WorkflowMethodContext(SomeStruct variables, SomeStruct workflowOutput, SomeStruct input, SomeData data)
         {
             Variables = variables;
             Input = input;
             Data = data;
             Output = new SomeStruct();
-            this.sendSignal = sendSignal;
             WorkflowOutput = workflowOutput;
         }
     }

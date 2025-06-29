@@ -1,13 +1,14 @@
-﻿using System;
+﻿using Efeu.Runtime.Function;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using Efeu.Runtime.Function;
 
 namespace Efeu.Runtime.Data
 {
@@ -86,18 +87,15 @@ namespace Efeu.Runtime.Data
 
     public struct SomeData : ISomeTraversableData
     {
-        public readonly WorkflowDataType DataType;
-
         private readonly object? scalarValue;
         private readonly IList<SomeData>? arrayItems;
         private readonly IDictionary<string, SomeData>? structProperties;
 
+        public readonly WorkflowDataType DataType;
+
         public IList<SomeData> Items => arrayItems ?? throw new InvalidOperationException("Not an Array.");
-
         public IDictionary<string, SomeData> Properties => structProperties ?? throw new InvalidOperationException("Not a Struct.");
-
         public object? Value => IsScalar ? scalarValue : throw new InvalidOperationException("Not a Scalar.");
-
 
         public bool IsNull => DataType == WorkflowDataType.Null;
         public bool IsError => DataType == WorkflowDataType.Error;
@@ -117,13 +115,6 @@ namespace Efeu.Runtime.Data
                     return TraversalNodeType.Leaf;
             }
         }
-
-        public SomeData()
-        {
-
-        }
-
-        
 
         public SomeData(IEnumerable<SomeData> items)
         {
@@ -163,7 +154,6 @@ namespace Efeu.Runtime.Data
             }
         }
 
-
         public SomeData this[string name]
         {
             get 
@@ -188,7 +178,7 @@ namespace Efeu.Runtime.Data
             }
         }
 
-        public static SomeData Undef()
+        public static SomeData Null()
         {
             return new SomeData();
         }
@@ -198,9 +188,9 @@ namespace Efeu.Runtime.Data
             return new SomeData(WorkflowDataType.Integer, value);
         }
 
-        public static SomeData Integer(Int64? value)
+        public static SomeData Long(Int64? value)
         {
-            return new SomeData(WorkflowDataType.Integer, value);
+            return new SomeData(WorkflowDataType.Long, value);
         }
 
         public static SomeData Boolean(bool? value)
@@ -213,26 +203,31 @@ namespace Efeu.Runtime.Data
             return new SomeData(WorkflowDataType.String, value);
         }
 
-        public static SomeData Float(Single? value)
+        public static SomeData Single(Single? value)
         {
             return new SomeData(WorkflowDataType.Single, value);
         }
 
-        public static SomeData Float(Double? value)
+        public static SomeData Double(Double? value)
         {
             return new SomeData(WorkflowDataType.Single, value);
         }
 
-        public static SomeData Error(WorkflowError? value)
+        public static SomeData Decimal(Decimal? value)
         {
-            return new SomeData(WorkflowDataType.Error, value);
+            return new SomeData(WorkflowDataType.Decimal, value);
         }
 
-        public static SomeData FromPolymorphicObject(object? value)
+        public static SomeData Timestamp(DateTime? value)
+        {
+            return new SomeData(WorkflowDataType.Timestamp, value);
+        }
+
+        public static SomeData Parse(object? value)
         {
             if (value == null)
             {
-                return SomeData.Undef();
+                return SomeData.Null();
             }
             else if(value is SomeData someData)
             {
@@ -243,7 +238,7 @@ namespace Efeu.Runtime.Data
                 SomeData structure = SomeData.Struct();
                 foreach (DictionaryEntry entry in properties)
                 {
-                    structure.Properties.Add((string)entry.Key, SomeData.FromPolymorphicObject(entry.Value));
+                    structure.Properties.Add((string)entry.Key, SomeData.Parse(entry.Value));
                 }
                 return structure;
             }
@@ -252,7 +247,7 @@ namespace Efeu.Runtime.Data
                 SomeData array = SomeData.Array();
                 foreach (object? item in items)
                 {
-                    array.Items.Add(FromPolymorphicObject(item));
+                    array.Items.Add(Parse(item));
                 }
                 return array;
             }
@@ -260,11 +255,16 @@ namespace Efeu.Runtime.Data
             {
                 return value switch
                 {
-                    Int32 v => Integer(v),
-                    Int64 v => Integer(v),
-                    String v => String(v),
+                    UInt16  v => Long(v),
+                    UInt32  v => Long(v),
+                    Int16   v => Integer(v),
+                    Int32   v => Integer(v),
+                    Int64   v => Long(v),
+                    String  v => String(v),
                     Boolean v => Boolean(v),
-                    Single v => Float(v),
+                    Single  v => Single(v),
+                    Double  v => Double(v),
+                    Decimal v => Decimal(v),
                     _ => throw new Exception($"Cannot convert {value.GetType()} into {nameof(SomeData)}")
                 };
             }
@@ -304,9 +304,52 @@ namespace Efeu.Runtime.Data
         public static explicit operator String(SomeData value) => value.ToString();
         public static explicit operator Boolean(SomeData value) => value.ToBoolean();
 
-        public int ToInt32()
+        public static implicit operator SomeData(Int32 value) => SomeData.Integer(value);
+        public static implicit operator SomeData(Int64 value) => SomeData.Long(value);
+        public static implicit operator SomeData(String value) => SomeData.String(value);
+        public static implicit operator SomeData(Boolean value) => SomeData.Boolean(value);
+        public static implicit operator SomeData(Single value) => SomeData.Single(value);
+        public static implicit operator SomeData(Double value) => SomeData.Double(value);
+        public static implicit operator SomeData(Decimal value) => SomeData.Decimal(value);
+
+        public Int16 ToInt16()
+        {
+            return Convert.ToInt16(scalarValue);
+        }
+
+        public Int32 ToInt32()
         {
             return Convert.ToInt32(scalarValue);
+        }
+
+        public Int64 ToInt64()
+        {
+            return Convert.ToInt64(scalarValue);
+        }
+
+        public Single ToSingle()
+        {
+            return Convert.ToSingle(scalarValue);
+        }
+
+        public Single ToDouble()
+        {
+            return Convert.ToSingle(scalarValue);
+        }
+
+        public Boolean ToBoolean()
+        {
+            return Convert.ToBoolean(scalarValue);
+        }
+
+        public Decimal ToDecimal()
+        {
+            return Convert.ToDecimal(scalarValue);
+        }
+
+        public DateTime ToDateTime()
+        {
+            return Convert.ToDateTime(scalarValue);
         }
 
         public new string ToString()
@@ -321,11 +364,6 @@ namespace Efeu.Runtime.Data
                 return "STRUCT";
 
             return Convert.ToString(scalarValue) ?? "";
-        }
-
-        public bool ToBoolean()
-        {
-            return Convert.ToBoolean(scalarValue);
         }
 
         public dynamic? ToDynamic()
@@ -379,7 +417,7 @@ namespace Efeu.Runtime.Data
             }
             else
             {
-                return FromPolymorphicObject(scalarValue);
+                return Parse(scalarValue);
             }
         }
 

@@ -14,19 +14,26 @@ namespace Efeu.Runtime.Data
     public struct SomeDataTraversal : IEnumerable<SomeDataTraversalSegment>
     {
         private static Regex regex = new Regex("([a-zA-Z_1-9-]+)(?:\\[([1-9]+)\\])?");
-        private readonly SomeDataTraversalSegment[] segments = [];
+        private readonly SomeDataTraversalSegment[] segments;
         private readonly string path;
 
         public int Length
         {
             get
             {
-                return segments.Length;
+                return segments?.Length ?? 0;
             }
+        }
+
+        public SomeDataTraversal()
+        {
+            segments = [];
+            path = "";
         }
 
         public SomeDataTraversal(string path)
         {
+            segments = [];
             this.path = path;
             if (string.IsNullOrEmpty(path))
                 return;
@@ -64,18 +71,17 @@ namespace Efeu.Runtime.Data
 
         public IEnumerator<SomeDataTraversalSegment> GetEnumerator()
         {
-            foreach (SomeDataTraversalSegment segment in segments)
-                yield return segment;
+            return segments?.AsEnumerable().GetEnumerator() ?? Enumerable.Empty<SomeDataTraversalSegment>().GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return GetEnumerator();
+            return this.GetEnumerator();
         }
 
         public override string ToString()
         {
-            return path;
+            return path ?? "";
         }
     }
 

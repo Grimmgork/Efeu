@@ -21,7 +21,7 @@ namespace Efeu.Runtime.Data
             {
                 string v => SomeData.String(v),
                 Int32 v => SomeData.Integer(v),
-                Int64 v => SomeData.Integer(v),
+                Int64 v => SomeData.Long(v),
                 Boolean v => SomeData.Boolean(v),
                 _ => base.ConvertFrom(context, culture, value)
             };

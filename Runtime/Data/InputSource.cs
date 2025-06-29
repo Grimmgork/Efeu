@@ -11,7 +11,7 @@ namespace Efeu.Runtime.Data
 {
     public static class InputSource
     {
-        public static IInputSource MethodOutput(int id, SomeDataTraversal name)
+        public static IInputSource MethodOutput(int id, SomeDataTraversal name = default)
         {
             return new MethodOutput()
             {
@@ -20,7 +20,7 @@ namespace Efeu.Runtime.Data
             };
         }
 
-        public static IInputSource FunctionOutput(int id, SomeDataTraversal name)
+        public static IInputSource FunctionOutput(int id, SomeDataTraversal name = default)
         {
             return new FunctionOutput()
             {
@@ -37,9 +37,12 @@ namespace Efeu.Runtime.Data
             };
         }
 
-        public static IInputSource Input(SomeDataTraversal traversal)
+        public static IInputSource Input(SomeDataTraversal traversal = default)
         {
-            return new WorkflowInput(traversal);
+            return new WorkflowInput()
+            {
+                Name = traversal
+            };
         }
 
         public static IInputSource Literal(SomeData literal)
@@ -50,15 +53,15 @@ namespace Efeu.Runtime.Data
             };
         }
 
-        public static IInputSource LambdaInput(SomeDataTraversal trabersal)
+        public static IInputSource LambdaInput(SomeDataTraversal traversal = default)
         {
             return new LambdaInput()
             {
-                Name = trabersal
+                Name = traversal
             };
         }
 
-        public static IInputSource Func(Func<InputEvaluationContext, SomeData> func)
+        public static IInputSource Lambda(Func<InputEvaluationContext, SomeData> func)
         {
             return new CSharpFunc()
             {
@@ -145,10 +148,9 @@ namespace Efeu.Runtime.Data
         }
     }
 
-    // cannot be persisted?
     public class CSharpFunc : IInputSource
     {
-        public Func<InputEvaluationContext, SomeData> Expression = (context) => SomeData.Undef();
+        public Func<InputEvaluationContext, SomeData> Expression = (context) => SomeData.Null();
 
         public SomeData GetValue(InputEvaluationContext context)
         {

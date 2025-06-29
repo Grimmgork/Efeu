@@ -53,10 +53,9 @@ namespace Efeu.Runtime
         private IWorkflowMethodInstance currentMethodInstance;
         private IWorkflowActionInstanceFactory instanceFactory;
 
-        private Func<WorkflowSignal, Task> sendSignal;
         private SomeData lambdaInput;
 
-        public WorkflowInstance(int id, WorkflowDefinition definition, IWorkflowActionInstanceFactory instanceFactory, Func<WorkflowSignal, Task> sendSignal, SomeStruct? input = null) 
+        public WorkflowInstance(int id, WorkflowDefinition definition, IWorkflowActionInstanceFactory instanceFactory, SomeStruct? input = null) 
         {
             this.Id = id;
             this.WorkflowDefintitionId = definition.Id;
@@ -67,11 +66,10 @@ namespace Efeu.Runtime
             this.currentMethodId = definition.EntryPointId;
             this.workflowInput = input ?? new SomeStruct();
             this.workflowOutput = new SomeStruct();
-            this.sendSignal = sendSignal;
             this.variables = new SomeStruct();
         }
 
-        public WorkflowInstance(WorkflowInstanceData data, WorkflowDefinition definition, IWorkflowActionInstanceFactory instanceFactory, Func<WorkflowSignal, Task> sendSignal)
+        public WorkflowInstance(WorkflowInstanceData data, WorkflowDefinition definition, IWorkflowActionInstanceFactory instanceFactory)
         {
             this.Id = data.Id;
             this.state = data.State;
@@ -82,7 +80,6 @@ namespace Efeu.Runtime
             this.WorkflowDefintitionId = data.WorkflowDefintitionId;
             this.definition = definition;
             this.instanceFactory = instanceFactory;
-            this.sendSignal = sendSignal;
             this.workflowInput = data.Input;
             this.workflowOutput = data.Output;
         }
@@ -103,7 +100,7 @@ namespace Efeu.Runtime
 
             WorkflowActionNode actionNode = definition.GetAction(currentMethodId);
             SomeStruct inputs = GetInputsForMethod(actionNode);
-            WorkflowMethodContext context = new WorkflowMethodContext(variables, workflowOutput, inputs, sendSignal, methodData.GetValueOrDefault(currentMethodId));
+            WorkflowMethodContext context = new WorkflowMethodContext(variables, workflowOutput, inputs, methodData.GetValueOrDefault(currentMethodId));
             WorkflowMethodState methodState;
             try
             {
@@ -158,7 +155,7 @@ namespace Efeu.Runtime
         {
             WorkflowActionNode actionNode = definition.GetAction(currentMethodId);
             SomeStruct inputs = GetInputsForMethod(actionNode);
-            WorkflowMethodContext context = new WorkflowMethodContext(variables, workflowOutput, inputs, sendSignal, methodData.GetValueOrDefault(currentMethodId));
+            WorkflowMethodContext context = new WorkflowMethodContext(variables, workflowOutput, inputs, methodData.GetValueOrDefault(currentMethodId));
             WorkflowMethodState methodState;
 
             try

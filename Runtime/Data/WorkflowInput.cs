@@ -10,11 +10,6 @@ namespace Efeu.Runtime.Data
     {
         public SomeDataTraversal Name { get; set; } = "";
 
-        public WorkflowInput(SomeDataTraversal traversal)
-        {
-            Name = traversal;
-        }
-
         public SomeData GetValue(InputEvaluationContext context)
         {
             return context.WorkflowInput.Traverse(Name);

@@ -20,42 +20,61 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        WorkflowDefinition definition = new WorkflowDefinition("workflow", 6);
-        definition.Method(1, "Print")
-            .Input("Message", InputSource.Literal(SomeData.String("Enter a message ...")))
-            .Then(2);
+        WorkflowDefinition definition = new WorkflowDefinition("workflow", 2);
+        //definition.Method(1, "WriteVariable")
+        //    .Input("Name", InputSource.Literal("Variable1"))
+        //    .Input("Value", InputSource.Literal(SomeData.Null()))
+        //    .Then(2);
 
         definition.Method(2, "WriteVariable")
-            .Input("Name", InputSource.Literal(SomeData.String("MyVariable")))
-            .Input("Value", InputSource.Literal(
-                SomeData.Struct([
-                    new("A", SomeData.Integer(42)),
-                    new("B", SomeData.Boolean(true))])))
+            .Input("Name", InputSource.Literal("Variable1"))
+            .Input("Value", InputSource.FunctionOutput(4))
             .Then(3);
 
-        definition.Method(3, "WaitForInput")
-            .Then(4)
-            .Error(5);
+        definition.Method(3, "Print")
+            .Input("Message", InputSource.Variable("Variable1"))
+            .Then(2);
 
-        definition.Method(4, "Print")
-            .Input("Message", InputSource.FunctionOutput(7, ""))
-            .Then(6);
+        definition.Function(4, "+")
+            .Input("A", InputSource.Variable("Variable1"))
+            .Input("B", InputSource.Literal(1));
 
-        definition.Method(6, "SetOutput")
-            .Input("Name", InputSource.Literal(SomeData.String("MyOutput")))
-            .Input("Value", InputSource.FunctionOutput(7, ""));
+        //definition.Method(1, "Print")
+        //    .Input("Message", InputSource.Literal("Enter a message ..."))
+        //    .Then(2);
 
-        definition.Method(5, "Print")
-            .Input("Message", InputSource.Literal(SomeData.String("An Error occured!")));
+        //definition.Method(2, "WriteVariable")
+        //    .Input("Name", InputSource.Literal("MyVariable"))
+        //    .Input("Value", InputSource.Literal(
+        //        SomeData.Struct([
+        //            new("A", 42),
+        //            new("B", true)
+        //        ])))
+        //    .Then(3);
 
-        definition.Function(7, "Map")
-            .Input("Array", InputSource.Literal(SomeData.Array([SomeData.Integer(1), SomeData.Integer(2), SomeData.Integer(3), SomeData.Integer(4)])))
-            // .Do((input) => SomeData.Integer(input.ToInt32() + 1));
-            .Do(8);
+        //definition.Method(3, "WaitForInput")
+        //    .Then(4)
+        //    .Error(5);
 
-        definition.Function(8, "+")
-            .Input("A", InputSource.LambdaInput(""))
-            .Input("B", InputSource.Literal(SomeData.Integer(1)));
+        //definition.Method(4, "Print")
+        //    .Input("Message", InputSource.FunctionOutput(7))
+        //    .Then(6);
+
+        //definition.Method(6, "SetOutput")
+        //    .Input("Name", InputSource.Literal("MyOutput"))
+        //    .Input("Value", InputSource.FunctionOutput(7));
+
+        //definition.Method(5, "Print")
+        //    .Input("Message", InputSource.Literal("An Error occured!"));
+
+        //definition.Function(7, "Map")
+        //    .Input("Array", InputSource.Literal(SomeData.Array([1, 2, 3, 4])))
+        //    // .Do((input) => SomeData.Integer(input.ToInt32() + 1));
+        //    .Do(8);
+
+        //definition.Function(8, "+")
+        //    .Input("A", InputSource.LambdaInput())
+        //    .Input("B", InputSource.Literal(1));
 
         //var options = new JsonSerializerOptions()
         //{
@@ -69,7 +88,6 @@ class Program
         //File.WriteAllText("workflow.json", JsonSerializer.Serialize(definition, options));
         //definition = JsonSerializer.Deserialize<WorkflowDefinition>(File.ReadAllText("workflow.json"), options)!;
 
-
         DefaultWorkflowFunctionInstanceFactory instanceFactory = new DefaultWorkflowFunctionInstanceFactory();
         instanceFactory.Register("WriteVariable", () => new WriteVariableMethod());
         instanceFactory.Register("Print", () => new PrintMethod());
@@ -77,13 +95,14 @@ class Program
         instanceFactory.Register("If", () => new IfMethod());
         instanceFactory.Register("SetOutput", () => new SetOutputMethod());
         instanceFactory.Register("If", () => new WorkflowFunction((inputs) => inputs["Condition"].ToBoolean() ? inputs["Then"] : inputs["Else"]));
-        instanceFactory.Register("+", () => new WorkflowFunction((inputs) => SomeData.Integer(inputs["A"].ToInt32() + inputs["B"].ToInt32())));
-        instanceFactory.Register("Map", () => new WorkflowFunction((context, input) => 
-        SomeData.Array(input["Array"].Items.Select(i => context.ComputeLambda(i))) ));
+        instanceFactory.Register("+", () => new WorkflowFunction((inputs) => SomeData.Integer(
+            (inputs["A"].ToDynamic() ?? 0) + 
+            (inputs["B"].ToDynamic() ?? 0)
+        )));
+        instanceFactory.Register("Map", () => new WorkflowFunction((context, input) => SomeData.Array(input["Array"].Items.Select(i => context.ComputeLambda(i)))));
+        instanceFactory.Register("GetGuid", () => new GetGuid());
 
-        WorkflowInstance instance = new WorkflowInstance(1, definition, instanceFactory, (signal) =>
-            Task.Run(() => Console.WriteLine($"SIGNAL: {signal.GetType()}"))
-        );
+        WorkflowInstance instance = new WorkflowInstance(1, definition, instanceFactory);
 
         do
         {
@@ -105,8 +124,6 @@ class Program
         {
             Console.WriteLine(item.ToInt32());
         }
-
-        Console.ReadLine();
     }
 }
 

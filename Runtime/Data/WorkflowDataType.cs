@@ -10,10 +10,11 @@ namespace Efeu.Runtime.Data
     {
         Null,
         Integer,
+        Long,
         Single,
         Double,
         Decimal,
-        DateTime,
+        Timestamp,
         Boolean,
         String,
         Name,

@@ -51,7 +51,7 @@ namespace Efeu.Runtime.Json
             }
             else if (reader.TokenType == JsonTokenType.Number)
             {
-                return SomeData.Integer(reader.GetInt64());
+                return SomeData.Long(reader.GetInt64());
             }
             else if (reader.TokenType == JsonTokenType.True)
             {

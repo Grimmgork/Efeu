@@ -12,14 +12,14 @@
   <OutputType>Exe</OutputType>
 </PropertyGroup>
 
-
+	<PropertyGroup>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+	
   <ItemGroup>
     <None Update="workflow.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
-
-  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 
 </Project>

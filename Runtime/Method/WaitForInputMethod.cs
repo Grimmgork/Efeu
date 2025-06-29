@@ -14,7 +14,7 @@ namespace Efeu.Runtime.Method
     {
         public override async Task<WorkflowMethodState> RunAsync(WorkflowMethodContext context, CancellationToken token)
         {
-            await context.RaiseSignal(new RequestInputSignal(DateTime.Now));
+            Console.WriteLine("Pls enter a value");
             return WorkflowMethodState.Suspended;
         }
 
