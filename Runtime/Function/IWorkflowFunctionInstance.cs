@@ -7,8 +7,8 @@ using Efeu.Runtime.Data;
 
 namespace Efeu.Runtime.Function
 {
-    public interface IWorkflowFunctionInstance : IDisposable
+    public interface IWorkflowFunctionInstance
     {
-        public SomeDataStruct Run(SomeDataStruct input);
+        public SomeData Run(WorkflowFunctionContext context, SomeStruct input);
     }
 }

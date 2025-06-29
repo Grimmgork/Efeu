@@ -11,7 +11,7 @@ using Efeu.Runtime.Function;
 
 namespace Efeu.Runtime.Data
 {
-    public class SomeDataStruct : Dictionary<string, SomeData>, ISomeTraversableData
+    public class SomeStruct : Dictionary<string, SomeData>, ISomeTraversableData
     {
         public new SomeData this[string name]
         {
@@ -123,14 +123,7 @@ namespace Efeu.Runtime.Data
 
         }
 
-        public SomeData(WorkflowDataType type, object? value = null)
-        {
-            if (value is not null)
-            {
-                this.scalarValue = value;
-                DataType = type;
-            }
-        }
+        
 
         public SomeData(IEnumerable<SomeData> items)
         {
@@ -158,6 +151,15 @@ namespace Efeu.Runtime.Data
             foreach (var entry in properties)
             {
                 this.structProperties.Add(entry.Key, entry.Value);
+            }
+        }
+
+        public SomeData(WorkflowDataType type, object? value = null)
+        {
+            if (value is not null)
+            {
+                this.scalarValue = value;
+                DataType = type;
             }
         }
 
@@ -209,16 +211,6 @@ namespace Efeu.Runtime.Data
         public static SomeData String(string? value)
         {
             return new SomeData(WorkflowDataType.String, value);
-        }
-
-        public static SomeData Name(string? value)
-        {
-            return new SomeData(WorkflowDataType.Name, value == null ? null : new WorkflowVariableRef(value));
-        }
-
-        public static SomeData Variable(WorkflowVariableRef? value)
-        {
-            return new SomeData(WorkflowDataType.Name, value);
         }
 
         public static SomeData Float(Single? value)
@@ -295,7 +287,7 @@ namespace Efeu.Runtime.Data
 
         public static SomeData Array(params SomeData[] items)
         {
-            return new SomeData(WorkflowDataType.Array, items);
+            return new SomeData(items);
         }
 
         public static SomeData Array(IList<SomeData> items)
@@ -305,7 +297,7 @@ namespace Efeu.Runtime.Data
 
         public static SomeData Array(IEnumerable<SomeData> items)
         {
-            return new SomeData(WorkflowDataType.Array, items);
+            return new SomeData(items);
         }
 
         public static explicit operator Int32(SomeData value) => value.ToInt32();
@@ -339,28 +331,6 @@ namespace Efeu.Runtime.Data
         public dynamic? ToDynamic()
         {
             return scalarValue;
-        }
-
-        public WorkflowMethodRef ToMethodRef()
-        {
-            if (scalarValue == null)
-            {
-                return default;
-            }
-            else
-            {
-                return (WorkflowMethodRef)scalarValue;
-            }
-        }
-
-        public WorkflowOutputRef ToOutputRef()
-        {
-            return (WorkflowOutputRef)scalarValue!;
-        }
-
-        public WorkflowVariableRef ToVariableRef()
-        {
-            return (WorkflowVariableRef)scalarValue!;
         }
 
         public object? ToPolymorphicObject()

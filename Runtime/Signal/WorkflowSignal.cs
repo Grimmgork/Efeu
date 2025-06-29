@@ -8,6 +8,8 @@ namespace Efeu.Runtime.Message
 {
     public abstract class WorkflowSignal
     {
+        public readonly string Name;
+
         public readonly DateTime Timestamp;
 
         public WorkflowSignal(DateTime timestamp)

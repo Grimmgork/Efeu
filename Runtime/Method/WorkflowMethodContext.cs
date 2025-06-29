@@ -11,17 +11,17 @@ namespace Efeu.Runtime.Method
 {
     public class WorkflowMethodContext
     {
-        public readonly SomeDataStruct Input;
+        public readonly SomeStruct Input;
 
-        public SomeDataStruct Output;
+        public SomeStruct Output;
 
         public SomeData Data;
 
         public string? Route;
 
-        public SomeDataStruct WorkflowOutput;
+        public SomeStruct WorkflowOutput;
 
-        public SomeDataStruct Variables;
+        public SomeStruct Variables;
 
         private Func<WorkflowSignal, Task> sendSignal;
 
@@ -30,21 +30,21 @@ namespace Efeu.Runtime.Method
             return sendSignal(message);
         }
 
-        public WorkflowMethodContext(SomeDataStruct variables, SomeDataStruct workflowOutput, SomeDataStruct input, Func<WorkflowSignal, Task> sendSignal)
+        public WorkflowMethodContext(SomeStruct variables, SomeStruct workflowOutput, SomeStruct input, Func<WorkflowSignal, Task> sendSignal)
         {
             Variables = variables;
             Input = input;
             this.sendSignal = sendSignal;
-            Output = new SomeDataStruct();
+            Output = new SomeStruct();
             WorkflowOutput = workflowOutput;
         }
 
-        public WorkflowMethodContext(SomeDataStruct variables, SomeDataStruct workflowOutput, SomeDataStruct input, Func<WorkflowSignal, Task> sendSignal, SomeData data)
+        public WorkflowMethodContext(SomeStruct variables, SomeStruct workflowOutput, SomeStruct input, Func<WorkflowSignal, Task> sendSignal, SomeData data)
         {
             Variables = variables;
             Input = input;
             Data = data;
-            Output = new SomeDataStruct();
+            Output = new SomeStruct();
             this.sendSignal = sendSignal;
             WorkflowOutput = workflowOutput;
         }

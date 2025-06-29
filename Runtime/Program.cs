@@ -2,7 +2,9 @@
 namespace Efeu.Runtime;
 
 using System;
+using System.Collections;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Efeu;
@@ -18,7 +20,7 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        WorkflowDefinition definition = new WorkflowDefinition("workflow", 1);
+        WorkflowDefinition definition = new WorkflowDefinition("workflow", 6);
         definition.Method(1, "Print")
             .Input("Message", InputSource.Literal(SomeData.String("Enter a message ...")))
             .Then(2);
@@ -36,27 +38,36 @@ class Program
             .Error(5);
 
         definition.Method(4, "Print")
-            .Input("Message", InputSource.Variable("MyVariable.C"))
+            .Input("Message", InputSource.FunctionOutput(7, ""))
             .Then(6);
 
         definition.Method(6, "SetOutput")
             .Input("Name", InputSource.Literal(SomeData.String("MyOutput")))
-            .Input("Value", InputSource.Variable("MyVariable.B"));
+            .Input("Value", InputSource.FunctionOutput(7, ""));
 
         definition.Method(5, "Print")
             .Input("Message", InputSource.Literal(SomeData.String("An Error occured!")));
 
-        var options = new JsonSerializerOptions()
-        {
-            WriteIndented = true
-        };
-        options.Converters.Add(new InterfaceJsonConverter<IInputSource>(
-            typeof(FunctionOutput), typeof(MethodOutput), typeof(Variable), typeof(Literal)));
-        options.Converters.Add(new SomeDataJsonConverter());
-        options.Converters.Add(new SomeDataTraversalJsonConverter());
+        definition.Function(7, "Map")
+            .Input("Array", InputSource.Literal(SomeData.Array([SomeData.Integer(1), SomeData.Integer(2), SomeData.Integer(3), SomeData.Integer(4)])))
+            // .Do((input) => SomeData.Integer(input.ToInt32() + 1));
+            .Do(8);
 
-        File.WriteAllText("workflow.json", JsonSerializer.Serialize(definition, options));
-        definition = JsonSerializer.Deserialize<WorkflowDefinition>(File.ReadAllText("workflow.json"), options)!;
+        definition.Function(8, "+")
+            .Input("A", InputSource.LambdaInput(""))
+            .Input("B", InputSource.Literal(SomeData.Integer(1)));
+
+        //var options = new JsonSerializerOptions()
+        //{
+        //    WriteIndented = true
+        //};
+        //options.Converters.Add(new InterfaceJsonConverter<IInputSource>(
+        //    typeof(FunctionOutput), typeof(MethodOutput), typeof(Variable), typeof(Literal)));
+        //options.Converters.Add(new SomeDataJsonConverter());
+        //options.Converters.Add(new SomeDataTraversalJsonConverter());
+
+        //File.WriteAllText("workflow.json", JsonSerializer.Serialize(definition, options));
+        //definition = JsonSerializer.Deserialize<WorkflowDefinition>(File.ReadAllText("workflow.json"), options)!;
 
 
         DefaultWorkflowFunctionInstanceFactory instanceFactory = new DefaultWorkflowFunctionInstanceFactory();
@@ -66,7 +77,9 @@ class Program
         instanceFactory.Register("If", () => new IfMethod());
         instanceFactory.Register("SetOutput", () => new SetOutputMethod());
         instanceFactory.Register("If", () => new WorkflowFunction((inputs) => inputs["Condition"].ToBoolean() ? inputs["Then"] : inputs["Else"]));
-        instanceFactory.Register("+", () => new WorkflowFunction((inputs) => inputs["A"].ToDynamic() + inputs["B"].ToDynamic()));
+        instanceFactory.Register("+", () => new WorkflowFunction((inputs) => SomeData.Integer(inputs["A"].ToInt32() + inputs["B"].ToInt32())));
+        instanceFactory.Register("Map", () => new WorkflowFunction((context, input) => 
+        SomeData.Array(input["Array"].Items.Select(i => context.ComputeLambda(i))) ));
 
         WorkflowInstance instance = new WorkflowInstance(1, definition, instanceFactory, (signal) =>
             Task.Run(() => Console.WriteLine($"SIGNAL: {signal.GetType()}"))
@@ -86,8 +99,14 @@ class Program
         Console.WriteLine("Done!");
 
         WorkflowInstanceData data = instance.Export();
-        Console.WriteLine(data.Output["MyOutput"].ToString());
+        SomeData array = data.Output["MyOutput"];
+        Console.WriteLine(array.DataType);
+        foreach (SomeData item in array.Items)
+        {
+            Console.WriteLine(item.ToInt32());
+        }
 
+        Console.ReadLine();
     }
 }
 

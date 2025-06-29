@@ -50,6 +50,14 @@ namespace Efeu.Runtime.Data
             };
         }
 
+        public static IInputSource LambdaInput(SomeDataTraversal trabersal)
+        {
+            return new LambdaInput()
+            {
+                Name = trabersal
+            };
+        }
+
         public static IInputSource Func(Func<InputEvaluationContext, SomeData> func)
         {
             return new CSharpFunc()
@@ -70,12 +78,15 @@ namespace Efeu.Runtime.Data
 
         public readonly Func<int, SomeDataTraversal, SomeData> GetMethodOutput;
 
-        public InputEvaluationContext(ISomeTraversableData variables, ISomeTraversableData workflowInput, Func<int, SomeDataTraversal, SomeData> getMethodOutput, Func<int, SomeDataTraversal, SomeData> getFunctionOutput)
+        public readonly SomeData LambdaInput;
+
+        public InputEvaluationContext(ISomeTraversableData variables, ISomeTraversableData workflowInput, Func<int, SomeDataTraversal, SomeData> getMethodOutput, Func<int, SomeDataTraversal, SomeData> getFunctionOutput, SomeData lambdaInput)
         {
             Variables = variables;
             WorkflowInput = workflowInput;
             GetMethodOutput = getMethodOutput;
             GetFunctionOutput = getFunctionOutput;
+            LambdaInput = lambdaInput;
         }
     }
 
@@ -97,6 +108,16 @@ namespace Efeu.Runtime.Data
         public SomeData GetValue(InputEvaluationContext context)
         {
             return context.Variables.Traverse(Name);
+        }
+    }
+
+    public class LambdaInput : IInputSource
+    {
+        public SomeDataTraversal Name { get; set; }
+
+        public SomeData GetValue(InputEvaluationContext context)
+        {
+            return context.LambdaInput.Traverse(Name);
         }
     }
 

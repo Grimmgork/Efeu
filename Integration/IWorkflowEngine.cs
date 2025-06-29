@@ -12,6 +12,6 @@ namespace Efeu.Integration
 {
     public interface IWorkflowEngine
     {
-        public Task<SomeDataStruct> ExecuteWorkflowAsync(WorkflowDefinition definition, SomeDataStruct input, CancellationToken token = default);
+        public Task<SomeStruct> ExecuteWorkflowAsync(WorkflowDefinition definition, SomeStruct input, CancellationToken token = default);
     }
 }

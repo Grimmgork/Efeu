@@ -12,23 +12,9 @@ namespace Efeu.Runtime.Function
 {
     public abstract class WorkflowFunctionInstanceBase : IWorkflowFunctionInstance
     {
-        public int Id { get; set; }
-
-        public virtual void Dispose()
-        {
-            // do nothing
-        }
-
-        public virtual SomeDataStruct Run(IWorkflowSignalHandler context, SomeDataStruct input)
-        {
-            throw new NotImplementedException();
-        }
-
-        public SomeDataStruct Run(SomeDataStruct input)
+        public virtual SomeData Run(WorkflowFunctionContext context, SomeStruct input)
         {
             throw new NotImplementedException();
         }
     }
-
-
 }

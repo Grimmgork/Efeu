@@ -9,11 +9,16 @@ namespace Efeu.Runtime.Function
 {
     public class WorkflowFunctionContext
     {
-        public readonly IReadOnlyDictionary<string, SomeData> Variables;
+        private Func<SomeData, SomeData> computeLambda;
 
-        public WorkflowFunctionContext(SomeDataStruct variables)
+        public WorkflowFunctionContext(Func<SomeData, SomeData> computeLambda)
         {
-            Variables = variables;
+            this.computeLambda = computeLambda;
+        }
+
+        public SomeData ComputeLambda(SomeData input)
+        {
+            return computeLambda(input);
         }
     }
 }

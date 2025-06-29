@@ -15,7 +15,7 @@
         {
           "Name": "Message",
           "Source": {
-            "$type": "Literal",
+            "Type": "Literal",
             "Value": "Enter a message ..."
           }
         }
@@ -34,14 +34,14 @@
         {
           "Name": "Name",
           "Source": {
-            "$type": "Literal",
+            "Type": "Literal",
             "Value": "MyVariable"
           }
         },
         {
           "Name": "Value",
           "Source": {
-            "$type": "Literal",
+            "Type": "Literal",
             "Value": {
               "A": 42,
               "B": true
@@ -74,7 +74,7 @@
         {
           "Name": "Message",
           "Source": {
-            "$type": "Variable",
+            "Type": "Variable",
             "Name": "MyVariable.C"
           }
         }
@@ -93,14 +93,14 @@
         {
           "Name": "Name",
           "Source": {
-            "$type": "Literal",
+            "Type": "Literal",
             "Value": "MyOutput"
           }
         },
         {
           "Name": "Value",
           "Source": {
-            "$type": "Variable",
+            "Type": "Variable",
             "Name": "MyVariable.B"
           }
         }
@@ -119,7 +119,7 @@
         {
           "Name": "Message",
           "Source": {
-            "$type": "Literal",
+            "Type": "Literal",
             "Value": "An Error occured!"
           }
         }

@@ -18,7 +18,7 @@ namespace Efeu.Runtime.Json
             this.implementations = implementations;
         }
 
-        public override TInterface? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override TInterface Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.Null)
                 return default;
@@ -26,10 +26,9 @@ namespace Efeu.Runtime.Json
             JsonDocument json = JsonDocument.ParseValue(ref reader);
             JsonElement root = json.RootElement;
 
-            string typeName = root.GetProperty("$type").ToString();
+            string typeName = root.GetProperty("Type").ToString();
             Type targetType = implementations.First(i => i.Name == typeName);
 
-            // TODO
             return (TInterface)JsonSerializer.Deserialize(root, targetType, options)!;
         }
 

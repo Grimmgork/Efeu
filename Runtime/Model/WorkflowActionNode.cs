@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Efeu.Runtime.Data;
 using Efeu.Runtime.Function;
@@ -23,6 +24,12 @@ namespace Efeu.Runtime.Model
         public int OnError { get; set; }
         public int XPos { get; set; }
         public int YPos { get; set; }
+
+        public int LambdaId { get; set; }
+
+        [JsonIgnore]
+        public Func<SomeData, SomeData> Lambda { get; set; }
+
         public int DefaultRoute { get; set; }
         public List<WorkflowInputNode> Inputs { get; set; } = [];
         public List<WorkflowRouteNode> Routes { get; set; } = [];
@@ -56,6 +63,18 @@ namespace Efeu.Runtime.Model
                 ActionId = methodId,
                 Name = route
             });
+            return this;
+        }
+
+        public WorkflowActionNode Do(int id)
+        {
+            LambdaId = id;
+            return this;
+        }
+
+        public WorkflowActionNode Do(Func<SomeData, SomeData> lambda)
+        {
+            Lambda = lambda;
             return this;
         }
     }

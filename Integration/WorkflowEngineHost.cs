@@ -58,7 +58,7 @@ namespace Efeu.Integration
             throw new NotImplementedException();
         }
 
-        public Task<SomeDataStruct> ExecuteWorkflowAsync(int id, SomeDataStruct input, CancellationToken token = default)
+        public Task<SomeStruct> ExecuteWorkflowAsync(int id, SomeStruct input, CancellationToken token = default)
         {
             throw new NotImplementedException();
         }

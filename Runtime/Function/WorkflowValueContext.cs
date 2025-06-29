@@ -11,13 +11,13 @@ namespace Efeu.Runtime.Function
     {
         public readonly IReadOnlyDictionary<string, SomeData> Variables;
 
-        public readonly IReadOnlyDictionary<int, SomeDataStruct> MethodOutputs;
+        public readonly IReadOnlyDictionary<int, SomeStruct> MethodOutputs;
 
         public readonly IReadOnlyDictionary<string, SomeData> WorkflowInputs;
 
         public Func<int, string, SomeData> getFunctionOutput;
 
-        public WorkflowValueContext(SomeDataStruct variables, IReadOnlyDictionary<int, SomeDataStruct> methodOutputs)
+        public WorkflowValueContext(SomeStruct variables, IReadOnlyDictionary<int, SomeStruct> methodOutputs)
         {
             Variables = variables;
             MethodOutputs = methodOutputs;

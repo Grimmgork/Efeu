@@ -22,7 +22,7 @@ namespace Efeu.Integration
             this.signalHandler = signalHandler;
         }
 
-        public async Task<SomeDataStruct> ExecuteWorkflowAsync(WorkflowDefinition definition, SomeDataStruct input, CancellationToken token)
+        public async Task<SomeStruct> ExecuteWorkflowAsync(WorkflowDefinition definition, SomeStruct input, CancellationToken token)
         {
             WorkflowInstance instance = new WorkflowInstance(1, definition, methodInstanceFactory,
                 (signal) => signalHandler.SendSignal(signal), input);

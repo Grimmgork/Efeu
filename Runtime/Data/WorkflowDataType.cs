@@ -19,6 +19,7 @@ namespace Efeu.Runtime.Data
         Name,
         Error,
         Array,
-        Struct
+        Struct,
+        Anything
     }
 }
