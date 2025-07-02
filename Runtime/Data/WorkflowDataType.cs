@@ -18,6 +18,7 @@ namespace Efeu.Runtime.Data
         Boolean,
         String,
         Name,
+        Stream,
         Error,
         Array,
         Struct,

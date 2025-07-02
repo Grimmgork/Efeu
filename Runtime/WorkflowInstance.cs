@@ -30,9 +30,9 @@ namespace Efeu.Runtime
         public SomeStruct Variables = new SomeStruct();
         public IDictionary<int, SomeData> MethodData = new Dictionary<int, SomeData>();
         public IDictionary<int, SomeStruct> MethodOutput = new Dictionary<int, SomeStruct>();
+        public Stack<int> ReturnStack = new Stack<int>();
     }
 
-    // TODO handle default route
     public class WorkflowInstance
     {
         public readonly int Id;
@@ -48,6 +48,7 @@ namespace Efeu.Runtime
         private SomeStruct variables;
         private IDictionary<int, SomeData> methodData;
         private IDictionary<int, SomeStruct> methodOutput;
+        private Stack<int> returnStack;
         private WorkflowDefinition definition;
 
         private IWorkflowMethodInstance currentMethodInstance;
@@ -67,6 +68,7 @@ namespace Efeu.Runtime
             this.workflowInput = input ?? new SomeStruct();
             this.workflowOutput = new SomeStruct();
             this.variables = new SomeStruct();
+            this.returnStack = new Stack<int>();
         }
 
         public WorkflowInstance(WorkflowInstanceData data, WorkflowDefinition definition, IWorkflowActionInstanceFactory instanceFactory)
@@ -82,6 +84,7 @@ namespace Efeu.Runtime
             this.instanceFactory = instanceFactory;
             this.workflowInput = data.Input;
             this.workflowOutput = data.Output;
+            this.returnStack = data.ReturnStack;
         }
 
         public Task StepAsync(CancellationToken token = default)
@@ -151,13 +154,31 @@ namespace Efeu.Runtime
             }
         }
 
+        private void DoDispatch()
+        {
+            returnStack.Push(currentMethodId);
+            WorkflowActionNode actionNode = definition.GetAction(currentMethodId);
+
+            currentMethodId = actionNode.LambdaId;
+            string methodname = definition.GetAction(currentMethodId).Name;
+            currentMethodInstance = instanceFactory.GetMethodInstance(methodname);
+        }
+
         private async Task RunMethodAsync(CancellationToken token)
         {
             WorkflowActionNode actionNode = definition.GetAction(currentMethodId);
             SomeStruct inputs = GetInputsForMethod(actionNode);
-            WorkflowMethodContext context = new WorkflowMethodContext(variables, workflowOutput, inputs, methodData.GetValueOrDefault(currentMethodId));
-            WorkflowMethodState methodState;
+            WorkflowMethodContext context;
+            if (methodData.ContainsKey(currentMethodId))
+            {
+                context = new WorkflowMethodContext(variables, workflowOutput, inputs, methodData.GetValueOrDefault(currentMethodId));
+            }
+            else
+            {
+                context = new WorkflowMethodContext(variables, workflowOutput, inputs);
+            }
 
+            WorkflowMethodState methodState;
             try
             {
                 methodState = await currentMethodInstance.RunAsync(context, token);
@@ -173,6 +194,7 @@ namespace Efeu.Runtime
             if (methodState == WorkflowMethodState.Done)
             {
                 methodOutput[currentMethodId] = context.Output;
+                methodData.Remove(currentMethodId);
 
                 int nextMethodId = string.IsNullOrWhiteSpace(context.Route) ?
                     actionNode.DefaultRoute : actionNode.Routes.First(x => x.Name == context.Route).ActionId;
@@ -189,10 +211,22 @@ namespace Efeu.Runtime
                 state = WorkflowInstanceState.Running;
                 return;
             }
+            else if (methodState == WorkflowMethodState.Dispatch)
+            {
+                state = WorkflowInstanceState.Running;
+                methodOutput[currentMethodId] = context.Output;
+                DoDispatch();
+                return;
+            }
         }
 
         private void MoveNextMethodOrDone(int nextRef)
         {
+            if (nextRef == 0 && returnStack.Any())
+            {
+                nextRef = returnStack.Pop();
+            }
+
             // resolve next
             if (nextRef == 0)
             {
@@ -306,7 +340,8 @@ namespace Efeu.Runtime
                 Variables = variables,
                 MethodData = methodData,
                 MethodOutput = methodOutput,
-                Output = workflowOutput
+                Output = workflowOutput,
+                ReturnStack = returnStack
             };
         }
     }

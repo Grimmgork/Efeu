@@ -10,6 +10,7 @@ namespace Efeu.Runtime.Method
     {
         Running,
         Suspended,
-        Done
+        Done,
+        Dispatch
     }
 }

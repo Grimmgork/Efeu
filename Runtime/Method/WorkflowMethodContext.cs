@@ -11,7 +11,7 @@ namespace Efeu.Runtime.Method
 {
     public class WorkflowMethodContext
     {
-        public readonly SomeStruct Input;
+        public SomeStruct Input;
 
         public SomeStruct Output;
 
@@ -23,6 +23,14 @@ namespace Efeu.Runtime.Method
 
         public SomeStruct Variables;
 
+        public readonly bool FirstRun;
+
+        private Action runDo;
+
+        public void Do()
+        {
+            runDo();
+        }
 
         public WorkflowMethodContext(SomeStruct variables, SomeStruct workflowOutput, SomeStruct input)
         {
@@ -30,6 +38,8 @@ namespace Efeu.Runtime.Method
             Input = input;
             Output = new SomeStruct();
             WorkflowOutput = workflowOutput;
+            FirstRun = true;
+            this.runDo = runDo;
         }
 
         public WorkflowMethodContext(SomeStruct variables, SomeStruct workflowOutput, SomeStruct input, SomeData data)
@@ -39,6 +49,8 @@ namespace Efeu.Runtime.Method
             Data = data;
             Output = new SomeStruct();
             WorkflowOutput = workflowOutput;
+            FirstRun = false;
+            this.runDo = runDo;
         }
     }
 }

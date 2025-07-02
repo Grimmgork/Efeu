@@ -2,16 +2,11 @@
 namespace Efeu.Runtime;
 
 using System;
-using System.Collections;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Efeu;
-using Efeu.Runtime;
 using Efeu.Runtime.Data;
 using Efeu.Runtime.Function;
-using Efeu.Runtime.Json;
 using Efeu.Runtime.Method;
 using Efeu.Runtime.Model;
 using Efeu.Runtime.Signal;
@@ -20,24 +15,38 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        WorkflowDefinition definition = new WorkflowDefinition("workflow", 2);
+        WorkflowDefinition definition = new WorkflowDefinition("workflow", 1);
+        definition.Method(1, "For")
+            .Input("From", InputSource.Literal(0))
+            .Input("To", InputSource.Literal(9))
+            .Do(2);
+
+        definition.Method(2, "For")
+            .Input("From", InputSource.Literal(0))
+            .Input("To", InputSource.Literal(9))
+            .Do(3);
+
+        definition.Method(3, "Print")
+            .Input("Message", InputSource.MethodOutput(1, "Count"));
+
+
         //definition.Method(1, "WriteVariable")
         //    .Input("Name", InputSource.Literal("Variable1"))
         //    .Input("Value", InputSource.Literal(SomeData.Null()))
         //    .Then(2);
 
-        definition.Method(2, "WriteVariable")
-            .Input("Name", InputSource.Literal("Variable1"))
-            .Input("Value", InputSource.FunctionOutput(4))
-            .Then(3);
+        //definition.Method(2, "WriteVariable")
+        //    .Input("Name", InputSource.Literal("Variable1"))
+        //    .Input("Value", InputSource.FunctionOutput(4))
+        //    .Then(3);
 
-        definition.Method(3, "Print")
-            .Input("Message", InputSource.Variable("Variable1"))
-            .Then(2);
+        //definition.Method(3, "Print")
+        //    .Input("Message", InputSource.Variable("Variable1"))
+        //    .Then(2);
 
-        definition.Function(4, "+")
-            .Input("A", InputSource.Variable("Variable1"))
-            .Input("B", InputSource.Literal(1));
+        //definition.Function(4, "+")
+        //    .Input("A", InputSource.Variable("Variable1"))
+        //    .Input("B", InputSource.Literal(1));
 
         //definition.Method(1, "Print")
         //    .Input("Message", InputSource.Literal("Enter a message ..."))
@@ -89,13 +98,14 @@ class Program
         //definition = JsonSerializer.Deserialize<WorkflowDefinition>(File.ReadAllText("workflow.json"), options)!;
 
         DefaultWorkflowFunctionInstanceFactory instanceFactory = new DefaultWorkflowFunctionInstanceFactory();
+        instanceFactory.Register("For", () => new ForMethod());
         instanceFactory.Register("WriteVariable", () => new WriteVariableMethod());
         instanceFactory.Register("Print", () => new PrintMethod());
         instanceFactory.Register("WaitForInput", () => new WaitForInputMethod());
         instanceFactory.Register("If", () => new IfMethod());
         instanceFactory.Register("SetOutput", () => new SetOutputMethod());
         instanceFactory.Register("If", () => new WorkflowFunction((inputs) => inputs["Condition"].ToBoolean() ? inputs["Then"] : inputs["Else"]));
-        instanceFactory.Register("+", () => new WorkflowFunction((inputs) => SomeData.Integer(
+        instanceFactory.Register("+", () => new WorkflowFunction((inputs) => SomeData.Parse(
             (inputs["A"].ToDynamic() ?? 0) + 
             (inputs["B"].ToDynamic() ?? 0)
         )));
@@ -116,6 +126,8 @@ class Program
         }
         while (instance.State != WorkflowInstanceState.Done);
         Console.WriteLine("Done!");
+
+        return;
 
         WorkflowInstanceData data = instance.Export();
         SomeData array = data.Output["MyOutput"];
