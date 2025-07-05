@@ -12,18 +12,21 @@ namespace Efeu.Runtime.Method
     {
         public override WorkflowMethodState Run(WorkflowMethodContext context, CancellationToken token)
         {
-            int from = context.Input["From"].ToInt32();
-            int to = context.Input["To"].ToInt32();
-
-            if (context.FirstRun)
+            if (context.InitialRun)
             {
-                if (to - from <= 0)
+                int from = context.Input["From"].ToInt32();
+                int to = context.Input["To"].ToInt32();
+
+                if (to - from < 0)
                 {
                     return WorkflowMethodState.Done;
                 }
 
                 context.Data = SomeData.Struct();
+                context.Data["To"] = to;
                 context.Data["Counter"] = from;
+                context.Output["Count"] = from;
+                return WorkflowMethodState.Dispatch;
             }
 
             int counter = context.Data["Counter"].ToInt32();

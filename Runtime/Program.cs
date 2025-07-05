@@ -17,17 +17,16 @@ class Program
     {
         WorkflowDefinition definition = new WorkflowDefinition("workflow", 1);
         definition.Method(1, "For")
-            .Input("From", InputSource.Literal(0))
-            .Input("To", InputSource.Literal(9))
+            .Input("From", InputSource.Literal(1))
+            .Input("To", InputSource.Literal(1))
             .Do(2);
 
-        definition.Method(2, "For")
-            .Input("From", InputSource.Literal(0))
-            .Input("To", InputSource.Literal(9))
+        definition.Method(2, "ForEach")
+            .Input("Items", InputSource.Literal(SomeData.Array(5, 6, 7, 8)))
             .Do(3);
 
         definition.Method(3, "Print")
-            .Input("Message", InputSource.MethodOutput(1, "Count"));
+            .Input("Message", InputSource.MethodOutput(2, "Item"));
 
 
         //definition.Method(1, "WriteVariable")
@@ -99,6 +98,7 @@ class Program
 
         DefaultWorkflowFunctionInstanceFactory instanceFactory = new DefaultWorkflowFunctionInstanceFactory();
         instanceFactory.Register("For", () => new ForMethod());
+        instanceFactory.Register("ForEach", () => new ForeachMethod());
         instanceFactory.Register("WriteVariable", () => new WriteVariableMethod());
         instanceFactory.Register("Print", () => new PrintMethod());
         instanceFactory.Register("WaitForInput", () => new WaitForInputMethod());
