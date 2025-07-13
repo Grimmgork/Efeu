@@ -1,0 +1,79 @@
+﻿
+.action_node {
+    background-color: lightgray;
+    box-shadow: 0px 2px 2px;
+    user-select: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.action_node td {
+    vertical-align: top;
+    padding: 0;
+}
+
+.action_node_section {
+
+}
+
+.action_node_section[do] {
+    background-color: lightgoldenrodyellow;
+}
+
+.action_node_section[route] {
+    background-color: lightgray;
+}
+
+.action_node_section[io] {
+    background-color: lightblue;
+}
+
+.action_node_input {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    height: 2rem;
+    justify-content: end;
+}
+
+.action_node_output {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    height: 2rem;
+    justify-content: end;
+}
+
+.action_node_output > div {
+    background-color: green;
+    width: 1rem;
+    height: 1rem;
+    margin-left: 0.5rem;
+}
+
+.action_node_input > div {
+    background-color: green;
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.5rem;
+}
+
+.action_node_output > div.dragging {
+    background-color: red;
+}
+
+.editor {
+    height: 100%;
+    overflow: auto;
+}
+
+.editor > .canvas {
+    height: 500rem;
+    width: 500rem;
+    position: relative;
+}

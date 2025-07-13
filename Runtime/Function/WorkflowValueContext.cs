@@ -11,16 +11,20 @@ namespace Efeu.Runtime.Function
     {
         public readonly IReadOnlyDictionary<string, SomeData> Variables;
 
-        public readonly IReadOnlyDictionary<int, SomeStruct> MethodOutputs;
+        public readonly IReadOnlyDictionary<int, SomeData> MethodOutputs;
 
-        public readonly IReadOnlyDictionary<string, SomeData> WorkflowInputs;
+        public readonly SomeData WorkflowInput;
 
-        public Func<int, string, SomeData> getFunctionOutput;
+        private Func<SomeData, SomeData> doFunc;
 
-        public WorkflowValueContext(SomeStruct variables, IReadOnlyDictionary<int, SomeStruct> methodOutputs)
+        public SomeData Do(SomeData input) => doFunc(input);
+
+        public WorkflowValueContext(SomeData workflowInput, SomeStruct variables, IReadOnlyDictionary<int, SomeData> methodOutputs, Func<SomeData, SomeData> doFunc)
         {
+            WorkflowInput = workflowInput;
             Variables = variables;
             MethodOutputs = methodOutputs;
+            this.doFunc = doFunc;
         }
     }
 }

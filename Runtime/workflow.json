@@ -1,130 +1,22 @@
 {
-  "Id": 0,
+  "Id": 1,
   "Name": "workflow",
   "EntryPointId": 1,
   "ActionNodes": [
     {
-      "Type": 0,
+      "Name": "ForEach",
       "Id": 1,
-      "Name": "Print",
-      "OnError": 0,
-      "XPos": 0,
-      "YPos": 0,
-      "DefaultRoute": 2,
-      "Inputs": [
-        {
-          "Name": "Message",
-          "Source": {
-            "Type": "Literal",
-            "Value": "Enter a message ..."
-          }
-        }
-      ],
-      "Routes": []
+      "DoReference": 2,
+      "Input": {
+        "Literal": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+      }
     },
     {
-      "Type": 0,
+      "Name": "Print",
       "Id": 2,
-      "Name": "WriteVariable",
-      "OnError": 0,
-      "XPos": 0,
-      "YPos": 0,
-      "DefaultRoute": 3,
-      "Inputs": [
-        {
-          "Name": "Name",
-          "Source": {
-            "Type": "Literal",
-            "Value": "MyVariable"
-          }
-        },
-        {
-          "Name": "Value",
-          "Source": {
-            "Type": "Literal",
-            "Value": {
-              "A": 42,
-              "B": true
-            }
-          }
-        }
-      ],
-      "Routes": []
-    },
-    {
-      "Type": 0,
-      "Id": 3,
-      "Name": "WaitForInput",
-      "OnError": 5,
-      "XPos": 0,
-      "YPos": 0,
-      "DefaultRoute": 4,
-      "Inputs": [],
-      "Routes": []
-    },
-    {
-      "Type": 0,
-      "Id": 4,
-      "Name": "Print",
-      "OnError": 0,
-      "XPos": 0,
-      "YPos": 0,
-      "DefaultRoute": 6,
-      "Inputs": [
-        {
-          "Name": "Message",
-          "Source": {
-            "Type": "Variable",
-            "Name": "MyVariable.C"
-          }
-        }
-      ],
-      "Routes": []
-    },
-    {
-      "Type": 0,
-      "Id": 6,
-      "Name": "SetOutput",
-      "OnError": 0,
-      "XPos": 0,
-      "YPos": 0,
-      "DefaultRoute": 0,
-      "Inputs": [
-        {
-          "Name": "Name",
-          "Source": {
-            "Type": "Literal",
-            "Value": "MyOutput"
-          }
-        },
-        {
-          "Name": "Value",
-          "Source": {
-            "Type": "Variable",
-            "Name": "MyVariable.B"
-          }
-        }
-      ],
-      "Routes": []
-    },
-    {
-      "Type": 0,
-      "Id": 5,
-      "Name": "Print",
-      "OnError": 0,
-      "XPos": 0,
-      "YPos": 0,
-      "DefaultRoute": 0,
-      "Inputs": [
-        {
-          "Name": "Message",
-          "Source": {
-            "Type": "Literal",
-            "Value": "An Error occured!"
-          }
-        }
-      ],
-      "Routes": []
+      "Input": {
+        "Literal": "Hello World!"
+      }
     }
   ]
 }

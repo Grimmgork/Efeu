@@ -11,7 +11,7 @@ namespace Efeu.Runtime.Method
     {
         public override WorkflowMethodState Run(WorkflowMethodContext context, CancellationToken token)
         {
-            context.Output["Result"] = Guid.NewGuid().ToString();
+            context.Output = Guid.NewGuid().ToString();
             return WorkflowMethodState.Done;
         }
     }

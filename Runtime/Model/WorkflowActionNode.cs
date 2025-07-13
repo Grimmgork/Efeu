@@ -21,32 +21,22 @@ namespace Efeu.Runtime.Model
         public WorkflowActionNodeType Type { get; set; }
         public int Id { get; set; }
         public string Name { get; set; } = "";
-        public int OnError { get; set; }
+        public int ErrorRoute { get; set; }
         public int XPos { get; set; }
         public int YPos { get; set; }
-
-        public int LambdaId { get; set; }
+        public int DoReference { get; set; }
+        public SomeDataTraversal DoOutputTraversal { get; set; }
 
         [JsonIgnore]
-        public Func<SomeData, SomeData> Lambda { get; set; }
-
+        public Func<SomeData, SomeData>? DoLambda { get; set; }
         public int DefaultRoute { get; set; }
-        public List<WorkflowInputNode> Inputs { get; set; } = [];
-        public List<WorkflowRouteNode> Routes { get; set; } = [];
+        public WorkflowInputNode Input { get; set; } = new WorkflowInputNode();
 
-        public WorkflowActionNode Input(string name, IInputSource source)
-        {
-            Inputs.Add(new WorkflowInputNode(name, source)
-            {
-                Name = name,
-                Source = source
-            });
-            return this;
-        }
+        public List<WorkflowRouteNode> Routes { get; set; } = [];
 
         public WorkflowActionNode Error(int methodId)
         {
-            OnError = methodId;
+            ErrorRoute = methodId;
             return this;
         }
 
@@ -68,13 +58,13 @@ namespace Efeu.Runtime.Model
 
         public WorkflowActionNode Do(int id)
         {
-            LambdaId = id;
+            DoReference = id;
             return this;
         }
 
         public WorkflowActionNode Do(Func<SomeData, SomeData> lambda)
         {
-            Lambda = lambda;
+            DoLambda = lambda;
             return this;
         }
     }

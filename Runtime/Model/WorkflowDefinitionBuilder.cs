@@ -4,13 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Runtime.Method
+namespace Efeu.Runtime.Model
 {
-    public enum WorkflowMethodState
+    public class WorkflowDefinitionBuilder
     {
-        Running,
-        Suspended,
-        Dispatch,
-        Done
+
     }
 }

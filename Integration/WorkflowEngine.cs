@@ -24,22 +24,13 @@ namespace Efeu.Integration
 
         public async Task<SomeStruct> ExecuteWorkflowAsync(WorkflowDefinition definition, SomeStruct input, CancellationToken token)
         {
-            WorkflowInstance instance = new WorkflowInstance(1, definition, methodInstanceFactory,
-                (signal) => signalHandler.SendSignal(signal), input);
 
-            do
-            {
-                await instance.RunAsync(token);
-            }
-            while (instance.State == WorkflowInstanceState.Running);
+            throw new Exception();
+        }
 
-            if (instance.State != WorkflowInstanceState.Done)
-            {
-                throw new Exception($"Workflow execution failed {instance.State}");
-            }
-
-            WorkflowInstanceData data = instance.Export();
-            return data.Output;
+        public Task<SomeData> ExecuteWorkflowAsync(WorkflowDefinition definition, SomeData input, CancellationToken token = default)
+        {
+            throw new NotImplementedException();
         }
     }
 }

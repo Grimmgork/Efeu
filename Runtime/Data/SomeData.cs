@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
@@ -88,13 +89,13 @@ namespace Efeu.Runtime.Data
     public struct SomeData : ISomeTraversableData
     {
         private readonly object? scalarValue;
-        private readonly IList<SomeData>? arrayItems;
-        private readonly IDictionary<string, SomeData>? structProperties;
+        private readonly IReadOnlyCollection<SomeData>? arrayItems;
+        private readonly IReadOnlyDictionary<string, SomeData>? structProperties;
 
         public readonly WorkflowDataType DataType;
 
-        public IList<SomeData> Items => arrayItems ?? throw new InvalidOperationException("Not an Array.");
-        public IDictionary<string, SomeData> Properties => structProperties ?? throw new InvalidOperationException("Not a Struct.");
+        public IReadOnlyCollection<SomeData> Items => arrayItems ?? throw new InvalidOperationException("Not an Array.");
+        public IReadOnlyDictionary<string, SomeData> Properties => structProperties ?? throw new InvalidOperationException("Not a Struct.");
         public object? Value => IsScalar ? scalarValue : throw new InvalidOperationException("Not a Scalar.");
 
         public bool IsNull => DataType == WorkflowDataType.Null;
@@ -116,33 +117,22 @@ namespace Efeu.Runtime.Data
             }
         }
 
-        public SomeData(IEnumerable<SomeData> items)
-        {
-            DataType = WorkflowDataType.Array;
-            this.arrayItems = new List<SomeData>(
-                items.Select(i => i.Clone()));
-        }
-
-        public SomeData(IDictionary<string, SomeData> structure)
+        public SomeData(IReadOnlyDictionary<string, SomeData> structure)
         {
             DataType = WorkflowDataType.Struct;
             this.structProperties = structure;
         }
 
-        public SomeData(IList<SomeData> list)
+        public SomeData(IEnumerable<SomeData> items)
         {
             DataType = WorkflowDataType.Array;
-            this.arrayItems = list;
+            this.arrayItems = items.ToImmutableArray();
         }
 
         public SomeData(IEnumerable<KeyValuePair<string, SomeData>> properties)
         {
             DataType = WorkflowDataType.Struct;
-            this.structProperties = new Dictionary<string, SomeData>();
-            foreach (var entry in properties)
-            {
-                this.structProperties.Add(entry.Key, entry.Value);
-            }
+            this.structProperties = new Dictionary<string, SomeData>(properties);
         }
 
         public SomeData(WorkflowDataType type, object? value = null)
@@ -156,13 +146,9 @@ namespace Efeu.Runtime.Data
 
         public SomeData this[string name]
         {
-            get 
+            get
             {
                 return structProperties?.GetValueOrDefault(name) ?? default;
-            }
-            set 
-            {
-                Properties[name] = value;
             }
         }
 
@@ -171,10 +157,6 @@ namespace Efeu.Runtime.Data
             get
             {
                 return arrayItems?.ElementAtOrDefault(index) ?? default;
-            }
-            set
-            {
-                Items[index] = value;
             }
         }
 
@@ -235,21 +217,14 @@ namespace Efeu.Runtime.Data
             }
             else if (value is IDictionary properties)
             {
-                SomeData structure = SomeData.Struct();
-                foreach (DictionaryEntry entry in properties)
-                {
-                    structure.Properties.Add((string)entry.Key, SomeData.Parse(entry.Value));
-                }
-                return structure;
+                return SomeData.Struct(
+                     properties.Cast<DictionaryEntry>().Select(p => 
+                        new KeyValuePair<string, SomeData>((string)p.Key, SomeData.Parse(p.Value))));
             }
             else if (value is IEnumerable items and not string)
             {
-                SomeData array = SomeData.Array();
-                foreach (object? item in items)
-                {
-                    array.Items.Add(Parse(item));
-                }
-                return array;
+                return SomeData.Array(items.Cast<object>().Select(i => 
+                    SomeData.Parse(i)));
             }
             else
             {
@@ -398,26 +373,6 @@ namespace Efeu.Runtime.Data
             else
             {
                 return scalarValue;
-            }
-        }
-
-        public SomeData Clone()
-        {
-            if (IsArray)
-            {
-                return SomeData.Array(arrayItems!.Select(i => i.Clone()));
-            }
-            else if (IsStruct)
-            {
-                SomeData result = SomeData.Struct();
-                foreach (KeyValuePair<string, SomeData> pair in Properties!)
-                    result.Properties.Add(pair.Key, pair.Value);
-
-                return result;
-            }
-            else
-            {
-                return Parse(scalarValue);
             }
         }
 

@@ -9,16 +9,13 @@ namespace Efeu.Runtime.Function
 {
     public class WorkflowFunctionContext
     {
-        private Func<SomeData, SomeData> computeLambda;
+        private Func<SomeData, SomeData> doFunc;
 
-        public WorkflowFunctionContext(Func<SomeData, SomeData> computeLambda)
+        public WorkflowFunctionContext(Func<SomeData, SomeData> doFunc)
         {
-            this.computeLambda = computeLambda;
+            this.doFunc = doFunc;
         }
 
-        public SomeData ComputeLambda(SomeData input)
-        {
-            return computeLambda(input);
-        }
+        public SomeData Do(SomeData input) => doFunc(input);
     }
 }

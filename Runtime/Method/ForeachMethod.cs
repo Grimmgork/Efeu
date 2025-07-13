@@ -14,24 +14,31 @@ namespace Efeu.Runtime.Method
         {
             if (context.InitialRun)
             {
-                IList<SomeData> items = context.Input["Items"].Items;
-                if (!items.Any())
+                if (context.Input.IsNull)
                     return WorkflowMethodState.Done;
 
-                context.Data = SomeData.Struct(); 
-                context.Data["Index"] = 0;
-                context.Output["Item"] = items.First();
-                return WorkflowMethodState.Dispatch;
-            }
-            else
-            {
-                int index = context.Data["Index"].ToInt32();
-                if (index > items.Count)
+                if (context.Input.Items.Count == 0)
                     return WorkflowMethodState.Done;
 
-                context.Output["Item"] = items[index];
-                return WorkflowMethodState.Dispatch;
+                context.Data = SomeData.Struct([
+                    new ("Items", context.Input),
+                    new ("Index", 0)
+                ]);
             }
+
+            int index = context.Data["Index"].ToInt32();
+            SomeData items = context.Data["Items"];
+            SomeData item = items[index];
+            if (index >= items.Items.Count)
+                return WorkflowMethodState.Done;
+
+            context.Output = item;
+            index++;
+            context.Data = SomeData.Struct([
+                new ("Items", items),
+                new ("Index", index)
+            ]);
+            return WorkflowMethodState.Dispatch;
         }
     }
 }

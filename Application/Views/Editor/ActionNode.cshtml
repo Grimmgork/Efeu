@@ -1,0 +1,43 @@
+﻿@using Efeu.Runtime.Model
+@model WorkflowActionNode
+
+<table class="action_node" id="@Model.Id" _="install efeuEditorActionNode">
+	<tr class="action_node_section" route>
+		<td>
+			<div class="action_node_input">
+				@Model.Name
+				<div inp _="install efeuEditorActionNodeInput"></div>
+			</div>
+		</td>
+		<td>
+			<div class="action_node_output">
+				Then
+				<div out _="install efeuEditorActionNodeOutput"></div>
+			</div>
+			<div class="action_node_output">
+				Else
+				<div out _="install efeuEditorActionNodeOutput"></div>
+			</div>
+			<div class="action_node_output">
+				Error
+				<div out _="install efeuEditorActionNodeOutput"></div>
+			</div>
+		</td>
+	</tr>
+	<tr class="action_node_section" do>
+		<td>
+		</td>
+		<td>
+			<div class="action_node_output">
+				do
+				<div out _="install efeuEditorActionNodeOutput"></div>
+			</div>
+			<div class="action_node_output">
+				context
+				<div out _="install efeuEditorActionNodeOutput"></div>
+			</div>
+		</td>
+	</tr>
+	<tr class="action_node_section" io>
+	</tr>
+</table>

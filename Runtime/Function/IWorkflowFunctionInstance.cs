@@ -9,6 +9,6 @@ namespace Efeu.Runtime.Function
 {
     public interface IWorkflowFunctionInstance
     {
-        public SomeData Run(WorkflowFunctionContext context, SomeStruct input);
+        public SomeData Run(WorkflowFunctionContext context, SomeData input);
     }
 }

@@ -1,0 +1,53 @@
+﻿@using Efeu.Runtime.Model
+@model WorkflowDefinition;
+
+<div>
+    <svg width="400" height="400" style="border:1px solid black">
+        <circle id="circle1" cx="100" cy="100" r="30" fill="skyblue" _="on mousedown
+        set window.dragging to me
+        set window.offsetX to event.clientX - me.cx.baseVal.value
+        set window.offsetY to event.clientY - me.cy.baseVal.value
+
+       on mouseup from window
+        set window.dragging to null
+
+       on mousemove from window
+        if window.dragging is me
+          set x to event.clientX - window.offsetX
+          set y to event.clientY - window.offsetY
+          set gridSize to 20
+          set snappedX to Math.round(x / gridSize) * gridSize
+          set snappedY to Math.round(y / gridSize) * gridSize
+          set me.cx.baseVal.value to snappedX
+          set me.cy.baseVal.value to snappedY" />
+        <circle id="circle2" cx="200" cy="100" r="30" fill="skyblue" _="on mousedown
+        set window.dragging to me
+        set window.offsetX to event.clientX - me.cx.baseVal.value
+        set window.offsetY to event.clientY - me.cy.baseVal.value
+
+       on mouseup from window
+        set window.dragging to null
+
+       on mousemove from window
+        if window.dragging is me
+          set x to event.clientX - window.offsetX
+          set y to event.clientY - window.offsetY
+          set gridSize to 20
+          set snappedX to Math.round(x / gridSize) * gridSize
+          set snappedY to Math.round(y / gridSize) * gridSize
+          set me.cx.baseVal.value to snappedX
+          set me.cy.baseVal.value to snappedY" />
+
+        <path d="0" id="bezier" _="on mutation from #circle1 set @@d to quadratic_bezier(#circle1.cx.baseVal.value, #circle1.cy.baseVal.value, #circle2.cx.baseVal.value, #circle2.cy.baseVal.value)" stroke="green" fill="none" />
+    </svg>
+</div>
+
+<div>@Model.Name</div>
+@foreach (WorkflowActionNode node in Model.ActionNodes)
+{
+    <partial name="ActionNode" model="@node" />
+}
+
+@{
+
+}

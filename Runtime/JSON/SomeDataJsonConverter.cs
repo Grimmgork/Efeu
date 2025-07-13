@@ -16,7 +16,7 @@ namespace Efeu.Runtime.Json
             if (reader.TokenType == JsonTokenType.StartObject)
             {
                 reader.Read();
-                SomeData data = SomeData.Struct();
+                List<KeyValuePair<string, SomeData>> properties = new List<KeyValuePair<string, SomeData>>();
                 while (reader.TokenType != JsonTokenType.EndObject)
                 {
                     string? prop = reader.GetString();
@@ -24,26 +24,21 @@ namespace Efeu.Runtime.Json
                         throw new Exception();
 
                     reader.Read();
-                    data[prop] = Read(ref reader, typeToConvert, options);
+                    properties.Add(new (prop, Read(ref reader, typeToConvert, options)));
                     reader.Read();
                 }
-                return data;
+                return SomeData.Struct(properties);
             }
             else if (reader.TokenType == JsonTokenType.StartArray)
             {
                 reader.Read();
-                SomeData data = SomeData.Array();
+                List<SomeData> items = new List<SomeData>();
                 while (reader.TokenType != JsonTokenType.EndArray)
                 {
-                    string? prop = reader.GetString();
-                    if (prop == null)
-                        throw new Exception();
-
                     reader.Read();
-                    data.Items.Add(Read(ref reader, typeToConvert, options));
-                    reader.Read();
+                    items.Add(Read(ref reader, typeToConvert, options));
                 }
-                return data;
+                return SomeData.Array(items);
             }
             else if (reader.TokenType == JsonTokenType.String)
             {

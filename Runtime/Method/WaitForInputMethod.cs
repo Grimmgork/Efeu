@@ -12,7 +12,7 @@ namespace Efeu.Runtime.Method
 {
     public class WaitForInputMethod : WorkflowMethodBase
     {
-        public override async Task<WorkflowMethodState> RunAsync(WorkflowMethodContext context, CancellationToken token)
+        public override WorkflowMethodState Run(WorkflowMethodContext context, CancellationToken token)
         {
             Console.WriteLine("Pls enter a value");
             return WorkflowMethodState.Suspended;
@@ -22,7 +22,7 @@ namespace Efeu.Runtime.Method
         {
             if (signal is PromptInputSignal inputSignal)
             {
-                context.Output["Result"] = SomeData.String(inputSignal.Input);
+                context.Output = SomeData.String(inputSignal.Input);
                 return WorkflowMethodState.Done;
             }
             else

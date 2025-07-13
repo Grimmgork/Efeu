@@ -25,12 +25,6 @@ namespace Efeu.Application.Controllers
                 return this.BadRequest();
 
             JsonSerializerOptions options = new JsonSerializerOptions();
-            options.Converters.Add(new InterfaceJsonConverter<IInputSource>(
-                typeof(FunctionOutput),
-                typeof(MethodOutput),
-                typeof(Variable),
-                typeof(Literal)));
-
             options.Converters.Add(new SomeDataJsonConverter());
             options.Converters.Add(new SomeDataTraversalJsonConverter());
 
@@ -38,7 +32,7 @@ namespace Efeu.Application.Controllers
             {
                 WorkflowDefinition definition = JsonSerializer.Deserialize<WorkflowDefinition>(file.OpenReadStream(), options);
 
-                return View(definition);
+                return PartialView("Editor", definition);
             }
             catch (Exception)
             {

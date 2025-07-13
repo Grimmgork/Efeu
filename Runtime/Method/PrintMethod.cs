@@ -12,7 +12,7 @@ namespace Efeu.Runtime.Method
     {
         public override WorkflowMethodState Run(WorkflowMethodContext context, CancellationToken token)
         {
-            Console.WriteLine(context.Input["Message"].ToString());
+            Console.WriteLine(context.Input.ToString());
             return WorkflowMethodState.Done;
         }
     }
