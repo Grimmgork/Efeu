@@ -19,31 +19,28 @@ namespace Efeu.Runtime.Method
 
         public string? Route;
 
-        public SomeData WorkflowOutput;
-
-        public SomeData DispatchContext;
+        public readonly SomeData DispatchResult;
 
         public SomeStruct Variables;
 
         public readonly bool InitialRun;
 
-        public WorkflowMethodContext(SomeStruct variables, SomeData input, SomeData workflowOutput)
+        public WorkflowMethodContext(SomeStruct variables, SomeData input)
         {
             Variables = variables;
             Input = input;
             Output = new SomeData();
             InitialRun = true;
-            WorkflowOutput = workflowOutput;
         }
 
-        public WorkflowMethodContext(SomeStruct variables, SomeData input, SomeData workflowOutput, SomeData data)
+        public WorkflowMethodContext(SomeStruct variables, SomeData input, SomeData data, SomeData dispatchResult)
         {
             Variables = variables;
             Input = input;
             Data = data;
             Output = new SomeData();
             InitialRun = false;
-            WorkflowOutput = workflowOutput;
+            DispatchResult = dispatchResult;
         }
     }
 }

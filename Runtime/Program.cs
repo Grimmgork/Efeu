@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Efeu;
 using Efeu.Runtime.Data;
@@ -20,6 +21,7 @@ class Program
     {
         JsonSerializerOptions options = new JsonSerializerOptions();
         options.Converters.Add(new SomeDataJsonConverter());
+        options.Converters.Add(new JsonStringEnumConverter());
         WorkflowDefinition definition = JsonSerializer.Deserialize<WorkflowDefinition>(File.ReadAllText("workflow.json"), options)!;
 
         DefaultWorkflowFunctionInstanceFactory instanceFactory = new DefaultWorkflowFunctionInstanceFactory();
@@ -29,14 +31,16 @@ class Program
         instanceFactory.Register("Print", () => new PrintMethod());
         instanceFactory.Register("WaitForInput", () => new WaitForInputMethod());
         instanceFactory.Register("If", () => new IfMethod());
-        instanceFactory.Register("SetOutput", () => new SetOutputMethod());
         instanceFactory.Register("If", () => new WorkflowFunction((input) => input["Condition"].ToBoolean() ? input["Then"] : input["Else"]));
         instanceFactory.Register("+", () => new WorkflowFunction((input) => SomeData.Parse(
             (input["A"].ToDynamic() ?? 0) + 
-            (input["B"].ToDynamic() ?? 0)
+            (input["B"].ToDynamic() ?? 0) 
         )));
-        instanceFactory.Register("Map", () => new WorkflowFunction((context, input) => SomeData.Array(input.Items.Select(i => context.Do(i)))));
+        instanceFactory.Register("Map", () => new MapMethod());
+        instanceFactory.Register("Filter", () => new FilterMethod());
+        instanceFactory.Register("Eval", () => new EvalMethod());
         instanceFactory.Register("GetGuid", () => new GetGuid());
+        instanceFactory.Register("SetVariable", () => new SetVariableMethod());
 
         WorkflowInstance instance = new WorkflowInstance(1, definition, instanceFactory);
 
@@ -53,15 +57,8 @@ class Program
         while (instance.State != WorkflowInstanceState.Done);
         Console.WriteLine("Done!");
 
-        return;
-
         WorkflowInstanceData data = instance.Export();
-        SomeData array = data.Output["MyOutput"];
-        Console.WriteLine(array.DataType);
-        foreach (SomeData item in array.Items)
-        {
-            Console.WriteLine(item.ToInt32());
-        }
+        Console.WriteLine(data.Output.ToString());
     }
 }
 

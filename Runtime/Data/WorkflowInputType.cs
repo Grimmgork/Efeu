@@ -9,12 +9,11 @@ namespace Efeu.Runtime.Data
     public enum WorkflowInputType
     {
         Literal,
-        DoInput,
+        DispatchContext,
         MethodOutput,
         FunctionOutput,
         Variable,
         Array,
-        Struct,
-        CSharp
+        Struct
     }
 }

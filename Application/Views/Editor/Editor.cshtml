@@ -4,8 +4,8 @@
     on mouseup from window
         if window.dragging is not null
             remove .dragging from window.dragging
+            set window.dragging to null
         end
-        set window.dragging to null
     end
 
     behavior  efeuEditorActionNode

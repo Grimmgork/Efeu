@@ -13,14 +13,9 @@ namespace Efeu.Runtime
     {
         public static SomeData EvaluateInput(this WorkflowInputNode node, InputEvaluationContext context)
         {
-            if (node.Type == WorkflowInputType.CSharp)
-            {
-                return node.CSharp(context);
-            }
-            else 
             if (node.Type == WorkflowInputType.Literal)
             {
-                return node.Literal;
+                return node.Value;
             }
             else
             if (node.Type == WorkflowInputType.Variable)
@@ -48,9 +43,9 @@ namespace Efeu.Runtime
                 return context.GetFunctionOutput(node.Id, node.Traversal);
             }
             else
-            if (node.Type == WorkflowInputType.DoInput)
+            if (node.Type == WorkflowInputType.DispatchContext)
             {
-                return context.DoInput;
+                return context.GetMethodOutput(node.Id, node.Traversal);
             }
 
             throw new NotImplementedException();

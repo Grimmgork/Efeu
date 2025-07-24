@@ -35,8 +35,8 @@ namespace Efeu.Runtime.Json
                 List<SomeData> items = new List<SomeData>();
                 while (reader.TokenType != JsonTokenType.EndArray)
                 {
-                    reader.Read();
                     items.Add(Read(ref reader, typeToConvert, options));
+                    reader.Read();
                 }
                 return SomeData.Array(items);
             }

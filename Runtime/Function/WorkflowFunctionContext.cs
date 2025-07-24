@@ -9,13 +9,6 @@ namespace Efeu.Runtime.Function
 {
     public class WorkflowFunctionContext
     {
-        private Func<SomeData, SomeData> doFunc;
 
-        public WorkflowFunctionContext(Func<SomeData, SomeData> doFunc)
-        {
-            this.doFunc = doFunc;
-        }
-
-        public SomeData Do(SomeData input) => doFunc(input);
     }
 }

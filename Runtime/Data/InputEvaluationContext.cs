@@ -19,15 +19,12 @@ namespace Efeu.Runtime.Data
 
         public readonly Func<int, SomeDataTraversal, SomeData> GetMethodOutput;
 
-        public readonly SomeData DoInput;
-
-        public InputEvaluationContext(ISomeTraversableData variables, ISomeTraversableData workflowInput, Func<int, SomeDataTraversal, SomeData> getMethodOutput, Func<int, SomeDataTraversal, SomeData> getFunctionOutput, SomeData doInput)
+        public InputEvaluationContext(ISomeTraversableData variables, ISomeTraversableData workflowInput, Func<int, SomeDataTraversal, SomeData> getMethodOutput, Func<int, SomeDataTraversal, SomeData> getFunctionOutput)
         {
             Variables = variables;
             WorkflowInput = workflowInput;
             GetMethodOutput = getMethodOutput;
             GetFunctionOutput = getFunctionOutput;
-            DoInput = doInput;
         }
     }
 }

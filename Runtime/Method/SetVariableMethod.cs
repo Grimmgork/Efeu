@@ -7,15 +7,12 @@ using System.Threading.Tasks;
 
 namespace Efeu.Runtime.Method
 {
-    public class WhileMethod : WorkflowMethodBase
+    public class SetVariableMethod : WorkflowMethodBase
     {
         public override WorkflowMethodState Run(WorkflowMethodContext context, CancellationToken token)
         {
-            if (context.Input.ToBoolean())
-            {
-                return WorkflowMethodState.Dispatch;
-            }
-
+            string name = context.Input.Properties["Name"].ToString();
+            context.Variables[name] = context.Input.Properties["Value"];
             return WorkflowMethodState.Done;
         }
     }

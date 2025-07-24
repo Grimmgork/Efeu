@@ -12,9 +12,7 @@ namespace Efeu.Runtime.Model
     {
         public int Id { get; set; }
         public SomeDataTraversal Traversal { get; set; }
-        public SomeData Literal { get; set; }
-        [JsonIgnore]
-        public Func<InputEvaluationContext, SomeData> CSharp { get; set; } = (context) => default;
+        public SomeData Value { get; set; }
         public WorkflowInputType Type { get; set; }
         public string Name { get; set; } = "";
         public WorkflowInputNode[] Inputs { get; set; } = [];

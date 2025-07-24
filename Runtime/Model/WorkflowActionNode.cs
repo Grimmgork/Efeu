@@ -26,46 +26,8 @@ namespace Efeu.Runtime.Model
         public int YPos { get; set; }
         public int DoReference { get; set; }
         public SomeDataTraversal DoOutputTraversal { get; set; }
-
-        [JsonIgnore]
-        public Func<SomeData, SomeData>? DoLambda { get; set; }
         public int DefaultRoute { get; set; }
         public WorkflowInputNode Input { get; set; } = new WorkflowInputNode();
-
         public List<WorkflowRouteNode> Routes { get; set; } = [];
-
-        public WorkflowActionNode Error(int methodId)
-        {
-            ErrorRoute = methodId;
-            return this;
-        }
-
-        public WorkflowActionNode Then(int methodId)
-        {
-            DefaultRoute = methodId;
-            return this;
-        }
-
-        public WorkflowActionNode When(string route, int methodId)
-        {
-            Routes.Add(new WorkflowRouteNode()
-            {
-                ActionId = methodId,
-                Name = route
-            });
-            return this;
-        }
-
-        public WorkflowActionNode Do(int id)
-        {
-            DoReference = id;
-            return this;
-        }
-
-        public WorkflowActionNode Do(Func<SomeData, SomeData> lambda)
-        {
-            DoLambda = lambda;
-            return this;
-        }
     }
 }

@@ -4,18 +4,20 @@
   "EntryPointId": 1,
   "ActionNodes": [
     {
-      "Name": "ForEach",
+      "Name": "Filter",
       "Id": 1,
-      "DoReference": 2,
+      "DoReference": 3,
       "Input": {
-        "Literal": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        "Type": "Literal",
+        "Value": [ 1, 2, 3, 4 ]
       }
     },
     {
-      "Name": "Print",
-      "Id": 2,
+      "Name": "Eval",
+      "Id": 3,
       "Input": {
-        "Literal": "Hello World!"
+        "Type": "Literal",
+        "Value": false
       }
     }
   ]
