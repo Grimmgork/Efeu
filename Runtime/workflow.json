@@ -2,7 +2,7 @@
   "Id": 1,
   "Name": "workflow",
   "EntryPointId": 1,
-  "ActionNodes": [
+  "Actions": [
     {
       "Name": "Filter",
       "Id": 1,

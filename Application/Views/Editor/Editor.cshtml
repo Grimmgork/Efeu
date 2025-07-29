@@ -48,7 +48,7 @@
     <div>@Model.Name</div>
     <div class="editor">
         <div class="canvas">
-            @foreach (WorkflowActionNode node in Model.ActionNodes)
+            @foreach (WorkflowActionNode node in Model.Actions)
             {
                 <partial name="ActionNode" model="@node" />
             }

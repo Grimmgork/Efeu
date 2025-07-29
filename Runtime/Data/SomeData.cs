@@ -22,7 +22,7 @@ namespace Efeu.Runtime.Data
 
         public TraversalNodeType TraversalNodeType => TraversalNodeType.Struct;
 
-        public SomeData ResolveTraversal()
+        public SomeData TraversalEnd()
         {
             return SomeData.Struct(this);
         }
@@ -53,29 +53,29 @@ namespace Efeu.Runtime.Data
 
         public SomeData TraverseByIndex(int index);
 
-        public SomeData ResolveTraversal();
+        public SomeData TraversalEnd();
     }
 
     public static class SomeTraversableDataExtensions
     {
-        public static SomeData Traverse(this ISomeTraversableData root, SomeDataTraversal traversal)
+        public static SomeData Traverse(this ISomeTraversableData root, DataTraversal traversal)
         {
             ISomeTraversableData node = root;
-            foreach (SomeDataTraversalSegment segment in traversal)
+            foreach (TraversalSegment segment in traversal)
             {
                 if (node.TraversalNodeType != TraversalNodeType.Struct)
                     throw new InvalidOperationException("Node is not a struct!");
 
-                node = node.TraverseByName(segment.Name);
-                if (segment.HasIndexer)
+                node = node.TraverseByName(segment.Property);
+                if (segment.IsIndex)
                 {
                     if (node.TraversalNodeType != TraversalNodeType.Array)
                         throw new InvalidOperationException("Node is not a array!");
 
-                    node = node.TraverseByIndex(segment.Indexer);
+                    node = node.TraverseByIndex(segment.Index);
                 }
             }
-            return node.ResolveTraversal();
+            return node.TraversalEnd();
         }
     }
 
@@ -379,7 +379,7 @@ namespace Efeu.Runtime.Data
             return this[index];
         }
 
-        public SomeData ResolveTraversal()
+        public SomeData TraversalEnd()
         {
             return this;
         }

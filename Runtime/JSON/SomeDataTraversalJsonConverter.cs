@@ -9,14 +9,14 @@ using Efeu.Runtime.Data;
 
 namespace Efeu.Runtime.Json
 {
-    public class SomeDataTraversalJsonConverter : JsonConverter<SomeDataTraversal>
+    public class SomeDataTraversalJsonConverter : JsonConverter<DataTraversal>
     {
-        public override SomeDataTraversal Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override DataTraversal Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             return reader.GetString() ?? "";
         }
 
-        public override void Write(Utf8JsonWriter writer, SomeDataTraversal value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, DataTraversal value, JsonSerializerOptions options)
         {
             writer.WriteStringValue(value.ToString());
         }

@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Efeu.Runtime.Function;
+using Efeu.Runtime.Model;
 
 namespace Efeu.Runtime.Data
 {
@@ -15,16 +16,13 @@ namespace Efeu.Runtime.Data
 
         public readonly ISomeTraversableData WorkflowInput;
 
-        public readonly Func<int, SomeDataTraversal, SomeData> GetFunctionOutput;
+        public readonly Func<int, SomeData> GetOutput;
 
-        public readonly Func<int, SomeDataTraversal, SomeData> GetMethodOutput;
-
-        public InputEvaluationContext(ISomeTraversableData variables, ISomeTraversableData workflowInput, Func<int, SomeDataTraversal, SomeData> getMethodOutput, Func<int, SomeDataTraversal, SomeData> getFunctionOutput)
+        public InputEvaluationContext(ISomeTraversableData variables, ISomeTraversableData workflowInput, Func<int, SomeData> getOutput)
         {
             Variables = variables;
             WorkflowInput = workflowInput;
-            GetMethodOutput = getMethodOutput;
-            GetFunctionOutput = getFunctionOutput;
+            GetOutput = getOutput;
         }
     }
 }

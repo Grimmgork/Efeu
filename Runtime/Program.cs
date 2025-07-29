@@ -22,6 +22,7 @@ class Program
         JsonSerializerOptions options = new JsonSerializerOptions();
         options.Converters.Add(new SomeDataJsonConverter());
         options.Converters.Add(new JsonStringEnumConverter());
+
         WorkflowDefinition definition = JsonSerializer.Deserialize<WorkflowDefinition>(File.ReadAllText("workflow.json"), options)!;
 
         DefaultWorkflowFunctionInstanceFactory instanceFactory = new DefaultWorkflowFunctionInstanceFactory();

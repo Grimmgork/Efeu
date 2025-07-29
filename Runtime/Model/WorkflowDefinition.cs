@@ -15,41 +15,11 @@ namespace Efeu.Runtime.Model
 
         public int EntryPointId { get; set; }
 
-        public List<WorkflowActionNode> ActionNodes { get; set; } = [];
-
-        public WorkflowDefinition(string name, int entryPointId)
-        {
-            Name = name;
-            EntryPointId = entryPointId;
-        }
+        public List<WorkflowActionNode> Actions { get; set; } = [];
 
         public WorkflowActionNode GetAction(int id)
         {
-            return ActionNodes.First(i => i.Id == id);
-        }
-
-        public WorkflowActionNode Function(int id, string name)
-        {
-            WorkflowActionNode node = new WorkflowActionNode()
-            {
-                Type = WorkflowActionNodeType.Function,
-                Id = id,
-                Name = name
-            };
-            ActionNodes.Add(node);
-            return node;
-        }
-
-        public WorkflowActionNode Method(int id, string name)
-        {
-            WorkflowActionNode node = new WorkflowActionNode()
-            {
-                Type = WorkflowActionNodeType.Method,
-                Id = id,
-                Name = name
-            };
-            ActionNodes.Add(node);
-            return node;
+            return Actions.First(i => i.Id == id);
         }
     }
 }

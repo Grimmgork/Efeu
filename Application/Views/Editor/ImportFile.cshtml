@@ -43,7 +43,7 @@
 </div>
 
 <div>@Model.Name</div>
-@foreach (WorkflowActionNode node in Model.ActionNodes)
+@foreach (WorkflowActionNode node in Model.Actions)
 {
     <partial name="ActionNode" model="@node" />
 }

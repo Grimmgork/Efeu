@@ -4,16 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Runtime.Data
+namespace Efeu.Runtime.Model
 {
     public enum WorkflowInputType
     {
         Literal,
-        DispatchContext,
-        MethodOutput,
-        FunctionOutput,
-        Variable,
         Array,
-        Struct
+        Struct,
+        Variable,
+        Output,
+        //MethodOutput,
+        //FunctionOutput
     }
 }

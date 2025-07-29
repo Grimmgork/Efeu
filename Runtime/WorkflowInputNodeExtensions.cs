@@ -18,11 +18,6 @@ namespace Efeu.Runtime
                 return node.Value;
             }
             else
-            if (node.Type == WorkflowInputType.Variable)
-            {
-                return context.Variables.Traverse(node.Traversal);
-            }
-            else
             if (node.Type == WorkflowInputType.Array)
             {
                 return SomeData.Array(node.Inputs.Select(i => i.EvaluateInput(context)));
@@ -33,19 +28,19 @@ namespace Efeu.Runtime
                 return SomeData.Struct(node.Inputs.Select(i => new KeyValuePair<string, SomeData>(i.Name, i.EvaluateInput(context))));
             }
             else
-            if (node.Type == WorkflowInputType.MethodOutput)
+            if (node.Type == WorkflowInputType.Output)
             {
-                return context.GetMethodOutput(node.Id, node.Traversal);
+                return context.GetOutput(node.Id).Traverse(node.Traversal);
             }
             else
-            if (node.Type == WorkflowInputType.FunctionOutput)
+            if (node.Type == WorkflowInputType.Output)
             {
-                return context.GetFunctionOutput(node.Id, node.Traversal);
+                return context.GetOutput(node.Id).Traverse(node.Traversal);
             }
             else
-            if (node.Type == WorkflowInputType.DispatchContext)
+            if (node.Type == WorkflowInputType.Variable)
             {
-                return context.GetMethodOutput(node.Id, node.Traversal);
+                return context.Variables.Traverse(node.Traversal);
             }
 
             throw new NotImplementedException();

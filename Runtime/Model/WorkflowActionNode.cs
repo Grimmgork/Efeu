@@ -13,7 +13,7 @@ namespace Efeu.Runtime.Model
     public enum WorkflowActionNodeType
     {
         Method,
-        Function
+        Function,
     }
 
     public class WorkflowActionNode
@@ -21,13 +21,14 @@ namespace Efeu.Runtime.Model
         public WorkflowActionNodeType Type { get; set; }
         public int Id { get; set; }
         public string Name { get; set; } = "";
-        public int ErrorRoute { get; set; }
         public int XPos { get; set; }
         public int YPos { get; set; }
-        public int DoReference { get; set; }
-        public SomeDataTraversal DoOutputTraversal { get; set; }
+        public int DispatchRoute { get; set; }
         public int DefaultRoute { get; set; }
+        public int ErrorRoute { get; set; }
         public WorkflowInputNode Input { get; set; } = new WorkflowInputNode();
+        public WorkflowOutputNode Output { get; set; } = new WorkflowOutputNode();
+        public WorkflowOutputNode DispatchOutput { get; set; } = new WorkflowOutputNode();
         public List<WorkflowRouteNode> Routes { get; set; } = [];
     }
 }

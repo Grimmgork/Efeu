@@ -162,7 +162,7 @@ namespace Efeu.Runtime
             returnStack.Push(currentMethodId);
             WorkflowActionNode actionNode = definition.GetAction(currentMethodId);
 
-            currentMethodId = actionNode.DoReference;
+            currentMethodId = actionNode.DispatchRoute;
             string methodname = definition.GetAction(currentMethodId).Name;
             currentMethodInstance = instanceFactory.GetMethodInstance(methodname);
         }
@@ -271,16 +271,15 @@ namespace Efeu.Runtime
             }
         }
 
-        private SomeData GetFunctionOutput(int id, SomeDataTraversal name = default)
+        private SomeData GetFunctionOutput(WorkflowActionNode node)
         {
-            WorkflowActionNode functionNode = definition.GetAction(id);
-            SomeData input = GetInputForFunction(functionNode);
+            SomeData input = GetInputForFunction(node);
 
-            string methodname = functionNode.Name;
+            string methodname = node.Name;
             IWorkflowFunctionInstance workflowFunctionInstance = instanceFactory.GetFunctionInstance(methodname);
             WorkflowFunctionContext context = new WorkflowFunctionContext();
             SomeData outputs = workflowFunctionInstance.Run(context, input);
-            return outputs.Traverse(name);
+            return outputs;
         }
 
         private SomeData GetInputForFunction(WorkflowActionNode function)
@@ -291,14 +290,24 @@ namespace Efeu.Runtime
         private SomeData GetInputForMethod(WorkflowActionNode method)
         {
             InputEvaluationContext context = new InputEvaluationContext(
-                variables, workflowInput, GetMethodOutput, GetFunctionOutput);
+                variables, workflowInput, GetOutput);
 
             return method.Input.EvaluateInput(context);
         }
 
-        private SomeData GetMethodOutput(int id, SomeDataTraversal name)
+        private SomeData GetOutput(int id)
         {
-            return methodOutput[id].Traverse(name);
+            WorkflowActionNode node = definition.GetAction(id);
+            return node.Type switch
+            {
+                WorkflowActionNodeType.Function => GetFunctionOutput(node),
+                WorkflowActionNodeType.Method => GetMethodOutput(node),
+            };
+        }
+
+        private SomeData GetMethodOutput(WorkflowActionNode node)
+        {
+            return methodOutput[node.Id];
         }
 
         public WorkflowInstanceData Export()
