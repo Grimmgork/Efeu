@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Runtime.Model
+namespace Efeu.Integration.Interfaces
 {
-    public class WorkflowDefinitionBuilder
+    public interface IUnitOfWork
     {
-
+        public Task ExecuteAsync(Func<Task> action);
     }
 }

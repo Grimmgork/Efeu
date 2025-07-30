@@ -12,8 +12,6 @@ namespace Efeu.Runtime.Model
         Array,
         Struct,
         Variable,
-        Output,
-        //MethodOutput,
-        //FunctionOutput
+        Output
     }
 }

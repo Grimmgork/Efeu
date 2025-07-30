@@ -5,8 +5,10 @@ using Efeu.Runtime.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Efeu.Application.Controllers
 {
@@ -26,7 +28,7 @@ namespace Efeu.Application.Controllers
 
             JsonSerializerOptions options = new JsonSerializerOptions();
             options.Converters.Add(new SomeDataJsonConverter());
-            options.Converters.Add(new SomeDataTraversalJsonConverter());
+            options.Converters.Add(new JsonStringEnumConverter());
 
             try
             {

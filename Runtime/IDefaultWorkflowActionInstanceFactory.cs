@@ -4,7 +4,7 @@ using Efeu.Runtime.Function;
 using Efeu.Runtime.Method;
 using System;
 
-namespace WorkflowEngineIntegration
+namespace Efeu.Runtime
 {
     public interface IDefaultWorkflowActionInstanceFactory : IWorkflowActionInstanceFactory
     {

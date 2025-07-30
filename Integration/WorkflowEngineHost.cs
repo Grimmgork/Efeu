@@ -9,6 +9,7 @@ using Efeu.Runtime;
 using Efeu.Runtime.Model;
 using Efeu.Runtime.Data;
 using System.Threading;
+using Efeu.Integration.Interfaces;
 
 namespace Efeu.Integration
 {
@@ -25,22 +26,20 @@ namespace Efeu.Integration
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            while (true)
-            {
-                // load all active workflow instances
+            //while (true)
+            //{
+            //    // load all active workflow instances
 
-                ScopeFactory.CreateScope();
+            //    ScopeFactory.CreateScope();
 
-                using (IServiceScope scope = ScopeFactory.CreateScope())
-                {
-                    // run workflow instance
-                    IWorkflowActionInstanceFactory instanceFactory = scope.ServiceProvider.GetRequiredService<IWorkflowActionInstanceFactory>();
-                    IWorkflowSignalHandler signalHandler = scope.ServiceProvider.GetRequiredService<IWorkflowSignalHandler>();
-                    // WorkflowInstance instance = new WorkflowInstance();
+            //    using (IServiceScope scope = ScopeFactory.CreateScope())
+            //    {
 
 
-                }
-            }
+            //    }
+            //}
+
+            return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

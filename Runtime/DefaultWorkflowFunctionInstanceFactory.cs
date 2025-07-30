@@ -2,9 +2,8 @@
 using Efeu.Runtime.Method;
 using System;
 using System.Collections.Generic;
-using WorkflowEngineIntegration;
 
-namespace Efeu
+namespace Efeu.Runtime
 {
     public class DefaultWorkflowFunctionInstanceFactory : IDefaultWorkflowActionInstanceFactory
     {

@@ -1,5 +1,5 @@
 ﻿using Efeu.Runtime.Data;
-using Efeu.Runtime.Message;
+using Efeu.Runtime.Signal;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

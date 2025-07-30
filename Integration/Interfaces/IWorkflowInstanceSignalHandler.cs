@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Efeu.Runtime.Message;
+using Efeu.Runtime.Signal;
 
-namespace Efeu.Integration
+namespace Efeu.Integration.Interfaces
 {
     public interface IWorkflowInstanceSignalHandler
     {

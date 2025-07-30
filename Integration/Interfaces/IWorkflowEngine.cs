@@ -8,7 +8,7 @@ using Efeu.Runtime.Data;
 using Efeu.Runtime.Model;
 using System.Threading;
 
-namespace Efeu.Integration
+namespace Efeu.Integration.Interfaces
 {
     public interface IWorkflowEngine
     {

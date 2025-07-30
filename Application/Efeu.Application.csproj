@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Efeu.Integration.Sqlite\Efeu.Integration.Sqlite.csproj" />
     <ProjectReference Include="..\Integration\Efeu.Integration.csproj" />
     <ProjectReference Include="..\Runtime\Efeu.Runtime.csproj" />
   </ItemGroup>

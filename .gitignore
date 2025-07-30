@@ -3,3 +3,5 @@
 .vs
 appsettings*.json
 *.csproj.user
+*.db
+*.sqlite

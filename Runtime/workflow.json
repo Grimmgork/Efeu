@@ -6,10 +6,50 @@
     {
       "Name": "Filter",
       "Id": 1,
-      "DoReference": 3,
+      "DispatchRoute": 3,
       "Input": {
-        "Type": "Literal",
-        "Value": [ 1, 2, 3, 4 ]
+        "Type": "Struct",
+        "Inputs": [
+          {
+            "Name": "A",
+            "Type": "Struct",
+            "Inputs": [
+              {
+                "Name": "asdf",
+                "Type": "Literal",
+                "Value": 13
+              },
+              {
+                "Name": "asdf",
+                "Type": "Literal",
+                "Value": 13
+              }
+            ]
+          },
+          {
+            "Name": "B",
+            "Type": "Array",
+            "Inputs": [
+              {
+                "Type": "Literal",
+                "Value": 1
+              },
+              {
+                "Type": "Literal",
+                "Value": 2
+              },
+              {
+                "Type": "Literal",
+                "Value": 3
+              }
+            ]
+          },
+          {
+            "Name": "C",
+            "Type": "Literal",
+            "Value": 54
+          }
+        ]
       }
     },
     {

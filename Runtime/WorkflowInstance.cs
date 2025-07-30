@@ -1,8 +1,8 @@
 ﻿using Efeu.Runtime.Data;
 using Efeu.Runtime.Function;
-using Efeu.Runtime.Message;
 using Efeu.Runtime.Method;
 using Efeu.Runtime.Model;
+using Efeu.Runtime.Signal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,8 +30,22 @@ namespace Efeu.Runtime
         public SomeStruct Variables = new SomeStruct();
         public IDictionary<int, SomeData> MethodData = new Dictionary<int, SomeData>();
         public IDictionary<int, SomeData> MethodOutput = new Dictionary<int, SomeData>();
-        public SomeData DispatchOutput;
+        public SomeData DispatchResult;
         public Stack<int> ReturnStack = new Stack<int>();
+
+        // currentMethodId
+        // Tasks[]
+    }
+
+    public class WorkflowInstanceScope
+    {
+        public int Id;
+
+        public int CurrentMethodId;
+
+        public WorkflowActionNode[] ActionNodes;
+
+        public WorkflowInstanceScope[] Scopes;
     }
 
     public class WorkflowInstance
@@ -57,7 +71,7 @@ namespace Efeu.Runtime
         private IWorkflowMethodInstance currentMethodInstance;
         private IWorkflowActionInstanceFactory instanceFactory;
 
-        public WorkflowInstance(int id, WorkflowDefinition definition, IWorkflowActionInstanceFactory instanceFactory, SomeData? input = null) 
+        public WorkflowInstance(int id, WorkflowDefinition definition, IWorkflowActionInstanceFactory instanceFactory, SomeData input = default) 
         {
             this.Id = id;
             this.WorkflowDefintitionId = definition.Id;
@@ -66,7 +80,7 @@ namespace Efeu.Runtime
             this.methodData = new Dictionary<int, SomeData>();
             this.methodOutput = new Dictionary<int, SomeData>();
             this.currentMethodId = definition.EntryPointId;
-            this.workflowInput = input ?? new SomeData();
+            this.workflowInput = input;
             this.workflowOutput = new SomeData();
             this.variables = new SomeStruct();
             this.returnStack = new Stack<int>();
@@ -86,7 +100,7 @@ namespace Efeu.Runtime
             this.instanceFactory = instanceFactory;
             this.workflowInput = data.Input;
             this.workflowOutput = data.Output;
-            this.dispatchResult = data.DispatchOutput;
+            this.dispatchResult = data.DispatchResult;
             this.returnStack = data.ReturnStack;
         }
 
@@ -323,7 +337,7 @@ namespace Efeu.Runtime
                 MethodData = methodData,
                 MethodOutput = methodOutput,
                 Output = workflowOutput,
-                DispatchOutput = dispatchResult,
+                DispatchResult = dispatchResult,
                 ReturnStack = returnStack
             };
         }

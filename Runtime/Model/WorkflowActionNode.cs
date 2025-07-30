@@ -14,6 +14,8 @@ namespace Efeu.Runtime.Model
     {
         Method,
         Function,
+        Task,
+        WaitTask
     }
 
     public class WorkflowActionNode

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Runtime.Message
+namespace Efeu.Runtime.Signal
 {
     public abstract class WorkflowSignal
     {

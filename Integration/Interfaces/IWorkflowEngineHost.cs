@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration
+namespace Efeu.Integration.Interfaces
 {
     public interface IWorkflowEngineHost
     {

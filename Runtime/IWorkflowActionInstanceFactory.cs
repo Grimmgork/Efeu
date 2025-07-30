@@ -1,7 +1,7 @@
 ﻿using Efeu.Runtime.Function;
 using Efeu.Runtime.Method;
 
-namespace Efeu
+namespace Efeu.Runtime
 {
     public interface IWorkflowActionInstanceFactory
     {

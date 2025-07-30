@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Efeu.Integration.Interfaces;
 using Efeu.Runtime;
 using Efeu.Runtime.Data;
 using Efeu.Runtime.Model;
@@ -13,13 +14,9 @@ namespace Efeu.Integration
 {
     public class WorkflowEngine : IWorkflowEngine
     {
-        private IWorkflowActionInstanceFactory methodInstanceFactory;
-        private IWorkflowInstanceSignalHandler signalHandler;
-
-        public WorkflowEngine(IWorkflowActionInstanceFactory instanceFactory, IWorkflowInstanceSignalHandler signalHandler)
+        public WorkflowEngine()
         {
-            this.methodInstanceFactory = instanceFactory;
-            this.signalHandler = signalHandler;
+
         }
 
         public async Task<SomeStruct> ExecuteWorkflowAsync(WorkflowDefinition definition, SomeStruct input, CancellationToken token)

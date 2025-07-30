@@ -1,3 +1,8 @@
+using Efeu.Integration;
+using Efeu.Integration.Sqlite;
+using Efeu.Runtime.Model;
+using LinqToDB;
+using LinqToDB.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -24,6 +29,8 @@ namespace Efeu.Application
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
+            services.AddEfeu();
+            services.AddEfeuSqlite("Data Source=data.db");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -52,6 +59,8 @@ namespace Efeu.Application
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
+
+            app.ApplicationServices.CreateScope().ServiceProvider.GetRequiredService<DataConnection>().CreateTable<WorkflowDefinition>();
         }
     }
 }

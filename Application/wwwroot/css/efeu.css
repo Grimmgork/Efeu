@@ -6,6 +6,7 @@
     position: absolute;
     top: 0;
     left: 0;
+    font-family: Consolas;
 }
 
 .action_node td {
@@ -36,7 +37,7 @@
     padding-left: 0.5rem;
     padding-right: 0.5rem;
     height: 2rem;
-    justify-content: end;
+    justify-content: start;
 }
 
 .action_node_output {
