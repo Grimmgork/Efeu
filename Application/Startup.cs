@@ -60,7 +60,9 @@ namespace Efeu.Application
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            app.ApplicationServices.CreateScope().ServiceProvider.GetRequiredService<DataConnection>().CreateTable<WorkflowDefinition>();
+            IEfeuMigrationRunner migration = app.ApplicationServices.CreateScope().ServiceProvider.GetRequiredService<IEfeuMigrationRunner>();
+            migration.MigrateAsync(1).GetAwaiter().GetResult();
+            Console.WriteLine("migrated");
         }
     }
 }

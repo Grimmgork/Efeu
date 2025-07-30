@@ -19,7 +19,7 @@ namespace Efeu.Integration.Sqlite
         {
             MappingSchema mapping = new MappingSchema();
             var builder = new FluentMappingBuilder(mapping);
-            builder.Entity<WorkflowDefinition>()
+            builder.Entity<WorkflowDefinitionEntity>()
                 .HasTableName("WorkflowDefinition")
                 .HasSchemaName(schema);
 
@@ -32,6 +32,7 @@ namespace Efeu.Integration.Sqlite
             services.AddScoped(provider => new DataConnection(options));
             services.AddScoped<SqliteUnitOfWork>();
             services.AddScoped<IWorkflowDefinitionRepository, WorkflowDefinitionRepository>();
+            services.AddScoped<IEfeuMigrationRunner, MigrationRunner>();
         }
     }
 }

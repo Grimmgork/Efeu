@@ -21,8 +21,6 @@ namespace Efeu.Runtime
 
     public class WorkflowInstanceData
     {
-        public int Id;
-        public int WorkflowDefintitionId;
         public WorkflowInstanceState State;
         public int CurrentMethodId;
         public SomeData Input = new SomeData();
@@ -50,9 +48,6 @@ namespace Efeu.Runtime
 
     public class WorkflowInstance
     {
-        public readonly int Id;
-        public readonly int WorkflowDefintitionId;
-
         public WorkflowInstanceState State => state;
 
         private int currentMethodId;
@@ -71,10 +66,8 @@ namespace Efeu.Runtime
         private IWorkflowMethodInstance currentMethodInstance;
         private IWorkflowActionInstanceFactory instanceFactory;
 
-        public WorkflowInstance(int id, WorkflowDefinition definition, IWorkflowActionInstanceFactory instanceFactory, SomeData input = default) 
+        public WorkflowInstance(WorkflowDefinition definition, IWorkflowActionInstanceFactory instanceFactory, SomeData input = default) 
         {
-            this.Id = id;
-            this.WorkflowDefintitionId = definition.Id;
             this.definition = definition;
             this.instanceFactory = instanceFactory;
             this.methodData = new Dictionary<int, SomeData>();
@@ -89,13 +82,11 @@ namespace Efeu.Runtime
 
         public WorkflowInstance(WorkflowInstanceData data, WorkflowDefinition definition, IWorkflowActionInstanceFactory instanceFactory)
         {
-            this.Id = data.Id;
             this.state = data.State;
             this.currentMethodId = data.CurrentMethodId;
             this.variables = data.Variables;
             this.methodData = data.MethodData;
             this.methodOutput = data.MethodOutput;
-            this.WorkflowDefintitionId = data.WorkflowDefintitionId;
             this.definition = definition;
             this.instanceFactory = instanceFactory;
             this.workflowInput = data.Input;
@@ -328,8 +319,6 @@ namespace Efeu.Runtime
         {
             return new WorkflowInstanceData()
             {
-                Id = this.Id,
-                WorkflowDefintitionId = this.WorkflowDefintitionId,
                 State = this.State,
                 CurrentMethodId = this.currentMethodId,
                 Input = workflowInput,

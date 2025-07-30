@@ -20,15 +20,24 @@ namespace Efeu.Integration.Sqlite
             this.connection = connection;
         }
 
+        public Task<int> CreateAsync(WorkflowDefinitionEntity definition)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task GetAllAsync()
         {
             throw new NotImplementedException();
         }
 
-        public Task<WorkflowDefinition> GetById(int id)
+        public Task<WorkflowDefinitionEntity> GetById(int id)
         {
-            return connection.GetTable<WorkflowDefinition>()
-                .FirstAsync(definition => definition.Id == id);
+            throw new NotImplementedException();
         }
 
         public Task GetByNameAsync(string name)

@@ -11,10 +11,14 @@ namespace Efeu.Integration.Interfaces
     {
         public Task GetByNameAsync(string name);
 
-        public Task<WorkflowDefinition> GetById(int id);
+        public Task<WorkflowDefinitionEntity> GetById(int id);
 
         public Task Update();
 
         public Task GetAllAsync();
+
+        public Task<int> CreateAsync(WorkflowDefinitionEntity definition);
+
+        public Task DeleteAsync(int id);
     }
 }

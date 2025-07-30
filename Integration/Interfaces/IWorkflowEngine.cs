@@ -13,5 +13,7 @@ namespace Efeu.Integration.Interfaces
     public interface IWorkflowEngine
     {
         public Task<SomeData> ExecuteWorkflowAsync(WorkflowDefinition definition, SomeData input, CancellationToken token = default);
+
+        public Task SendSignal(WorkflowSignal signal);
     }
 }

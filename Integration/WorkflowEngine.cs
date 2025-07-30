@@ -19,13 +19,19 @@ namespace Efeu.Integration
 
         }
 
-        public async Task<SomeStruct> ExecuteWorkflowAsync(WorkflowDefinition definition, SomeStruct input, CancellationToken token)
+        public async Task<SomeData> ExecuteWorkflowAsync(WorkflowDefinition definition, SomeData input, CancellationToken token)
         {
+            WorkflowInstance instance = new WorkflowInstance(definition, null, input);
+            await instance.RunAsync(token);
+            WorkflowInstanceData data = instance.Export();
 
-            throw new Exception();
+            if (data.State != WorkflowInstanceState.Done)
+                throw new Exception("Workflow has terminated without completion!");
+
+            return data.Output;
         }
 
-        public Task<SomeData> ExecuteWorkflowAsync(WorkflowDefinition definition, SomeData input, CancellationToken token = default)
+        public Task SendSignal(WorkflowSignal signal)
         {
             throw new NotImplementedException();
         }

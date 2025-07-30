@@ -43,7 +43,7 @@ class Program
         instanceFactory.Register("GetGuid", () => new GetGuid());
         instanceFactory.Register("SetVariable", () => new SetVariableMethod());
 
-        WorkflowInstance instance = new WorkflowInstance(1, definition, instanceFactory);
+        WorkflowInstance instance = new WorkflowInstance(definition, instanceFactory);
 
         do
         {

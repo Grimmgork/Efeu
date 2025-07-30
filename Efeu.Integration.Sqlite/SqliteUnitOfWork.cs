@@ -10,14 +10,27 @@ namespace Efeu.Integration.Sqlite
 {
     public class SqliteUnitOfWork : IUnitOfWork
     {
+        private readonly DataConnection connection;
+
         public SqliteUnitOfWork(DataConnection connection)
         {
-
+            this.connection = connection;
         }
 
-        public Task ExecuteAsync(Func<Task> action)
+        public async Task ExecuteAsync(Func<Task> action)
         {
-            throw new NotImplementedException();
+            await connection.BeginTransactionAsync();
+            try
+            {
+                await action();
+            }
+            catch (Exception)
+            {
+                await connection.RollbackTransactionAsync();
+                throw;
+            }
+
+            await connection.CommitTransactionAsync();
         }
     }
 }
