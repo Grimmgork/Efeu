@@ -7,6 +7,7 @@ using Efeu.Runtime.Model;
 using LinqToDB;
 using LinqToDB.Data;
 using LinqToDB.Mapping;
+using LinqToDB.SqlQuery;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -26,17 +27,21 @@ namespace Efeu.Integration.Sqlite
             jsonOptions.Converters.Add(new SomeDataJsonConverter());
             jsonOptions.Converters.Add(new JsonStringEnumConverter());
 
-            MappingSchema mapping = new MappingSchema();
-            mapping.SetConverter<SomeStruct, string>(i => JsonSerializer.Serialize(i, jsonOptions));
-            mapping.SetConverter<string, SomeStruct>(i => JsonSerializer.Deserialize<SomeStruct>(i, jsonOptions));
-            mapping.SetConverter<SomeData, string>(i => JsonSerializer.Serialize(i, jsonOptions));
-            mapping.SetConverter<string, SomeData>(i => JsonSerializer.Deserialize<SomeData>(i, jsonOptions));
-            mapping.SetConverter<Stack<int>, string>(i => JsonSerializer.Serialize(i, jsonOptions));
-            mapping.SetConverter<string, Stack<int>>(i => JsonSerializer.Deserialize<Stack<int>>(i, jsonOptions));
-            mapping.SetConverter<IDictionary<int, SomeData>, string>(i => JsonSerializer.Serialize(i, jsonOptions));
-            mapping.SetConverter<string, IDictionary<int, SomeData>>(i => JsonSerializer.Deserialize<IDictionary<int, SomeData>>(i, jsonOptions));
+            var builder = new FluentMappingBuilder();
+            //builder.MappingSchema.SetDataType(typeof(SomeStruct), new SqlDataType(DataType.Text, typeof(string)));
+            //builder.MappingSchema.SetDataType(typeof(SomeData), new SqlDataType(DataType.Text, typeof(string)));
+            builder.MappingSchema.SetConverter<SomeData, DataParameter>(c => new DataParameter(null, JsonSerializer.Serialize(c, jsonOptions)));
+            builder.MappingSchema.SetConverter<SomeStruct, DataParameter>(c => new DataParameter(null, c)); // TODO add more like these
 
-            var builder = new FluentMappingBuilder(mapping);
+            builder.MappingSchema.SetConverter<SomeStruct, string>(i => JsonSerializer.Serialize(i, jsonOptions));
+            builder.MappingSchema.SetConverter<string, SomeStruct>(i => JsonSerializer.Deserialize<SomeStruct>(i, jsonOptions));
+            builder.MappingSchema.SetConverter<SomeData, string>(i => JsonSerializer.Serialize(i, jsonOptions));
+            builder.MappingSchema.SetConverter<string, SomeData>(i => JsonSerializer.Deserialize<SomeData>(i, jsonOptions));
+            builder.MappingSchema.SetConverter<Stack<int>, string>(i => JsonSerializer.Serialize(i, jsonOptions));
+            builder.MappingSchema.SetConverter<string, Stack<int>>(i => JsonSerializer.Deserialize<Stack<int>>(i, jsonOptions));
+            builder.MappingSchema.SetConverter<IDictionary<int, SomeData>, string>(i => JsonSerializer.Serialize(i, jsonOptions));
+            builder.MappingSchema.SetConverter<string, IDictionary<int, SomeData>>(i => JsonSerializer.Deserialize<IDictionary<int, SomeData>>(i, jsonOptions));
+
             builder.Entity<WorkflowDefinitionEntity>()
                 .HasTableName("WorkflowDefinition")
                 .HasSchemaName(schema);
@@ -47,15 +52,14 @@ namespace Efeu.Integration.Sqlite
 
             builder.Entity<WorkflowInstanceEntity>()
                 .HasTableName("WorkflowInstance")
-                .HasSchemaName(schema)
-                .Property(i => i.Input)
-                .HasConversion(v => JsonSerializer.Serialize(v, jsonOptions), v => JsonSerializer.Deserialize<SomeData>(v, jsonOptions));
+                .HasSchemaName(schema);
+                // .HasConversion(v => JsonSerializer.Serialize(v, jsonOptions), v => JsonSerializer.Deserialize<SomeData>(v, jsonOptions));
 
             builder.Build();
 
             var options = new DataOptions()
                 .UseSQLite(connectionString)
-                .UseMappingSchema(mapping);
+                .UseMappingSchema(builder.MappingSchema);
 
             services.AddScoped(provider => new DataConnection(options));
             services.AddScoped<SqliteUnitOfWork>();
