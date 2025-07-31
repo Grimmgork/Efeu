@@ -1,11 +1,12 @@
-﻿using Efeu.Runtime.Model;
+﻿using Efeu.Integration.Model;
+using Efeu.Runtime.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Interfaces
+namespace Efeu.Integration.Data
 {
     public interface IWorkflowDefinitionRepository
     {

@@ -1,4 +1,5 @@
-﻿using LinqToDB;
+﻿using Efeu.Integration.Data;
+using LinqToDB;
 using LinqToDB.Data;
 using System;
 using System.Collections.Generic;
@@ -17,16 +18,16 @@ namespace Efeu.Integration.Sqlite.Migrations
             this.connection = connection;
         }
 
-        public Task Up()
+        public async Task Up()
         {
-            Console.WriteLine($"Up {1}");
-            return Task.CompletedTask;
+            await connection.ExecuteAsync("CREATE TABLE WorkflowDefinition (Id INTEGER PRIMARY KEY, Name TEXT)");
+            await connection.ExecuteAsync("CREATE TABLE WorkflowDefinitionVersion (Id INTEGER PRIMARY KEY, Name TEXT, WorkflowDefinitionId INTEGER, FOREIGN KEY(WorkflowDefinitionId) REFERENCES WorkflowDefinition(Id))");
+            await connection.ExecuteAsync("CREATE TABLE WorkflowInstance (Id INTEGER PRIMARY KEY, WorkflowDefinitionVersionId INTEGER, State INTEGER, CurrentMethodId INTEGER, Input TEXT, Output TEXT, Variables TEXT, MethodData TEXT, MethodOutput TEXT, DispatchResult TEXT, ReturnStack TEXT)");
         }
 
         public Task Down()
         {
-            Console.WriteLine($"Down {1}");
-            return Task.CompletedTask;
+            throw new NotImplementedException();
         }
     }
 }

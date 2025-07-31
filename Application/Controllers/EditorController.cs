@@ -1,4 +1,6 @@
-﻿using Efeu.Runtime;
+﻿using Efeu.Integration.Data;
+using Efeu.Integration.Model;
+using Efeu.Runtime;
 using Efeu.Runtime.Data;
 using Efeu.Runtime.Json;
 using Efeu.Runtime.Model;
@@ -9,11 +11,18 @@ using Newtonsoft.Json.Converters;
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 namespace Efeu.Application.Controllers
 {
     public class EditorController : Controller
     {
+        private readonly IWorkflowInstanceRepository workflowInstanceRepository;
+        public EditorController(IWorkflowInstanceRepository workflowInstanceRepository)
+        {
+            this.workflowInstanceRepository = workflowInstanceRepository;
+        }
+
         public IActionResult Index()
         {
             return View();
@@ -40,6 +49,14 @@ namespace Efeu.Application.Controllers
             {
                 return BadRequest();
             }
+        }
+
+        [HttpPost]
+        [Route("WorkflowInstance")]
+        public async Task CreateWorkflowInstance()
+        {
+            WorkflowInstanceEntity entity = new WorkflowInstanceEntity();
+            await workflowInstanceRepository.Add(entity);
         }
     }
 }

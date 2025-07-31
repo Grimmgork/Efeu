@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Interfaces
+namespace Efeu.Integration.Data
 {
-    public interface IUnitOfWork
+    internal interface IDataContext
     {
-        public Task ExecuteAsync(Func<Task> action);
+        
     }
 }

@@ -9,9 +9,8 @@ using Efeu.Runtime;
 using Efeu.Runtime.Model;
 using Efeu.Runtime.Data;
 using System.Threading;
-using Efeu.Integration.Interfaces;
 
-namespace Efeu.Integration
+namespace Efeu.Integration.Services
 {
     public class WorkflowEngineHost : IHostedService, IWorkflowEngineHost
     {
@@ -21,23 +20,13 @@ namespace Efeu.Integration
 
         public WorkflowEngineHost(IServiceScopeFactory scopeFactory)
         {
-            this.ScopeFactory = scopeFactory;
+            ScopeFactory = scopeFactory;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            //while (true)
-            //{
-            //    // load all active workflow instances
-
-            //    ScopeFactory.CreateScope();
-
-            //    using (IServiceScope scope = ScopeFactory.CreateScope())
-            //    {
-
-
-            //    }
-            //}
+            // load all active worklfow instances
+            // 
 
             return Task.CompletedTask;
         }

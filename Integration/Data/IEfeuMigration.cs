@@ -5,11 +5,11 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration
+namespace Efeu.Integration.Data
 {
     public interface IEfeuMigration
     {
-        public int Version => int.Parse(Regex.Match(this.GetType().Name, "^_([0-9]+)_").Groups[1].Value);
+        public int Version => int.Parse(Regex.Match(GetType().Name, "^_([0-9]+)_").Groups[1].Value);
 
         public Task Up();
 

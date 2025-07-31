@@ -4,13 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Efeu.Integration.Interfaces;
 using Efeu.Runtime;
 using Efeu.Runtime.Data;
 using Efeu.Runtime.Model;
 using Efeu.Runtime.Signal;
 
-namespace Efeu.Integration
+namespace Efeu.Integration.Services
 {
     public class WorkflowEngine : IWorkflowEngine
     {

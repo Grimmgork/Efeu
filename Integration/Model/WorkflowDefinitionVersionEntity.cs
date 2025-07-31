@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration
+namespace Efeu.Integration.Model
 {
     public class WorkflowDefinitionVersionEntity
     {
@@ -12,7 +12,7 @@ namespace Efeu.Integration
 
         public int Version { get; set; }
 
-        public DateTime Created { get; set; }
+        public DateTimeOffset Created { get; set; }
 
         public int WorkflowDefinitionId { get; set; }
     }

@@ -1,4 +1,4 @@
-namespace Efeu.Integration
+namespace Efeu.Integration.Model
 {
     using Efeu.Runtime.Model;
 

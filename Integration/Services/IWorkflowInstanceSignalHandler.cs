@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Efeu.Runtime.Signal;
 
-namespace Efeu.Integration.Interfaces
+namespace Efeu.Integration.Services
 {
     public interface IWorkflowInstanceSignalHandler
     {

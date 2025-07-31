@@ -1,4 +1,5 @@
-﻿using Efeu.Integration.Interfaces;
+﻿using Efeu.Integration.Commands;
+using Efeu.Integration.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,7 @@ namespace Efeu.Integration
     {
         public static void AddEfeu(this IServiceCollection services)
         {
+            services.AddScoped<IWorkflowDefinitionCommands, WorkflowDefinitionCommands>();
             services.AddScoped<IWorkflowEngine, WorkflowEngine>();
         }
     }

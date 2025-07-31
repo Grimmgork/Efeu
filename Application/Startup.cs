@@ -1,4 +1,5 @@
 using Efeu.Integration;
+using Efeu.Integration.Data;
 using Efeu.Integration.Sqlite;
 using Efeu.Runtime.Model;
 using LinqToDB;
@@ -60,9 +61,13 @@ namespace Efeu.Application
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            IEfeuMigrationRunner migration = app.ApplicationServices.CreateScope().ServiceProvider.GetRequiredService<IEfeuMigrationRunner>();
-            migration.MigrateAsync(1).GetAwaiter().GetResult();
-            Console.WriteLine("migrated");
+            Console.WriteLine("running migrations ...");
+            using (var scope = app.ApplicationServices.CreateScope())
+            {
+                IEfeuMigrationRunner migrationRunner = scope.ServiceProvider.GetRequiredService<IEfeuMigrationRunner>();
+                migrationRunner.MigrateAsync().GetAwaiter().GetResult();
+            }
+            Console.WriteLine("Done!");
         }
     }
 }

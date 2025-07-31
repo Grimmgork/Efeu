@@ -1,4 +1,4 @@
-﻿using Efeu.Integration.Interfaces;
+﻿using Efeu.Integration.Data;
 using LinqToDB;
 using LinqToDB.Common;
 using LinqToDB.Data;
@@ -44,6 +44,7 @@ namespace Efeu.Integration.Sqlite
                 {
                     await Setup();
                     await migrations.First().Up();
+                    await connection.ExecuteAsync("INSERT INTO __Migration(Version) VALUES (@version)", [new ("version", 1)]);
                     currentVersion = 1;
                 }
 
@@ -61,9 +62,10 @@ namespace Efeu.Integration.Sqlite
                 while (currentVersion < desiredVersion)
                 {
                     // up
-                    await currentMigration.Up();
                     currentMigration = migrations[++currentMigrationIndex];
                     currentVersion = currentMigration.Version;
+                    await currentMigration.Up();
+                    await connection.ExecuteAsync("INSERT INTO __Migration(Version) VALUES (@version)", [new("version", currentVersion)]);
                 }
 
                 await transaction.CommitAsync();
@@ -94,7 +96,7 @@ namespace Efeu.Integration.Sqlite
             return connection.ExecuteAsync("CREATE TABLE IF NOT EXISTS __Migration (Version INTEGER);");
         }
 
-        public int[] GetAvailableVersions()
+        public int[] GetAllVersions()
         {
             return migrations.Select(i => i.Version).ToArray();
         }

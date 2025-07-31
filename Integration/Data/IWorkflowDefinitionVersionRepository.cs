@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Interfaces
+namespace Efeu.Integration.Data
 {
     public interface IWorkflowDefinitionVersionRepository
     {
