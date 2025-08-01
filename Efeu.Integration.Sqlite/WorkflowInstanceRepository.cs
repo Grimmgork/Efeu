@@ -29,9 +29,10 @@ namespace Efeu.Integration.Sqlite
             throw new NotImplementedException();
         }
 
-        public Task GetById()
+        public Task<WorkflowInstanceEntity> GetById(int id)
         {
-            throw new NotImplementedException();
+            return connection.GetTable<WorkflowInstanceEntity>()
+                .FirstAsync(i => i.Id == id);
         }
     }
 }

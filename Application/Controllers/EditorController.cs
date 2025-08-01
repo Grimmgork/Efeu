@@ -56,7 +56,18 @@ namespace Efeu.Application.Controllers
         public async Task CreateWorkflowInstance()
         {
             WorkflowInstanceEntity entity = new WorkflowInstanceEntity();
+            entity.Input = 42;
+            entity.Variables = new SomeStruct();
+            entity.Variables["Variable"] = 13;
             await workflowInstanceRepository.Add(entity);
+        }
+
+        [HttpGet]
+        [Route("WorkflowInstance/{id}")]
+        public async Task<WorkflowInstanceEntity> GetWorkflowInstance(int id)
+        {
+            WorkflowInstanceEntity entity = await workflowInstanceRepository.GetById(id);
+            return entity;
         }
     }
 }

@@ -1,6 +1,7 @@
 using Efeu.Integration;
 using Efeu.Integration.Data;
 using Efeu.Integration.Sqlite;
+using Efeu.Runtime.Json;
 using Efeu.Runtime.Model;
 using LinqToDB;
 using LinqToDB.Data;
@@ -13,6 +14,7 @@ using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Efeu.Application
@@ -29,7 +31,12 @@ namespace Efeu.Application
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();
+            services.AddControllersWithViews()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(new SomeDataJsonConverter());
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                });
             services.AddEfeu();
             services.AddEfeuSqlite("Data Source=data.db");
         }

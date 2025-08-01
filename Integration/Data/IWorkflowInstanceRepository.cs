@@ -9,7 +9,7 @@ namespace Efeu.Integration.Data
 {
     public  interface IWorkflowInstanceRepository
     {
-        public Task GetById();
+        public Task<WorkflowInstanceEntity> GetById(int id);
 
         public Task GetAllActive();
 
