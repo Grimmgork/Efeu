@@ -14,6 +14,7 @@ namespace Efeu.Integration
         public static void AddEfeu(this IServiceCollection services)
         {
             services.AddScoped<IWorkflowDefinitionCommands, WorkflowDefinitionCommands>();
+            services.AddScoped<IWorkflowInstanceCommands, WorkflowInstanceCommands>();
             services.AddScoped<IWorkflowEngine, WorkflowEngine>();
         }
     }

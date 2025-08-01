@@ -24,9 +24,11 @@ namespace Efeu.Integration.Sqlite
             return connection.InsertWithInt32IdentityAsync(instance);
         }
 
-        public Task GetAllActive()
+        public async Task<IEnumerable<WorkflowInstanceEntity>> GetAllActive()
         {
-            throw new NotImplementedException();
+             return await connection.GetTable<WorkflowInstanceEntity>()
+                .Where(i => i.State != Runtime.WorkflowInstanceState.Done)
+                .ToArrayAsync();
         }
 
         public Task<WorkflowInstanceEntity> GetById(int id)

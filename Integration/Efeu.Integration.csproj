@@ -14,5 +14,8 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\Runtime\Efeu.Runtime.csproj" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Queries\" />
+	</ItemGroup>
 
 </Project>

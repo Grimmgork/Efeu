@@ -21,33 +21,16 @@ namespace Efeu.Integration.Sqlite
 {
     public static class ServiceCollectionExtensions
     {
-        private static DataParameter ConvertToJson(object obj, JsonSerializerOptions jsonOptions)
+        private static T ConvertFromJson<T>(string json, JsonSerializerOptions jsonOptions)
         {
-            if (obj is SomeStruct someStruct)
-            {
-                string json = JsonSerializer.Serialize(someStruct, jsonOptions);
-                return new DataParameter(null, json, DataType.Text);
-            }
+            T value = JsonSerializer.Deserialize<T>(json, jsonOptions);
+            return value;
+        }
 
-            if (obj is IDictionary<int, SomeData> dictionary)
-            {
-                string json = JsonSerializer.Serialize(dictionary, jsonOptions);
-                return new DataParameter(null, json, DataType.Text);
-            }
-
-            if (obj is Stack<int> stack)
-            {
-                string json = JsonSerializer.Serialize(stack, jsonOptions);
-                return new DataParameter(null, json, DataType.Text);
-            }
-
-            if (obj is SomeData someData)
-            {
-                string json = JsonSerializer.Serialize(someData, jsonOptions);
-                return new DataParameter(null, json, DataType.Text);
-            }
-
-            throw new NotImplementedException();
+        private static DataParameter ConvertToJson<T>(T value, JsonSerializerOptions jsonOptions)
+        {
+            string json = JsonSerializer.Serialize(value, jsonOptions);
+            return new DataParameter(null, json, DataType.Text);
         }
 
         public static void AddEfeuSqlite(this IServiceCollection services, string connectionString, string schema = "efeu")
@@ -57,33 +40,15 @@ namespace Efeu.Integration.Sqlite
             jsonOptions.Converters.Add(new JsonStringEnumConverter());
 
             var builder = new FluentMappingBuilder();
-            //builder.MappingSchema.SetDataType(typeof(SomeStruct), new SqlDataType(DataType.Text, typeof(string)));
-            //builder.MappingSchema.SetDataType(typeof(SomeData), new SqlDataType(DataType.Text, typeof(string)));
-            //builder.MappingSchema.SetConverter<SomeData, DataParameter>(c => 
-            //    new DataParameter(null, JsonSerializer.Serialize(c, jsonOptions)));
-
-            //builder.MappingSchema.SetConverter<SomeStruct, DataParameter>(c => 
-            //    new DataParameter(null, JsonSerializer.Serialize(c, jsonOptions)));
-
-            //builder.MappingSchema.SetConverter<IDictionary<int, SomeData>, DataParameter>(c => 
-            //    new DataParameter(null, JsonSerializer.Serialize(c, jsonOptions)));
-
-            //builder.MappingSchema.SetConverter<Stack<int>, DataParameter>(c => 
-            //    new DataParameter(null, JsonSerializer.Serialize(c, jsonOptions)));
-
             builder.MappingSchema.SetConverter<SomeData, DataParameter>(c => ConvertToJson(c, jsonOptions));
             builder.MappingSchema.SetConverter<SomeStruct, DataParameter>(c => ConvertToJson(c, jsonOptions));
             builder.MappingSchema.SetConverter<IDictionary<int, SomeData>, DataParameter>(c => ConvertToJson(c, jsonOptions));
             builder.MappingSchema.SetConverter<Stack<int>, DataParameter>(c => ConvertToJson(c, jsonOptions));
 
-            // builder.MappingSchema.SetConverter<SomeStruct, string>(i => JsonSerializer.Serialize(i, jsonOptions));
-            builder.MappingSchema.SetConverter<string, SomeStruct>(i => JsonSerializer.Deserialize<SomeStruct>(i, jsonOptions));
-            //builder.MappingSchema.SetConverter<SomeData, string>(i => JsonSerializer.Serialize(i, jsonOptions));
-            builder.MappingSchema.SetConverter<string, SomeData>(i => JsonSerializer.Deserialize<SomeData>(i, jsonOptions));
-            //builder.MappingSchema.SetConverter<Stack<int>, string>(i => JsonSerializer.Serialize(i, jsonOptions));
-            builder.MappingSchema.SetConverter<string, Stack<int>>(i => JsonSerializer.Deserialize<Stack<int>>(i, jsonOptions));
-            //builder.MappingSchema.SetConverter<IDictionary<int, SomeData>, string>(i => JsonSerializer.Serialize(i, jsonOptions));
-            builder.MappingSchema.SetConverter<string, IDictionary<int, SomeData>>(i => JsonSerializer.Deserialize<IDictionary<int, SomeData>>(i, jsonOptions));
+            builder.MappingSchema.SetConverter<string, SomeStruct>(i => ConvertFromJson<SomeStruct>(i, jsonOptions));
+            builder.MappingSchema.SetConverter<string, SomeData>(i => ConvertFromJson<SomeData>(i, jsonOptions));
+            builder.MappingSchema.SetConverter<string, Stack<int>>(i => ConvertFromJson<Stack<int>>(i, jsonOptions));
+            builder.MappingSchema.SetConverter<string, IDictionary<int, SomeData>>(i => ConvertFromJson<IDictionary<int, SomeData>>(i, jsonOptions));
 
             builder.Entity<WorkflowDefinitionEntity>()
                 .HasTableName("WorkflowDefinition")
@@ -96,6 +61,10 @@ namespace Efeu.Integration.Sqlite
             builder.Entity<WorkflowInstanceEntity>()
                 .HasTableName("WorkflowInstance")
                 .HasSchemaName(schema)
+                .Property(p => p.Id)
+                    .IsIdentity()
+                    .IsPrimaryKey()
+                    .HasSkipOnInsert(true)
                 .Property(p => p.Variables)
                 .Property(p => p.ReturnStack)
                 .Property(p => p.MethodOutput)

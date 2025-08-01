@@ -11,7 +11,7 @@ namespace Efeu.Integration.Data
     {
         public Task<WorkflowInstanceEntity> GetById(int id);
 
-        public Task GetAllActive();
+        public Task<IEnumerable<WorkflowInstanceEntity>> GetAllActive();
 
         public Task<int> Add(WorkflowInstanceEntity instance);
     }

@@ -22,12 +22,14 @@ namespace Efeu.Integration.Sqlite.Migrations
         {
             await connection.ExecuteAsync("CREATE TABLE WorkflowDefinition (Id INTEGER PRIMARY KEY, Name TEXT)");
             await connection.ExecuteAsync("CREATE TABLE WorkflowDefinitionVersion (Id INTEGER PRIMARY KEY, Name TEXT, WorkflowDefinitionId INTEGER, FOREIGN KEY(WorkflowDefinitionId) REFERENCES WorkflowDefinition(Id))");
-            await connection.ExecuteAsync("CREATE TABLE WorkflowInstance (Id INTEGER PRIMARY KEY, WorkflowDefinitionVersionId INTEGER, State INTEGER, CurrentMethodId INTEGER, Input TEXT, Output TEXT, Variables TEXT, MethodData TEXT, MethodOutput TEXT, DispatchResult TEXT, ReturnStack TEXT)");
+            await connection.ExecuteAsync("CREATE TABLE WorkflowInstance (Id INTEGER PRIMARY KEY, WorkflowDefinitionVersionId INTEGER, ExecutionState Integer, State INTEGER, CurrentMethodId INTEGER, Input TEXT, Output TEXT, Variables TEXT, MethodData TEXT, MethodOutput TEXT, DispatchResult TEXT, ReturnStack TEXT)");
         }
 
-        public Task Down()
+        public async Task Down()
         {
-            throw new NotImplementedException();
+            await connection.ExecuteAsync("DROP TABLE WorkflowDefinition");
+            await connection.ExecuteAsync("DROP TABLE WorkflowDefinitionVersion");
+            await connection.ExecuteAsync("DROP TABLE WorkflowInstance");
         }
     }
 }

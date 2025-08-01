@@ -1,4 +1,5 @@
-﻿using Efeu.Integration.Data;
+﻿using Efeu.Integration.Commands;
+using Efeu.Integration.Data;
 using Efeu.Integration.Model;
 using Efeu.Runtime;
 using Efeu.Runtime.Data;
@@ -18,7 +19,8 @@ namespace Efeu.Application.Controllers
     public class EditorController : Controller
     {
         private readonly IWorkflowInstanceRepository workflowInstanceRepository;
-        public EditorController(IWorkflowInstanceRepository workflowInstanceRepository)
+
+        public EditorController(IWorkflowInstanceRepository workflowInstanceRepository, IWorkflowInstanceCommands workflowInstanceCommands)
         {
             this.workflowInstanceRepository = workflowInstanceRepository;
         }
@@ -57,6 +59,7 @@ namespace Efeu.Application.Controllers
         {
             WorkflowInstanceEntity entity = new WorkflowInstanceEntity();
             entity.Input = 42;
+            entity.State = WorkflowInstanceState.Running;
             entity.Variables = new SomeStruct();
             entity.Variables["Variable"] = 13;
             await workflowInstanceRepository.Add(entity);

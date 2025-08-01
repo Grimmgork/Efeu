@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Commands
 {
-    internal interface IWorkflowDefinitionCommands
+    public interface IWorkflowDefinitionCommands
     {
         public Task Create(string name);
 
