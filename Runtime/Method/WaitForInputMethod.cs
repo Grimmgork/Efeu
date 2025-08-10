@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Efeu.Runtime.Data;
 using Efeu.Runtime.Signal;
+using Efeu.Runtime.Trigger;
 
 namespace Efeu.Runtime.Method
 {
@@ -14,12 +15,20 @@ namespace Efeu.Runtime.Method
         public override WorkflowMethodState Run(WorkflowMethodContext context, CancellationToken token)
         {
             Console.WriteLine("Pls enter a value");
-            context.SignalFilter = new WorkflowTrigger(nameof(PromptInputTrigger), 10.ToString());
+            context.Trigger = new ConsoleInputTrigger()
+            {
+                CallbackId = 1
+            };
             return WorkflowMethodState.Suspended;
         }
 
-        public override WorkflowMethodState OnSignal(WorkflowMethodContext context, WorkflowSignal signal)
+        public override WorkflowMethodState OnSignal(WorkflowMethodContext context, object signal)
         {
+            if (signal is ConsoleInputSignal)
+            {
+
+            }
+
             context.Output = signal.Payload;
             return WorkflowMethodState.Done;
 

@@ -5,12 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Runtime.Trigger
+namespace Efeu.Integration.Logic
 {
-    internal class ChronTrigger : WorkflowTrigger
+    public interface IWorkflowTrigger
     {
-        public Guid Id;
-
-        public string ChronExpression;
+        public WorkflowTrigger GetTrigger();
     }
 }

@@ -38,7 +38,7 @@ namespace Efeu.Integration.Commands
         /// </summary>
         /// <param name="signal"></param>
         /// <returns></returns>
-        public Task<WorkflowExecutionResult> SendSignalAsync(int workflowInstanceId, WorkflowSignal signal);
+        public Task<WorkflowExecutionResult> SendSignalAsync(int workflowInstanceId, CustomWorkflowSignal signal);
 
         /// <summary>
         /// Abort a workflow wich is paused, suspended, failed

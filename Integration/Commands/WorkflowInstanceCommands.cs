@@ -206,7 +206,7 @@ namespace Efeu.Integration.Commands
             };
         }
 
-        public async Task<WorkflowExecutionResult> SendSignalAsync(int id, WorkflowSignal signal)
+        public async Task<WorkflowExecutionResult> SendSignalAsync(int id, CustomWorkflowSignal signal)
         {
             WorkflowInstanceEntity? instanceEntity = await instanceRepository.GetForProcessing(id, [WorkflowExecutionState.Suspended], WorkflowExecutionState.Running);
             if (instanceEntity == null)

@@ -11,15 +11,15 @@ namespace Efeu.Runtime
 {
     public class ConsoleSignalHandler : IWorkflowSignalHandler
     {
-        public Task RaiseSignal(WorkflowSignal message)
+        public Task RaiseSignal(CustomWorkflowSignal message)
         {
             return Task.Run(() => Console.WriteLine($"SIGNAL: {message.GetType()}"));
         }
 
-        public Task<WorkflowSignal> WaitForSignal(CancellationToken token)
+        public Task<CustomWorkflowSignal> WaitForSignal(CancellationToken token)
         {
             string message = Console.ReadLine() ?? "";
-            return Task.FromResult<WorkflowSignal>(new PromptInputSignal(message, DateTime.Now));
+            return Task.FromResult<CustomWorkflowSignal>(new PromptInputSignal(message, DateTime.Now));
         }
     }
 }

@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Efeu.Runtime.Signal
 {
-    public class RequestInputSignal : WorkflowSignal
+    public class ChronRaisedSignal
     {
-
+        public Guid Id;
     }
 }

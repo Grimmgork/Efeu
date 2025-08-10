@@ -37,7 +37,7 @@ class Program
             (input["A"].ToDynamic() ?? 0) + 
             (input["B"].ToDynamic() ?? 0) 
         )));
-
+        instanceFactory.Register("Eval", () => new WorkflowFunction((input) => input));
         instanceFactory.Register("Map", () => new MapMethod());
         instanceFactory.Register("Filter", () => new FilterMethod());
         instanceFactory.Register("Eval", () => new EvalMethod());
@@ -51,7 +51,7 @@ class Program
             if (instance.State == WorkflowInstanceState.Suspended)
             {
                 string message = Console.ReadLine() ?? "";
-                instance.SendSignal(new WorkflowSignal()
+                instance.SendSignal(new CustomWorkflowSignal()
                 {
                     Name = "Message",
                     Timestamp = DateTime.Now,

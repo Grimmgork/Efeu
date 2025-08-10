@@ -90,7 +90,7 @@ namespace Efeu.Runtime
             };
         }
 
-        public void SendSignal(WorkflowSignal signal)
+        public void SendSignal(CustomWorkflowSignal signal)
         {
             if (state != WorkflowInstanceState.Suspended)
                 throw new InvalidOperationException();

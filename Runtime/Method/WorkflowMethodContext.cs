@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Efeu.Integration.Logic;
 using Efeu.Runtime.Data;
 using Efeu.Runtime.Function;
 using Efeu.Runtime.Signal;
@@ -19,7 +20,7 @@ namespace Efeu.Runtime.Method
 
         public string? Route;
 
-        public WorkflowTrigger SignalFilter; // TODO
+        public IWorkflowTrigger Trigger; // TODO
 
         public readonly SomeData DispatchResult;
 

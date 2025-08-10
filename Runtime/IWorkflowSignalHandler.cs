@@ -11,8 +11,8 @@ namespace Efeu.Runtime
 {
     public interface IWorkflowSignalHandler
     {
-        public Task RaiseSignal(WorkflowSignal message);
+        public Task RaiseSignal(CustomWorkflowSignal message);
 
-        public Task<WorkflowSignal> WaitForSignal(CancellationToken token);
+        public Task<CustomWorkflowSignal> WaitForSignal(CancellationToken token);
     }
 }

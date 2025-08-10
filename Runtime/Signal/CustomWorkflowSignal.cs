@@ -7,17 +7,12 @@ using System.Threading.Tasks;
 
 namespace Efeu.Runtime.Signal
 {
-    public class WorkflowSignal
+    public class CustomWorkflowSignal
     {
         public string Name = "";
 
         public DateTime Timestamp;
 
         public SomeData Payload;
-
-        public virtual WorkflowSignalHash GetPayloadHash()
-        {
-            return WorkflowSignalHash.From(this.GetType().Name);
-        }
     }
 }
