@@ -19,10 +19,12 @@ namespace Efeu.Application.Controllers
     public class EditorController : Controller
     {
         private readonly IWorkflowInstanceRepository workflowInstanceRepository;
+        private readonly IWorkflowInstanceCommands workflowInstanceCommands;
 
         public EditorController(IWorkflowInstanceRepository workflowInstanceRepository, IWorkflowInstanceCommands workflowInstanceCommands)
         {
             this.workflowInstanceRepository = workflowInstanceRepository;
+            this.workflowInstanceCommands = workflowInstanceCommands;
         }
 
         public IActionResult Index()
@@ -67,10 +69,16 @@ namespace Efeu.Application.Controllers
 
         [HttpGet]
         [Route("WorkflowInstance/{id}")]
-        public async Task<WorkflowInstanceEntity> GetWorkflowInstance(int id)
+        public Task<WorkflowInstanceEntity> GetWorkflowInstance(int id)
         {
-            WorkflowInstanceEntity entity = await workflowInstanceRepository.GetById(id);
-            return entity;
+            return workflowInstanceRepository.GetByIdAsync(id);
+        }
+
+        [HttpDelete]
+        [Route("WorkflowInstance/{id}")]
+        public async Task DeleteWorkflowInstance(int id)
+        {
+            await workflowInstanceCommands.DeleteAsync(id);
         }
     }
 }

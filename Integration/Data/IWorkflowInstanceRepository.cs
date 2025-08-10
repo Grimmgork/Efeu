@@ -7,12 +7,18 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Data
 {
-    public  interface IWorkflowInstanceRepository
+    public interface IWorkflowInstanceRepository
     {
-        public Task<WorkflowInstanceEntity> GetById(int id);
+        public Task<WorkflowInstanceEntity> GetByIdAsync(int id);
 
-        public Task<IEnumerable<WorkflowInstanceEntity>> GetAllActive();
+        public Task<IEnumerable<WorkflowInstanceEntity>> GetAllActiveAsync();
+
+        public Task<WorkflowInstanceEntity?> GetForProcessing(int id, WorkflowExecutionState[] allowedExecutionStates, WorkflowExecutionState toExecutionState);
 
         public Task<int> Add(WorkflowInstanceEntity instance);
+
+        public Task Update(WorkflowInstanceEntity instance);
+
+        public Task<bool> Delete(int id, WorkflowExecutionState[] allowedExecutionStates);
     }
 }

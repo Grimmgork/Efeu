@@ -4,12 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Runtime.Model
+namespace Efeu.Runtime.Trigger
 {
-    public enum WorkflowOutputType
+    internal class ChronTrigger : WorkflowTrigger<ChronRaisedSignal>
     {
-        Direct,
-        Field,
-        Index
+        public string Chron;
     }
 }

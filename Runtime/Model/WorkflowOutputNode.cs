@@ -10,12 +10,10 @@ namespace Efeu.Runtime.Model
 {
     public class WorkflowOutputNode
     {
+        // public int Id { get; set; }
         public string Name { get; set; } = "";
-
         public int Index { get; set; }
-
         public WorkflowOutputType Type { get; set; }
-
-        public WorkflowOutputNode[] Outputs { get; set; } = [];
+        public List<WorkflowOutputNode> Outputs { get; set; } = [];
     }
 }

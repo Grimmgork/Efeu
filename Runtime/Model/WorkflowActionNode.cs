@@ -14,14 +14,14 @@ namespace Efeu.Runtime.Model
     {
         Method,
         Function,
-        Task,
-        WaitTask
+        // Task,
+        // WaitTask
     }
 
     public class WorkflowActionNode
     {
-        public WorkflowActionNodeType Type { get; set; }
         public int Id { get; set; }
+        public WorkflowActionNodeType Type { get; set; }
         public string Name { get; set; } = "";
         public int XPos { get; set; }
         public int YPos { get; set; }
@@ -31,6 +31,6 @@ namespace Efeu.Runtime.Model
         public WorkflowInputNode Input { get; set; } = new WorkflowInputNode();
         public WorkflowOutputNode Output { get; set; } = new WorkflowOutputNode();
         public WorkflowOutputNode DispatchOutput { get; set; } = new WorkflowOutputNode();
-        public List<WorkflowRouteNode> Routes { get; set; } = [];
+        public Dictionary<string, int> Routes { get; set; } = new Dictionary<string, int>();
     }
 }

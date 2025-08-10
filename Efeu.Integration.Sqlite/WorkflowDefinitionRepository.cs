@@ -16,39 +16,42 @@ namespace Efeu.Integration.Sqlite
     {
         private readonly DataConnection connection;
 
-        public WorkflowDefinitionRepository(SqliteUnitOfWork unitOfWork, DataConnection connection) 
+        public WorkflowDefinitionRepository(UnitOfWork unitOfWork, DataConnection connection) 
         { 
             this.connection = connection;
         }
 
         public Task<int> CreateAsync(WorkflowDefinitionEntity definition)
         {
-            throw new NotImplementedException();
+            return connection.InsertWithInt32IdentityAsync(definition);
         }
 
         public Task DeleteAsync(int id)
         {
-            throw new NotImplementedException();
+            return connection.GetTable<WorkflowDefinitionEntity>()
+                .DeleteAsync(i => i.Id == id);
         }
 
-        public Task GetAllAsync()
+        public Task<WorkflowDefinitionEntity[]> GetAllAsync()
         {
-            throw new NotImplementedException();
+            return connection.GetTable<WorkflowDefinitionEntity>().ToArrayAsync();
         }
 
-        public Task<WorkflowDefinitionEntity> GetById(int id)
+        public Task<WorkflowDefinitionEntity> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            return connection.GetTable<WorkflowDefinitionEntity>()
+                .FirstAsync(i => i.Id == id);
         }
 
-        public Task GetByNameAsync(string name)
+        public Task<WorkflowDefinitionEntity> GetByNameAsync(string name)
         {
-            throw new NotImplementedException();
+            return connection.GetTable<WorkflowDefinitionEntity>()
+                .FirstAsync(i => i.Name == name);
         }
 
-        public Task Update()
+        public Task UpdateAsync(WorkflowDefinitionEntity definition)
         {
-            throw new NotImplementedException();
+            return connection.UpdateAsync(definition);
         }
     }
 }

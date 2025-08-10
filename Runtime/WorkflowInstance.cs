@@ -19,7 +19,7 @@ namespace Efeu.Runtime
         Done
     }
 
-    public class WorkflowInstanceData
+    public class WorkflowInstanceExport
     {
         public WorkflowInstanceState State;
         public int CurrentMethodId;
@@ -30,20 +30,6 @@ namespace Efeu.Runtime
         public IDictionary<int, SomeData> MethodOutput = new Dictionary<int, SomeData>();
         public SomeData DispatchResult;
         public Stack<int> ReturnStack = new Stack<int>();
-
-        // currentMethodId
-        // Tasks[]
-    }
-
-    public class WorkflowInstanceScope
-    {
-        public int Id;
-
-        public int CurrentMethodId;
-
-        public WorkflowActionNode[] ActionNodes;
-
-        public WorkflowInstanceScope[] Scopes;
     }
 
     public class WorkflowInstance
@@ -80,7 +66,7 @@ namespace Efeu.Runtime
             this.dispatchResult = new SomeData();
         }
 
-        public WorkflowInstance(WorkflowInstanceData data, WorkflowDefinition definition, IWorkflowActionInstanceFactory instanceFactory)
+        public WorkflowInstance(WorkflowInstanceExport data, WorkflowDefinition definition, IWorkflowActionInstanceFactory instanceFactory)
         {
             this.state = data.State;
             this.currentMethodId = data.CurrentMethodId;
@@ -130,7 +116,7 @@ namespace Efeu.Runtime
                 methodOutput[currentMethodId] = context.Output;
 
                 int nextMethodId = string.IsNullOrWhiteSpace(context.Route) ? 
-                    actionNode.DefaultRoute : actionNode.Routes.First(x => x.Name == context.Route).ActionId;
+                    actionNode.DefaultRoute : actionNode.Routes[context.Route];
                 MoveNextMethodOrDone(nextMethodId, context.Output);
                 return;
             }
@@ -205,7 +191,7 @@ namespace Efeu.Runtime
                 methodData.Remove(currentMethodId);
 
                 int nextMethodId = string.IsNullOrWhiteSpace(context.Route) ?
-                    actionNode.DefaultRoute : actionNode.Routes.First(x => x.Name == context.Route).ActionId;
+                    actionNode.DefaultRoute : actionNode.Routes[context.Route];
                 MoveNextMethodOrDone(nextMethodId, context.Output);
                 return;
             }
@@ -307,6 +293,9 @@ namespace Efeu.Runtime
             {
                 WorkflowActionNodeType.Function => GetFunctionOutput(node),
                 WorkflowActionNodeType.Method => GetMethodOutput(node),
+                // WorkflowActionNodeType.Task => throw new NotImplementedException(),
+                // WorkflowActionNodeType.WaitTask => throw new NotImplementedException(),
+                _ => throw new NotImplementedException(),
             };
         }
 
@@ -315,9 +304,9 @@ namespace Efeu.Runtime
             return methodOutput[node.Id];
         }
 
-        public WorkflowInstanceData Export()
+        public WorkflowInstanceExport Export()
         {
-            return new WorkflowInstanceData()
+            return new WorkflowInstanceExport()
             {
                 State = this.State,
                 CurrentMethodId = this.currentMethodId,

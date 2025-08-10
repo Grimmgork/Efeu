@@ -5,12 +5,12 @@ using System.Collections.Generic;
 
 namespace Efeu.Runtime
 {
-    public class DefaultWorkflowFunctionInstanceFactory : IDefaultWorkflowActionInstanceFactory
+    public class DefaultWorkflowActionInstanceFactory : IDefaultWorkflowActionInstanceFactory
     {
         private Dictionary<string, Func<IWorkflowMethodInstance>> methods = new Dictionary<string, Func<IWorkflowMethodInstance>>(StringComparer.InvariantCultureIgnoreCase);
         private Dictionary<string, Func<IWorkflowFunctionInstance>> functions = new Dictionary<string, Func<IWorkflowFunctionInstance>>(StringComparer.InvariantCultureIgnoreCase);
 
-        public DefaultWorkflowFunctionInstanceFactory()
+        public DefaultWorkflowActionInstanceFactory()
         {
             
         }

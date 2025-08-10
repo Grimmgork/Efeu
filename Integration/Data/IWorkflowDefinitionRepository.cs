@@ -10,13 +10,13 @@ namespace Efeu.Integration.Data
 {
     public interface IWorkflowDefinitionRepository
     {
-        public Task GetByNameAsync(string name);
+        public Task<WorkflowDefinitionEntity> GetByNameAsync(string name);
 
-        public Task<WorkflowDefinitionEntity> GetById(int id);
+        public Task<WorkflowDefinitionEntity> GetByIdAsync(int id);
 
-        public Task Update();
+        public Task UpdateAsync(WorkflowDefinitionEntity definition);
 
-        public Task GetAllAsync();
+        public Task<WorkflowDefinitionEntity[]> GetAllAsync();
 
         public Task<int> CreateAsync(WorkflowDefinitionEntity definition);
 

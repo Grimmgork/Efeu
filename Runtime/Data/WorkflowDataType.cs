@@ -17,11 +17,11 @@ namespace Efeu.Runtime.Data
         Timestamp,
         Boolean,
         String,
-        Name,
         Stream,
-        Error,
+        Exception,
         Array,
         Struct,
+
         Anything
     }
 }

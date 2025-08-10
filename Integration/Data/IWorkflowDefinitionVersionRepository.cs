@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Efeu.Integration.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,14 +9,16 @@ namespace Efeu.Integration.Data
 {
     public interface IWorkflowDefinitionVersionRepository
     {
-        public Task GetByIdAsync(int id);
+        public Task<WorkflowDefinitionVersionEntity> GetByIdAsync(int id);
 
-        public Task GetPublishedAsync(string name);
+        public Task<WorkflowDefinitionVersionEntity> GetByVersionAsync(int definitionId, int version);
 
-        public Task GetLatestVersion(int definitionId);
+        public Task<WorkflowDefinitionVersionEntity> GetLatestVersion(int definitionId);
+
+        public Task<WorkflowDefinitionVersionEntity[]> GetAllVersionsAsync(int definitionId);
 
         public Task DeleteAsync(int id);
 
-        public Task Create();
+        public Task Create(WorkflowDefinitionVersionEntity version);
     }
 }

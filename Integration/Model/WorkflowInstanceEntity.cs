@@ -11,6 +11,7 @@ namespace Efeu.Integration.Model
     public class WorkflowInstanceEntity
     {
         public int Id { get; set; }
+        public bool IsProcessing { get; set; }
         public int WorkflowDefinitionVersionId { get; set; }
         public WorkflowExecutionState ExecutionState { get; set; }
         public WorkflowInstanceState State { get; set; }

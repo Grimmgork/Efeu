@@ -15,10 +15,10 @@
 				Then
 				<div out _="install efeuEditorActionNodeOutput"></div>
 			</div>
-			@foreach (WorkflowRouteNode routeNode in Model.Routes)
+			@foreach (KeyValuePair<string, int> routeNode in Model.Routes)
 			{
 				<div class="action_node_output">
-					@routeNode.Name
+					@routeNode.Key
 					<div out _="install efeuEditorActionNodeOutput"></div>
 				</div>
 			}

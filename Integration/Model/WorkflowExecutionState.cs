@@ -9,7 +9,10 @@ namespace Efeu.Integration.Model
     public enum WorkflowExecutionState
     {
         Running,
+        Suspended,
+        Paused,
+        Completed,
         Failed,
-        Paused
+        Aborted
     }
 }

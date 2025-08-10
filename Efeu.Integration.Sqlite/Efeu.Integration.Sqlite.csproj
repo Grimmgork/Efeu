@@ -8,8 +8,11 @@
     <PackageReference Include="linq2db" Version="5.4.1" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.119" />
   </ItemGroup>
+	<PropertyGroup>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-  <ItemGroup>
+	<ItemGroup>
     <ProjectReference Include="..\Integration\Efeu.Integration.csproj" />
   </ItemGroup>
 

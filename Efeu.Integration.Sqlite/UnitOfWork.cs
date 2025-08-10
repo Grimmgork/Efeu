@@ -5,21 +5,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data;
 
 namespace Efeu.Integration.Sqlite
 {
-    public class SqliteUnitOfWork : IUnitOfWork
+    public class UnitOfWork : IUnitOfWork
     {
         private readonly DataConnection connection;
 
-        public SqliteUnitOfWork(DataConnection connection)
+        public UnitOfWork(DataConnection connection)
         {
             this.connection = connection;
         }
 
-        public async Task ExecuteAsync(Func<Task> action)
+        public Task ExecuteAsync(Func<Task> action)
         {
-            await connection.BeginTransactionAsync();
+            return ExecuteAsync(IsolationLevel.Unspecified, action);
+        }
+
+        public async Task ExecuteAsync(IsolationLevel isolationLevel, Func<Task> action)
+        {
+            await connection.BeginTransactionAsync(isolationLevel);
             try
             {
                 await action();

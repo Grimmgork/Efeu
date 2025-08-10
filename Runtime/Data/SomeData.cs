@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace Efeu.Runtime.Data
@@ -82,17 +83,19 @@ namespace Efeu.Runtime.Data
     public struct SomeData : ISomeTraversableData
     {
         private readonly object? scalarValue;
-        private readonly IReadOnlyCollection<SomeData>? arrayItems;
-        private readonly IReadOnlyDictionary<string, SomeData>? structProperties;
+        private readonly IReadOnlyCollection<SomeData> arrayItems = [];
+        private readonly IReadOnlyDictionary<string, SomeData> structProperties = ReadOnlyDictionary<string, SomeData>.Empty;
 
         public readonly WorkflowDataType DataType;
 
-        public IReadOnlyCollection<SomeData> Items => arrayItems ?? throw new InvalidOperationException("Not an Array.");
-        public IReadOnlyDictionary<string, SomeData> Properties => structProperties ?? throw new InvalidOperationException("Not a Struct.");
-        public object? Value => IsScalar ? scalarValue : throw new InvalidOperationException("Not a Scalar.");
+        public IReadOnlyCollection<SomeData> Items => arrayItems; // ?? []; throw new InvalidOperationException("Not an Array.");
+        public IReadOnlyDictionary<string, SomeData> Properties => structProperties; // ?? throw new InvalidOperationException("Not a Struct.");
+        public object? Value => scalarValue; // IsScalar ? scalarValue : throw new InvalidOperationException("Not a Scalar.");
+
+        public Exception Exception => HasException ? (Exception)scalarValue! : throw new InvalidOperationException("Not an exception.");
 
         public bool IsNull => DataType == WorkflowDataType.Null;
-        public bool IsError => DataType == WorkflowDataType.Error;
+        public bool HasException => DataType == WorkflowDataType.Exception;
         public bool IsStruct => DataType == WorkflowDataType.Struct;
         public bool IsArray => DataType == WorkflowDataType.Array;
         public bool IsScalar => DataType != WorkflowDataType.Struct && DataType != WorkflowDataType.Array;
@@ -141,7 +144,7 @@ namespace Efeu.Runtime.Data
         {
             get
             {
-                return structProperties?.GetValueOrDefault(name) ?? default;
+                return structProperties.GetValueOrDefault(name);
             }
         }
 
@@ -149,13 +152,18 @@ namespace Efeu.Runtime.Data
         {
             get
             {
-                return arrayItems?.ElementAtOrDefault(index) ?? default;
+                return arrayItems.ElementAtOrDefault(index);
             }
         }
 
         public static SomeData Null()
         {
             return new SomeData();
+        }
+
+        public static SomeData FromException(Exception exception)
+        {
+            return new SomeData(WorkflowDataType.Exception, exception);
         }
 
         public static SomeData Integer(Int32? value)
@@ -318,6 +326,30 @@ namespace Efeu.Runtime.Data
         public DateTime ToDateTime()
         {
             return Convert.ToDateTime(scalarValue);
+        }
+
+        public Int16? ToInt16Nullable()
+        {
+            if (IsNull) return null;
+            return Convert.ToInt16(scalarValue);
+        }
+
+        public Int32? ToInt32Nullable()
+        {
+            if (IsNull) return null;
+            return Convert.ToInt32(scalarValue);
+        }
+
+        public Int64? ToInt64Nullable()
+        {
+            if (IsNull) return null;
+            return Convert.ToInt64(scalarValue);
+        }
+
+        public string? ToStringNullable()
+        {
+            if (IsNull) return null;
+            return Convert.ToString(scalarValue);
         }
 
         public new string ToString()

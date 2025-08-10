@@ -8,9 +8,6 @@ namespace Efeu.Runtime.Signal
 {
     public class RequestInputSignal : WorkflowSignal
     {
-        public RequestInputSignal(DateTime time) : base(time)
-        {
 
-        }
     }
 }

@@ -27,7 +27,7 @@ else
 <div style="@(Model.IsRoot ? "" : "margin-left: 0.5rem;")">
 	@if (Model.Input.Type == WorkflowInputType.Array)
 	{
-		@for (int i = 0; i < Model.Input.Inputs.Length; i++)
+		@for (int i = 0; i < Model.Input.Inputs.Count; i++)
 		{
 			WorkflowInputNodeViewModel input = new WorkflowInputNodeViewModel()
 			{

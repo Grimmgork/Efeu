@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Efeu.Runtime.Signal
 {
-    public class PromptInputSignal : WorkflowSignal
+    public class PromptInputTrigger : WorkflowSignal
     {
         public readonly string Input;
 
-        public PromptInputSignal(string input, DateTime time) : base(time)
+        public PromptInputTrigger(string input)
         {
             Input = input;
         }

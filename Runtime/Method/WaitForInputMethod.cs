@@ -14,20 +14,24 @@ namespace Efeu.Runtime.Method
         public override WorkflowMethodState Run(WorkflowMethodContext context, CancellationToken token)
         {
             Console.WriteLine("Pls enter a value");
+            context.SignalFilter = new WorkflowTrigger(nameof(PromptInputTrigger), 10.ToString());
             return WorkflowMethodState.Suspended;
         }
 
         public override WorkflowMethodState OnSignal(WorkflowMethodContext context, WorkflowSignal signal)
         {
-            if (signal is PromptInputSignal inputSignal)
-            {
-                context.Output = SomeData.String(inputSignal.Input);
-                return WorkflowMethodState.Done;
-            }
-            else
-            {
-                return WorkflowMethodState.Suspended;
-            }
+            context.Output = signal.Payload;
+            return WorkflowMethodState.Done;
+
+            //if (signal is PromptInputTrigger inputSignal)
+            //{
+            //    context.Output = SomeData.String(inputSignal.Input);
+            //    return WorkflowMethodState.Done;
+            //}
+            //else
+            //{
+            //    return WorkflowMethodState.Suspended;
+            //}
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Efeu.Runtime.Data;
 using Efeu.Runtime.Function;
+using Efeu.Runtime.Signal;
 
 namespace Efeu.Runtime.Method
 {
@@ -17,6 +18,8 @@ namespace Efeu.Runtime.Method
         public SomeData Data;
 
         public string? Route;
+
+        public WorkflowTrigger SignalFilter; // TODO
 
         public readonly SomeData DispatchResult;
 

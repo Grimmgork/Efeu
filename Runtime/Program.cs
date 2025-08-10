@@ -25,7 +25,7 @@ class Program
 
         WorkflowDefinition definition = JsonSerializer.Deserialize<WorkflowDefinition>(File.ReadAllText("workflow.json"), options)!;
 
-        DefaultWorkflowFunctionInstanceFactory instanceFactory = new DefaultWorkflowFunctionInstanceFactory();
+        DefaultWorkflowActionInstanceFactory instanceFactory = new DefaultWorkflowActionInstanceFactory();
         instanceFactory.Register("For", () => new ForMethod());
         instanceFactory.Register("ForEach", () => new ForeachMethod());
         instanceFactory.Register("WriteVariable", () => new WriteVariableMethod());
@@ -37,6 +37,7 @@ class Program
             (input["A"].ToDynamic() ?? 0) + 
             (input["B"].ToDynamic() ?? 0) 
         )));
+
         instanceFactory.Register("Map", () => new MapMethod());
         instanceFactory.Register("Filter", () => new FilterMethod());
         instanceFactory.Register("Eval", () => new EvalMethod());
@@ -50,7 +51,12 @@ class Program
             if (instance.State == WorkflowInstanceState.Suspended)
             {
                 string message = Console.ReadLine() ?? "";
-                instance.SendSignal(new PromptInputSignal(message, DateTime.Now));
+                instance.SendSignal(new WorkflowSignal()
+                {
+                    Name = "Message",
+                    Timestamp = DateTime.Now,
+                    Payload = message
+                });
             }
 
             await instance.RunAsync();
@@ -58,7 +64,7 @@ class Program
         while (instance.State != WorkflowInstanceState.Done);
         Console.WriteLine("Done!");
 
-        WorkflowInstanceData data = instance.Export();
+        WorkflowInstanceExport data = instance.Export();
         Console.WriteLine(data.Output.ToString());
     }
 }

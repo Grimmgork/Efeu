@@ -30,12 +30,7 @@ namespace Efeu.Runtime
             else
             if (node.Type == WorkflowInputType.Output)
             {
-                return context.GetOutput(node.Id).Traverse(node.Traversal);
-            }
-            else
-            if (node.Type == WorkflowInputType.Output)
-            {
-                return context.GetOutput(node.Id).Traverse(node.Traversal);
+                return context.GetOutput(node.ActionId).Traverse(node.Traversal);
             }
             else
             if (node.Type == WorkflowInputType.Variable)

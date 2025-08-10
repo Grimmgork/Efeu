@@ -17,6 +17,9 @@
 	</PropertyGroup>
 	
   <ItemGroup>
+    <None Update="workflow_test_indent.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="workflow.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
