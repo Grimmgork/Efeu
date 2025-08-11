@@ -25,8 +25,24 @@ namespace Efeu.Integration
             instanceFactory.Register("If", () => new IfMethod());
             instanceFactory.Register("If", () => new WorkflowFunction((input) => input["Condition"].ToBoolean() ? input["Then"] : input["Else"]));
             instanceFactory.Register("+", () => new WorkflowFunction((input) => SomeData.Parse(
-                (input["A"].ToDynamic() ?? 0) +
-                (input["B"].ToDynamic() ?? 0)
+                (dynamic)(input["A"].Value ?? 0) +
+                (dynamic)(input["B"].Value ?? 0)
+            )));
+            instanceFactory.Register("-", () => new WorkflowFunction((input) => SomeData.Parse(
+                (dynamic)(input["A"].Value ?? 0) -
+                (dynamic)(input["B"].Value ?? 0)
+            )));
+            instanceFactory.Register("/", () => new WorkflowFunction((input) => SomeData.Parse(
+                (dynamic)(input["A"].Value ?? 0) /
+                (dynamic)(input["B"].Value ?? 0)
+            )));
+            instanceFactory.Register("*", () => new WorkflowFunction((input) => SomeData.Parse(
+                (dynamic)(input["A"].Value ?? 0) *
+                (dynamic)(input["B"].Value ?? 0)
+            )));
+            instanceFactory.Register("%", () => new WorkflowFunction((input) => SomeData.Parse(
+                (dynamic)(input["A"].Value ?? 0) %
+                (dynamic)(input["B"].Value ?? 0)
             )));
             instanceFactory.Register("Map", () => new MapMethod());
             instanceFactory.Register("Filter", () => new FilterMethod());

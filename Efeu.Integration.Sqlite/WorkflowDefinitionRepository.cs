@@ -12,11 +12,11 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Sqlite
 {
-    public class WorkflowDefinitionRepository : IWorkflowDefinitionRepository
+    internal class WorkflowDefinitionRepository : IWorkflowDefinitionRepository
     {
-        private readonly DataConnection connection;
+        private readonly SqliteDataConnection connection;
 
-        public WorkflowDefinitionRepository(UnitOfWork unitOfWork, DataConnection connection) 
+        public WorkflowDefinitionRepository(UnitOfWork unitOfWork, SqliteDataConnection connection) 
         { 
             this.connection = connection;
         }

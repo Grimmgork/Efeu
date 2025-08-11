@@ -15,13 +15,13 @@ namespace Efeu.Runtime.Data
         Double,
         Decimal,
         Timestamp,
+        Date,
+        Time,
         Boolean,
         String,
-        Stream,
-        Exception,
         Array,
         Struct,
-
+        Reference,
         Anything
     }
 }

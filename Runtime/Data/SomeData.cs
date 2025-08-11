@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Net.Http.Headers;
 
 namespace Efeu.Runtime.Data
 {
@@ -83,22 +85,19 @@ namespace Efeu.Runtime.Data
     public struct SomeData : ISomeTraversableData
     {
         private readonly object? scalarValue;
-        private readonly IReadOnlyCollection<SomeData> arrayItems = [];
+        private readonly IReadOnlyCollection<SomeData> arrayItems = ReadOnlyCollection<SomeData>.Empty;
         private readonly IReadOnlyDictionary<string, SomeData> structProperties = ReadOnlyDictionary<string, SomeData>.Empty;
 
         public readonly WorkflowDataType DataType;
 
-        public IReadOnlyCollection<SomeData> Items => arrayItems; // ?? []; throw new InvalidOperationException("Not an Array.");
-        public IReadOnlyDictionary<string, SomeData> Properties => structProperties; // ?? throw new InvalidOperationException("Not a Struct.");
-        public object? Value => scalarValue; // IsScalar ? scalarValue : throw new InvalidOperationException("Not a Scalar.");
-
-        public Exception Exception => HasException ? (Exception)scalarValue! : throw new InvalidOperationException("Not an exception.");
-
+        public IReadOnlyCollection<SomeData> Items => arrayItems;
+        public IReadOnlyDictionary<string, SomeData> Properties => structProperties;
+        public object? Value => scalarValue;
         public bool IsNull => DataType == WorkflowDataType.Null;
-        public bool HasException => DataType == WorkflowDataType.Exception;
         public bool IsStruct => DataType == WorkflowDataType.Struct;
         public bool IsArray => DataType == WorkflowDataType.Array;
         public bool IsScalar => DataType != WorkflowDataType.Struct && DataType != WorkflowDataType.Array;
+        public bool IsReference => DataType == WorkflowDataType.Reference;
 
         public TraversalNodeType TraversalNodeType 
         {
@@ -161,11 +160,6 @@ namespace Efeu.Runtime.Data
             return new SomeData();
         }
 
-        public static SomeData FromException(Exception exception)
-        {
-            return new SomeData(WorkflowDataType.Exception, exception);
-        }
-
         public static SomeData Integer(Int32? value)
         {
             return new SomeData(WorkflowDataType.Integer, value);
@@ -204,6 +198,11 @@ namespace Efeu.Runtime.Data
         public static SomeData Timestamp(DateTime? value)
         {
             return new SomeData(WorkflowDataType.Timestamp, value);
+        }
+
+        public static SomeData Reference<T>(T reference) where T : class
+        {
+            return new SomeData(WorkflowDataType.Reference, reference);
         }
 
         public static SomeData Parse(object? value)
@@ -352,6 +351,20 @@ namespace Efeu.Runtime.Data
             return Convert.ToString(scalarValue);
         }
 
+        public bool MatchReference<T>([NotNullWhen(true)] out T? obj)
+        {
+            if (scalarValue?.GetType().IsAssignableTo(typeof(T)) ?? false)
+            {
+                obj = (T)scalarValue;
+                return true;
+            }
+            else
+            {
+                obj = default;
+                return false;
+            }
+        }
+
         public new string ToString()
         {
             if (IsNull)
@@ -364,11 +377,6 @@ namespace Efeu.Runtime.Data
                 return "STRUCT";
 
             return Convert.ToString(scalarValue) ?? "";
-        }
-
-        public dynamic? ToDynamic()
-        {
-            return scalarValue;
         }
 
         public object? ToPolymorphicObject()

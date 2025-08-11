@@ -9,7 +9,7 @@ using Efeu.Runtime.Signal;
 
 namespace Efeu.Runtime.Method
 {
-    public abstract class WorkflowMethodBase : IWorkflowMethodInstance
+    public abstract class WorkflowMethodBase : IWorkflowMethod
     {
         public virtual void Dispose()
         {

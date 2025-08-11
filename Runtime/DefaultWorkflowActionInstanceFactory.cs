@@ -7,7 +7,7 @@ namespace Efeu.Runtime
 {
     public class DefaultWorkflowActionInstanceFactory : IDefaultWorkflowActionInstanceFactory
     {
-        private Dictionary<string, Func<IWorkflowMethodInstance>> methods = new Dictionary<string, Func<IWorkflowMethodInstance>>(StringComparer.InvariantCultureIgnoreCase);
+        private Dictionary<string, Func<IWorkflowMethod>> methods = new Dictionary<string, Func<IWorkflowMethod>>(StringComparer.InvariantCultureIgnoreCase);
         private Dictionary<string, Func<IWorkflowFunctionInstance>> functions = new Dictionary<string, Func<IWorkflowFunctionInstance>>(StringComparer.InvariantCultureIgnoreCase);
 
         public DefaultWorkflowActionInstanceFactory()
@@ -15,7 +15,7 @@ namespace Efeu.Runtime
             
         }
 
-        public IWorkflowMethodInstance GetMethodInstance(string name)
+        public IWorkflowMethod GetMethodInstance(string name)
         {
             return methods[name].Invoke();
         }
@@ -30,7 +30,7 @@ namespace Efeu.Runtime
             functions.Add(name, build);
         }
 
-        public void Register(string name, Func<IWorkflowMethodInstance> build)
+        public void Register(string name, Func<IWorkflowMethod> build)
         {
             methods.Add(name, build);
         }

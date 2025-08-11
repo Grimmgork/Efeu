@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Efeu.Runtime.Method
 {
-    public interface IWorkflowMethodInstance : IDisposable
+    public interface IWorkflowMethod : IDisposable
     {
         public Task<WorkflowMethodState> RunAsync(WorkflowMethodContext context, CancellationToken token);
 

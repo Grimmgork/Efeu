@@ -208,6 +208,8 @@ namespace Efeu.Integration.Commands
 
         public async Task<WorkflowExecutionResult> SendSignalAsync(int id, CustomWorkflowSignal signal)
         {
+            // TODO send multiple signals if multiple triggers match
+
             WorkflowInstanceEntity? instanceEntity = await instanceRepository.GetForProcessing(id, [WorkflowExecutionState.Suspended], WorkflowExecutionState.Running);
             if (instanceEntity == null)
             {

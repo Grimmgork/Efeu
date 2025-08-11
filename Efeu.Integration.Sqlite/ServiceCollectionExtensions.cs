@@ -88,7 +88,7 @@ namespace Efeu.Integration.Sqlite
                 .UseSQLite(connectionString)
                 .UseMappingSchema(builder.MappingSchema);
 
-            services.AddScoped(provider => new DataConnection(options));
+            services.AddScoped(serviceprovider => new SqliteDataConnection(options));
             services.AddScoped<UnitOfWork>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IWorkflowDefinitionVersionRepository, WorkflowDefinitionVersionRepository>();

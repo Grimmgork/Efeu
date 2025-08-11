@@ -49,7 +49,7 @@ namespace Efeu.Runtime
 
         private WorkflowDefinition definition;
 
-        private IWorkflowMethodInstance currentMethodInstance;
+        private IWorkflowMethod currentMethodInstance;
         private IWorkflowActionInstanceFactory instanceFactory;
 
         public WorkflowInstance(WorkflowDefinition definition, IWorkflowActionInstanceFactory instanceFactory, SomeData input = default) 

@@ -24,13 +24,11 @@ namespace Efeu.Runtime.Method
 
         public override WorkflowMethodState OnSignal(WorkflowMethodContext context, object signal)
         {
-            if (signal is ConsoleInputSignal)
+            if (signal is ConsoleInputSignal consoleSignal)
             {
-
+                context.Output = SomeData.Reference(consoleSignal);
+                return WorkflowMethodState.Done;
             }
-
-            context.Output = signal.Payload;
-            return WorkflowMethodState.Done;
 
             //if (signal is PromptInputTrigger inputSignal)
             //{

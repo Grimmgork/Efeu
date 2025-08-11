@@ -11,9 +11,9 @@ namespace Efeu.Integration.Sqlite
 {
     internal class WorkflowInstanceRepository : IWorkflowInstanceRepository
     {
-        private readonly DataConnection connection;
+        private readonly SqliteDataConnection connection;
 
-        public WorkflowInstanceRepository(DataConnection connection)
+        public WorkflowInstanceRepository(SqliteDataConnection connection)
         {
             this.connection = connection;
         }

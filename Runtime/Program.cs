@@ -2,6 +2,7 @@
 namespace Efeu.Runtime;
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -34,8 +35,8 @@ class Program
         instanceFactory.Register("If", () => new IfMethod());
         instanceFactory.Register("If", () => new WorkflowFunction((input) => input["Condition"].ToBoolean() ? input["Then"] : input["Else"]));
         instanceFactory.Register("+", () => new WorkflowFunction((input) => SomeData.Parse(
-            (input["A"].ToDynamic() ?? 0) + 
-            (input["B"].ToDynamic() ?? 0) 
+            (dynamic)(input["A"].Value ?? 0) +
+            (dynamic)(input["B"].Value ?? 0) 
         )));
         instanceFactory.Register("Eval", () => new WorkflowFunction((input) => input));
         instanceFactory.Register("Map", () => new MapMethod());

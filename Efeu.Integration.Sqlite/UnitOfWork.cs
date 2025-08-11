@@ -9,19 +9,16 @@ using System.Data;
 
 namespace Efeu.Integration.Sqlite
 {
-    public class UnitOfWork : IUnitOfWork
+    internal class UnitOfWork : IUnitOfWork
     {
-        private readonly DataConnection connection;
+        private readonly SqliteDataConnection connection;
 
-        public UnitOfWork(DataConnection connection)
+        public UnitOfWork(SqliteDataConnection connection)
         {
             this.connection = connection;
         }
 
-        public Task ExecuteAsync(Func<Task> action)
-        {
-            return ExecuteAsync(IsolationLevel.Unspecified, action);
-        }
+        public Task ExecuteAsync(Func<Task> action) => ExecuteAsync(IsolationLevel.Unspecified, action);
 
         public async Task ExecuteAsync(IsolationLevel isolationLevel, Func<Task> action)
         {

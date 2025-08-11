@@ -7,6 +7,6 @@ namespace Efeu.Runtime
     {
         public IWorkflowFunctionInstance GetFunctionInstance(string name);
 
-        public IWorkflowMethodInstance GetMethodInstance(string name);
+        public IWorkflowMethod GetMethodInstance(string name);
     }
 }

@@ -10,6 +10,6 @@ namespace Efeu.Runtime
     {
         public void Register(string name, Func<IWorkflowFunctionInstance> build);
 
-        public void Register(string name, Func<IWorkflowMethodInstance> build);
+        public void Register(string name, Func<IWorkflowMethod> build);
     }
 }
