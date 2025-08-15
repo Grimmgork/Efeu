@@ -14,12 +14,15 @@ namespace Efeu.Integration
 {
     public static class ServiceCollectionExtensions
     {
+        public static Task InitializeEfeu(this IServiceProvider services)
+        {
+            throw new Exception();
+        }
+
         public static void AddEfeu(this IServiceCollection services)
         {
             DefaultWorkflowActionInstanceFactory instanceFactory = new DefaultWorkflowActionInstanceFactory();
-            instanceFactory.Register("For", () => new ForMethod());
             instanceFactory.Register("ForEach", () => new ForeachMethod());
-            instanceFactory.Register("WriteVariable", () => new WriteVariableMethod());
             instanceFactory.Register("Print", () => new PrintMethod());
             instanceFactory.Register("WaitForInput", () => new WaitForInputMethod());
             instanceFactory.Register("If", () => new IfMethod());
@@ -44,11 +47,9 @@ namespace Efeu.Integration
                 (dynamic)(input["A"].Value ?? 0) %
                 (dynamic)(input["B"].Value ?? 0)
             )));
-            instanceFactory.Register("Map", () => new MapMethod());
             instanceFactory.Register("Filter", () => new FilterMethod());
             instanceFactory.Register("Eval", () => new EvalMethod());
             instanceFactory.Register("GetGuid", () => new GetGuid());
-            instanceFactory.Register("SetVariable", () => new SetVariableMethod());
 
             services.AddScoped<IWorkflowActionInstanceFactory>((services) => instanceFactory);
             services.AddScoped<IWorkflowDefinitionCommands, WorkflowDefinitionCommands>();

@@ -33,18 +33,19 @@ namespace Efeu.Integration.Sqlite
             return new DataParameter(null, json, DataType.Text);
         }
 
-        public static void AddEfeuSqlite(this IServiceCollection services, string connectionString, string schema = "efeu")
+        private static SqliteDataConnection ConfigureConnection(IServiceProvider services, string connectionString, string schema)
         {
             JsonSerializerOptions jsonOptions = new JsonSerializerOptions();
             jsonOptions.Converters.Add(new SomeDataJsonConverter());
-            jsonOptions.Converters.Add(new JsonStringEnumConverter());
+
+            ISomeDataSerializer someDataSerializer = services.GetRequiredService<ISomeDataSerializer>();
 
             var builder = new FluentMappingBuilder();
             builder.MappingSchema.SetConverter<SomeData, DataParameter>(c => ConvertToJson(c, jsonOptions));
             builder.MappingSchema.SetConverter<IDictionary<int, SomeData>, DataParameter>(c => ConvertToJson(c, jsonOptions));
             builder.MappingSchema.SetConverter<Stack<int>, DataParameter>(c => ConvertToJson(c, jsonOptions));
             builder.MappingSchema.SetConverter<WorkflowDefinition, DataParameter>(c => ConvertToJson(c, jsonOptions));
-            
+
             builder.MappingSchema.SetConverter<string, SomeData>(i => ConvertFromJson<SomeData>(i, jsonOptions));
             builder.MappingSchema.SetConverter<string, Stack<int>>(i => ConvertFromJson<Stack<int>>(i, jsonOptions));
             builder.MappingSchema.SetConverter<string, IDictionary<int, SomeData>>(i => ConvertFromJson<IDictionary<int, SomeData>>(i, jsonOptions));
@@ -85,7 +86,14 @@ namespace Efeu.Integration.Sqlite
                 .UseSQLite(connectionString)
                 .UseMappingSchema(builder.MappingSchema);
 
-            services.AddScoped(serviceprovider => new SqliteDataConnection(options));
+            return new SqliteDataConnection(options);
+        }
+
+        public static void AddEfeuSqlite(this IServiceCollection services, string connectionString, string schema = "efeu")
+        {
+            services.AddScoped((servicesProvider) => 
+                ConfigureConnection(servicesProvider, connectionString, schema));
+
             services.AddScoped<UnitOfWork>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IWorkflowDefinitionVersionRepository, WorkflowDefinitionVersionRepository>();

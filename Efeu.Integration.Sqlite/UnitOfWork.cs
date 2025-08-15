@@ -18,7 +18,8 @@ namespace Efeu.Integration.Sqlite
             this.connection = connection;
         }
 
-        public Task ExecuteAsync(Func<Task> action) => ExecuteAsync(IsolationLevel.Unspecified, action);
+        public Task ExecuteAsync(Func<Task> action) => 
+            ExecuteAsync(IsolationLevel.Unspecified, action);
 
         public async Task ExecuteAsync(IsolationLevel isolationLevel, Func<Task> action)
         {
