@@ -25,7 +25,6 @@ namespace Efeu.Runtime
         public int CurrentMethodId;
         public SomeData Input = new SomeData();
         public SomeData Output = new SomeData();
-        public SomeStruct Variables = new SomeStruct();
         public IDictionary<int, SomeData> MethodData = new Dictionary<int, SomeData>();
         public IDictionary<int, SomeData> MethodOutput = new Dictionary<int, SomeData>();
         public SomeData DispatchResult;
@@ -41,7 +40,6 @@ namespace Efeu.Runtime
         private WorkflowInstanceState state = WorkflowInstanceState.Initial;
         private SomeData workflowInput;
         private SomeData workflowOutput;
-        private SomeStruct variables;
         private IDictionary<int, SomeData> methodData;
         private IDictionary<int, SomeData> methodOutput;
         private SomeData dispatchResult;
@@ -61,7 +59,6 @@ namespace Efeu.Runtime
             this.currentMethodId = definition.EntryPointId;
             this.workflowInput = input;
             this.workflowOutput = new SomeData();
-            this.variables = new SomeStruct();
             this.returnStack = new Stack<int>();
             this.dispatchResult = new SomeData();
         }
@@ -70,7 +67,6 @@ namespace Efeu.Runtime
         {
             this.state = data.State;
             this.currentMethodId = data.CurrentMethodId;
-            this.variables = data.Variables;
             this.methodData = data.MethodData;
             this.methodOutput = data.MethodOutput;
             this.definition = definition;
@@ -97,11 +93,11 @@ namespace Efeu.Runtime
 
             WorkflowActionNode actionNode = definition.GetAction(currentMethodId);
             SomeData input = GetInputForMethod(actionNode);
-            WorkflowMethodContext context = new WorkflowMethodContext(variables, input, methodData.GetValueOrDefault(currentMethodId), dispatchResult);
+            WorkflowMethodContext context = new WorkflowMethodContext(input, methodData.GetValueOrDefault(currentMethodId), dispatchResult);
             WorkflowMethodState methodState;
             try
             {
-                methodState = currentMethodInstance.OnSignal(context, signal);
+                methodState = currentMethodInstance.OnTrigger(context, signal);
             }
             catch (Exception exception)
             {
@@ -165,11 +161,11 @@ namespace Efeu.Runtime
             WorkflowMethodContext context;
             if (methodData.ContainsKey(currentMethodId))
             {
-                context = new WorkflowMethodContext(variables, input, methodData.GetValueOrDefault(currentMethodId), dispatchResult);
+                context = new WorkflowMethodContext(input, methodData.GetValueOrDefault(currentMethodId), dispatchResult);
             }
             else
             {
-                context = new WorkflowMethodContext(variables, input);
+                context = new WorkflowMethodContext(input);
             }
 
             WorkflowMethodState methodState;
@@ -281,7 +277,7 @@ namespace Efeu.Runtime
         private SomeData GetInputForMethod(WorkflowActionNode method)
         {
             InputEvaluationContext context = new InputEvaluationContext(
-                variables, workflowInput, GetOutput);
+                workflowInput, GetOutput);
 
             return method.Input.EvaluateInput(context);
         }
@@ -311,7 +307,6 @@ namespace Efeu.Runtime
                 State = this.State,
                 CurrentMethodId = this.currentMethodId,
                 Input = workflowInput,
-                Variables = variables,
                 MethodData = methodData,
                 MethodOutput = methodOutput,
                 Output = workflowOutput,

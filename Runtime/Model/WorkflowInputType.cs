@@ -11,7 +11,6 @@ namespace Efeu.Runtime.Model
         Literal,
         Array,
         Struct,
-        Variable,
         Output
     }
 }

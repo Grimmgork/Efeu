@@ -41,12 +41,10 @@ namespace Efeu.Integration.Sqlite
 
             var builder = new FluentMappingBuilder();
             builder.MappingSchema.SetConverter<SomeData, DataParameter>(c => ConvertToJson(c, jsonOptions));
-            builder.MappingSchema.SetConverter<SomeStruct, DataParameter>(c => ConvertToJson(c, jsonOptions));
             builder.MappingSchema.SetConverter<IDictionary<int, SomeData>, DataParameter>(c => ConvertToJson(c, jsonOptions));
             builder.MappingSchema.SetConverter<Stack<int>, DataParameter>(c => ConvertToJson(c, jsonOptions));
             builder.MappingSchema.SetConverter<WorkflowDefinition, DataParameter>(c => ConvertToJson(c, jsonOptions));
             
-            builder.MappingSchema.SetConverter<string, SomeStruct>(i => ConvertFromJson<SomeStruct>(i, jsonOptions));
             builder.MappingSchema.SetConverter<string, SomeData>(i => ConvertFromJson<SomeData>(i, jsonOptions));
             builder.MappingSchema.SetConverter<string, Stack<int>>(i => ConvertFromJson<Stack<int>>(i, jsonOptions));
             builder.MappingSchema.SetConverter<string, IDictionary<int, SomeData>>(i => ConvertFromJson<IDictionary<int, SomeData>>(i, jsonOptions));
@@ -77,7 +75,6 @@ namespace Efeu.Integration.Sqlite
                     .IsIdentity()
                     .IsPrimaryKey()
                     .HasSkipOnInsert(true)
-                .Property(p => p.Variables)
                 .Property(p => p.ReturnStack)
                 .Property(p => p.MethodOutput)
                 .Property(p => p.MethodData);

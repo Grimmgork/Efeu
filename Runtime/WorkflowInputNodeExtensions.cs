@@ -32,11 +32,6 @@ namespace Efeu.Runtime
             {
                 return context.GetOutput(node.ActionId).Traverse(node.Traversal);
             }
-            else
-            if (node.Type == WorkflowInputType.Variable)
-            {
-                return context.Variables.Traverse(node.Traversal);
-            }
 
             throw new NotImplementedException();
         }

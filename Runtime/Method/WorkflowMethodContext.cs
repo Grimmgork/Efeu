@@ -14,6 +14,8 @@ namespace Efeu.Runtime.Method
     {
         public readonly SomeData Input;
 
+        public readonly SomeData InitialInput;
+
         public SomeData Output;
 
         public SomeData Data;
@@ -24,21 +26,17 @@ namespace Efeu.Runtime.Method
 
         public readonly SomeData DispatchResult;
 
-        public SomeStruct Variables;
-
         public readonly bool InitialRun;
 
-        public WorkflowMethodContext(SomeStruct variables, SomeData input)
+        public WorkflowMethodContext(SomeData input)
         {
-            Variables = variables;
             Input = input;
             Output = new SomeData();
             InitialRun = true;
         }
 
-        public WorkflowMethodContext(SomeStruct variables, SomeData input, SomeData data, SomeData dispatchResult)
+        public WorkflowMethodContext(SomeData input, SomeData data, SomeData dispatchResult)
         {
-            Variables = variables;
             Input = input;
             Data = data;
             Output = new SomeData();

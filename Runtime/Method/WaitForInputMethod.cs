@@ -22,7 +22,7 @@ namespace Efeu.Runtime.Method
             return WorkflowMethodState.Suspended;
         }
 
-        public override WorkflowMethodState OnSignal(WorkflowMethodContext context, object signal)
+        public override WorkflowMethodState OnTrigger(WorkflowMethodContext context, object signal)
         {
             if (signal is ConsoleInputSignal consoleSignal)
             {
@@ -30,15 +30,7 @@ namespace Efeu.Runtime.Method
                 return WorkflowMethodState.Done;
             }
 
-            //if (signal is PromptInputTrigger inputSignal)
-            //{
-            //    context.Output = SomeData.String(inputSignal.Input);
-            //    return WorkflowMethodState.Done;
-            //}
-            //else
-            //{
-            //    return WorkflowMethodState.Suspended;
-            //}
+            return WorkflowMethodState.Suspended;
         }
     }
 }

@@ -5,117 +5,89 @@ using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Net.Http.Headers;
 
 namespace Efeu.Runtime.Data
 {
-    public class SomeStruct : Dictionary<string, SomeData>, ISomeTraversableData
+    public enum WorkflowTraversalNodeType
     {
-        public new SomeData this[string name]
-        {
-            get
-            {
-                return this.GetValueOrDefault(name);
-            }
-            set
-            {
-                base[name] = value;
-            }
-        }
-
-        public TraversalNodeType TraversalNodeType => TraversalNodeType.Struct;
-
-        public SomeData TraversalEnd()
-        {
-            return SomeData.Struct(this);
-        }
-
-        public SomeData TraverseByIndex(int index)
-        {
-            throw new InvalidOperationException();
-        }
-
-        public SomeData TraverseByName(string name)
-        {
-            return this[name];
-        }
-    }
-
-    public enum TraversalNodeType
-    {
+        Leaf,
         Array,
-        Struct,
-        Leaf
+        Struct
     }
 
-    public interface ISomeTraversableData
+    public interface IWorkflowTraversible
     {
-        public TraversalNodeType TraversalNodeType { get; }
+        public WorkflowTraversalNodeType NodeType { get; }
 
-        public SomeData TraverseByName(string name);
+        public IWorkflowTraversible GetField(string name);
 
-        public SomeData TraverseByIndex(int index);
+        public IWorkflowTraversible GetIndex(int index);
 
-        public SomeData TraversalEnd();
+        public SomeData Evaluate();
     }
 
-    public static class SomeTraversableDataExtensions
+    public static class WorkflowTraversableExtensions
     {
-        public static SomeData Traverse(this ISomeTraversableData root, DataTraversal traversal)
+        public static SomeData Traverse(this IWorkflowTraversible start, DataTraversal traversal)
         {
-            ISomeTraversableData node = root;
+            IWorkflowTraversible node = start;
             foreach (TraversalSegment segment in traversal)
             {
-                if (node.TraversalNodeType != TraversalNodeType.Struct)
+                if (node.NodeType != WorkflowTraversalNodeType.Struct)
                     throw new InvalidOperationException("Node is not a struct!");
 
-                node = node.TraverseByName(segment.Property);
+                node = node.GetField(segment.Property);
                 if (segment.IsIndex)
                 {
-                    if (node.TraversalNodeType != TraversalNodeType.Array)
+                    if (node.NodeType != WorkflowTraversalNodeType.Array)
                         throw new InvalidOperationException("Node is not a array!");
 
-                    node = node.TraverseByIndex(segment.Index);
+                    node = node.GetIndex(segment.Index);
                 }
             }
-            return node.TraversalEnd();
+            return node.Evaluate();
         }
     }
 
-    public struct SomeData : ISomeTraversableData
+    public struct SomeData : IWorkflowTraversible
     {
         private readonly object? scalarValue;
         private readonly IReadOnlyCollection<SomeData> arrayItems = ReadOnlyCollection<SomeData>.Empty;
-        private readonly IReadOnlyDictionary<string, SomeData> structProperties = ReadOnlyDictionary<string, SomeData>.Empty;
+        private readonly IReadOnlyDictionary<string, SomeData> structFields = ReadOnlyDictionary<string, SomeData>.Empty;
 
         public readonly WorkflowDataType DataType;
 
         public IReadOnlyCollection<SomeData> Items => arrayItems;
-        public IReadOnlyDictionary<string, SomeData> Properties => structProperties;
+        public IReadOnlyDictionary<string, SomeData> Fields => structFields;
         public object? Value => scalarValue;
         public bool IsNull => DataType == WorkflowDataType.Null;
         public bool IsStruct => DataType == WorkflowDataType.Struct;
         public bool IsArray => DataType == WorkflowDataType.Array;
-        public bool IsScalar => DataType != WorkflowDataType.Struct && DataType != WorkflowDataType.Array;
-        public bool IsReference => DataType == WorkflowDataType.Reference;
+        public bool IsValue => DataType != WorkflowDataType.Struct && DataType != WorkflowDataType.Array;
 
-        public TraversalNodeType TraversalNodeType 
+        public WorkflowTraversalNodeType NodeType
         {
             get
             {
                 if (IsStruct)
-                    return TraversalNodeType.Struct;
+                    return WorkflowTraversalNodeType.Struct;
                 if (IsArray)
-                    return TraversalNodeType.Array;
+                    return WorkflowTraversalNodeType.Array;
                 else
-                    return TraversalNodeType.Leaf;
+                    return WorkflowTraversalNodeType.Leaf;
             }
         }
 
-        public SomeData(IReadOnlyDictionary<string, SomeData> structure)
+        public SomeData(IReadOnlyCollection<SomeData> items)
+        {
+            DataType = WorkflowDataType.Array;
+            this.arrayItems = items;
+        }
+
+        public SomeData(IReadOnlyDictionary<string, SomeData> fields)
         {
             DataType = WorkflowDataType.Struct;
-            this.structProperties = structure;
+            this.structFields = fields;
         }
 
         public SomeData(IEnumerable<SomeData> items)
@@ -124,10 +96,10 @@ namespace Efeu.Runtime.Data
             this.arrayItems = items.ToImmutableArray();
         }
 
-        public SomeData(IEnumerable<KeyValuePair<string, SomeData>> properties)
+        public SomeData(IEnumerable<KeyValuePair<string, SomeData>> fields)
         {
             DataType = WorkflowDataType.Struct;
-            this.structProperties = new Dictionary<string, SomeData>(properties);
+            this.structFields = new Dictionary<string, SomeData>(fields);
         }
 
         public SomeData(WorkflowDataType type, object? value = null)
@@ -143,7 +115,7 @@ namespace Efeu.Runtime.Data
         {
             get
             {
-                return structProperties.GetValueOrDefault(name);
+                return structFields.GetValueOrDefault(name);
             }
         }
 
@@ -160,14 +132,14 @@ namespace Efeu.Runtime.Data
             return new SomeData();
         }
 
-        public static SomeData Integer(Int32? value)
+        public static SomeData Int32(Int32? value)
         {
-            return new SomeData(WorkflowDataType.Integer, value);
+            return new SomeData(WorkflowDataType.Int23, value);
         }
 
-        public static SomeData Long(Int64? value)
+        public static SomeData Int64(Int64? value)
         {
-            return new SomeData(WorkflowDataType.Long, value);
+            return new SomeData(WorkflowDataType.Int64, value);
         }
 
         public static SomeData Boolean(bool? value)
@@ -200,8 +172,9 @@ namespace Efeu.Runtime.Data
             return new SomeData(WorkflowDataType.Timestamp, value);
         }
 
-        public static SomeData Reference<T>(T reference) where T : class
+        public static SomeData Reference<T>(T reference)
         {
+            if (reference is null) return SomeData.Null();
             return new SomeData(WorkflowDataType.Reference, reference);
         }
 
@@ -230,24 +203,24 @@ namespace Efeu.Runtime.Data
             {
                 return value switch
                 {
-                    UInt16  v => Long(v),
-                    UInt32  v => Long(v),
-                    Int16   v => Integer(v),
-                    Int32   v => Integer(v),
-                    Int64   v => Long(v),
+                    UInt16  v => Int64(v),
+                    UInt32  v => Int64(v),
+                    Int16   v => Int32(v),
+                    Int32   v => Int32(v),
+                    Int64   v => Int64(v),
                     String  v => String(v),
                     Boolean v => Boolean(v),
                     Single  v => Single(v),
                     Double  v => Double(v),
                     Decimal v => Decimal(v),
-                    _ => throw new Exception($"Cannot convert {value.GetType()} into {nameof(SomeData)}")
+                    _ => Reference(value)
                 };
             }
         }
 
-        public static SomeData Struct(IEnumerable<KeyValuePair<string, SomeData>> properties)
+        public static SomeData Struct(IEnumerable<KeyValuePair<string, SomeData>> fields)
         {
-            return new SomeData(properties);
+            return new SomeData(fields);
         }
 
         public static SomeData Struct(IDictionary<string, SomeData> structure)
@@ -279,8 +252,8 @@ namespace Efeu.Runtime.Data
         public static explicit operator String(SomeData value) => value.ToString();
         public static explicit operator Boolean(SomeData value) => value.ToBoolean();
 
-        public static implicit operator SomeData(Int32 value) => SomeData.Integer(value);
-        public static implicit operator SomeData(Int64 value) => SomeData.Long(value);
+        public static implicit operator SomeData(Int32 value) => SomeData.Int32(value);
+        public static implicit operator SomeData(Int64 value) => SomeData.Int64(value);
         public static implicit operator SomeData(String value) => SomeData.String(value);
         public static implicit operator SomeData(Boolean value) => SomeData.Boolean(value);
         public static implicit operator SomeData(Single value) => SomeData.Single(value);
@@ -351,7 +324,12 @@ namespace Efeu.Runtime.Data
             return Convert.ToString(scalarValue);
         }
 
-        public bool MatchReference<T>([NotNullWhen(true)] out T? obj)
+        public bool Match<T>()
+        {
+            return Match<T>(out var _);
+        }
+
+        public bool Match<T>([NotNullWhen(true)] out T? obj)
         {
             if (scalarValue?.GetType().IsAssignableTo(typeof(T)) ?? false)
             {
@@ -396,12 +374,12 @@ namespace Efeu.Runtime.Data
             }
             else if (IsStruct)
             {
-                Dictionary<string, object?> properties = new Dictionary<string, object?>();
-                foreach (KeyValuePair<string, SomeData> property in structProperties!)
+                Dictionary<string, object?> fields = new Dictionary<string, object?>();
+                foreach (KeyValuePair<string, SomeData> field in structFields!)
                 {
-                    properties.Add(property.Key, property.Value.ToPolymorphicObject());
+                    fields.Add(field.Key, field.Value.ToPolymorphicObject());
                 }
-                return properties;
+                return fields;
             }
             else
             {
@@ -409,17 +387,50 @@ namespace Efeu.Runtime.Data
             }
         }
 
-        public SomeData TraverseByName(string name)
+        public IWorkflowTraversible GetField(string name)
         {
-            return this[name];
+            if (DataType == WorkflowDataType.Reference)
+            {
+                return TraverseFieldOfReference(name);
+            }
+            else
+            {
+                return this[name];
+            }
         }
 
-        public SomeData TraverseByIndex(int index)
+        private IWorkflowTraversible TraverseFieldOfReference(string name)
         {
-            return this[index];
+            // TODO add IDynamicMetadataObject?
+            if (scalarValue is IDictionary dictionary)
+            {
+                return SomeData.Parse(dictionary[name]);
+            }
+            else
+            {
+                return SomeData.Parse(scalarValue?.GetType().GetProperty(name)?.GetValue(scalarValue, null));
+            }
         }
 
-        public SomeData TraversalEnd()
+        public IWorkflowTraversible GetIndex(int index)
+        {
+            if (DataType == WorkflowDataType.Reference)
+            {
+                return TraverseIndexOfReference(index);
+            }
+            else
+            {
+                return this[index];
+            }
+        }
+
+        private SomeData TraverseIndexOfReference(int index)
+        {
+            dynamic? obj = scalarValue;
+            return SomeData.Parse(obj?[index]);
+        }
+
+        public SomeData Evaluate()
         {
             return this;
         }

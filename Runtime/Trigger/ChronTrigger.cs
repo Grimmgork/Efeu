@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Efeu.Runtime.Trigger
 {
-    internal class ChronTrigger : WorkflowTrigger
+    internal class ChronTrigger
     {
         public Guid Id;
 

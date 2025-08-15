@@ -22,7 +22,7 @@ namespace Efeu.Integration.Sqlite.Migrations
         {
             await connection.ExecuteAsync("CREATE TABLE WorkflowDefinition (Id INTEGER PRIMARY KEY, Name TEXT)");
             await connection.ExecuteAsync("CREATE TABLE WorkflowDefinitionVersion (Id INTEGER PRIMARY KEY, Name TEXT, Definition TEXT, WorkflowDefinitionId INTEGER, FOREIGN KEY(WorkflowDefinitionId) REFERENCES WorkflowDefinition(Id))");
-            await connection.ExecuteAsync("CREATE TABLE WorkflowInstance (Id INTEGER PRIMARY KEY, IsProcessing INTEGER, WorkflowDefinitionVersionId INTEGER, ExecutionState Integer, State INTEGER, CurrentMethodId INTEGER, Input TEXT, Output TEXT, Variables TEXT, MethodData TEXT, MethodOutput TEXT, DispatchResult TEXT, ReturnStack TEXT)");
+            await connection.ExecuteAsync("CREATE TABLE WorkflowInstance (Id INTEGER PRIMARY KEY, IsProcessing INTEGER, WorkflowDefinitionVersionId INTEGER, ExecutionState Integer, State INTEGER, CurrentMethodId INTEGER, Input TEXT, Output TEXT, MethodData TEXT, MethodOutput TEXT, DispatchResult TEXT, ReturnStack TEXT)");
         }
 
         public async Task Down()

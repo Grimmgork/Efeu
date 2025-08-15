@@ -9,8 +9,6 @@ namespace Efeu.Runtime.Function
 {
     public class WorkflowValueContext
     {
-        public readonly IReadOnlyDictionary<string, SomeData> Variables;
-
         public readonly IReadOnlyDictionary<int, SomeData> MethodOutputs;
 
         public readonly SomeData WorkflowInput;
@@ -19,10 +17,9 @@ namespace Efeu.Runtime.Function
 
         public SomeData Do(SomeData input) => doFunc(input);
 
-        public WorkflowValueContext(SomeData workflowInput, SomeStruct variables, IReadOnlyDictionary<int, SomeData> methodOutputs, Func<SomeData, SomeData> doFunc)
+        public WorkflowValueContext(SomeData workflowInput, IReadOnlyDictionary<int, SomeData> methodOutputs, Func<SomeData, SomeData> doFunc)
         {
             WorkflowInput = workflowInput;
-            Variables = variables;
             MethodOutputs = methodOutputs;
             this.doFunc = doFunc;
         }

@@ -46,7 +46,7 @@ namespace Efeu.Runtime.Json
             }
             else if (reader.TokenType == JsonTokenType.Number)
             {
-                return SomeData.Long(reader.GetInt64());
+                return SomeData.Int64(reader.GetInt64());
             }
             else if (reader.TokenType == JsonTokenType.True)
             {
@@ -62,7 +62,7 @@ namespace Efeu.Runtime.Json
 
         public override void Write(Utf8JsonWriter writer, SomeData value, JsonSerializerOptions options)
         {
-            if (value.IsScalar)
+            if (value.IsValue)
             {
                 JsonSerializer.Serialize(writer, value.Value, options);
             }
@@ -87,7 +87,7 @@ namespace Efeu.Runtime.Json
         private void WriteStruct(Utf8JsonWriter writer, SomeData value, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
-            foreach (KeyValuePair<string, SomeData> prop in value.Properties)
+            foreach (KeyValuePair<string, SomeData> prop in value.Fields)
             {
                 writer.WritePropertyName(prop.Key);
                 Write(writer, prop.Value, options);

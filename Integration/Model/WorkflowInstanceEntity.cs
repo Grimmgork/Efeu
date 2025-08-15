@@ -18,7 +18,6 @@ namespace Efeu.Integration.Model
         public int CurrentMethodId { get; set; }
         public SomeData Input { get; set; } = new SomeData();
         public SomeData Output { get; set; } = new SomeData();
-        public SomeStruct Variables { get; set; } = new SomeStruct();
         public IDictionary<int, SomeData> MethodData { get; set; } = new Dictionary<int, SomeData>();
         public IDictionary<int, SomeData> MethodOutput { get; set; } = new Dictionary<int, SomeData>();
         public SomeData DispatchResult { get; set; }

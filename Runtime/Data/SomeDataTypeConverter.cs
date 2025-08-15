@@ -20,8 +20,8 @@ namespace Efeu.Runtime.Data
             return value switch
             {
                 string v => SomeData.String(v),
-                Int32 v => SomeData.Integer(v),
-                Int64 v => SomeData.Long(v),
+                Int32 v => SomeData.Int32(v),
+                Int64 v => SomeData.Int64(v),
                 Boolean v => SomeData.Boolean(v),
                 _ => base.ConvertFrom(context, culture, value)
             };

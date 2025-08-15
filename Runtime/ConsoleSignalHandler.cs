@@ -19,7 +19,9 @@ namespace Efeu.Runtime
         public Task<CustomWorkflowSignal> WaitForSignal(CancellationToken token)
         {
             string message = Console.ReadLine() ?? "";
-            return Task.FromResult<CustomWorkflowSignal>(new PromptInputSignal(message, DateTime.Now));
+            // return Task.FromResult<CustomWorkflowSignal>(new PromptInputSignal(message, DateTime.Now));
+
+            throw new Exception();
         }
     }
 }

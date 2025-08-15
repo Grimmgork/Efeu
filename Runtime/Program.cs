@@ -2,6 +2,8 @@
 namespace Efeu.Runtime;
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -19,7 +21,7 @@ using Efeu.Runtime.Signal;
 class Program
 {
     static async Task Main(string[] args)
-    {
+    { 
         JsonSerializerOptions options = new JsonSerializerOptions();
         options.Converters.Add(new SomeDataJsonConverter());
         options.Converters.Add(new JsonStringEnumConverter());
@@ -27,9 +29,7 @@ class Program
         WorkflowDefinition definition = JsonSerializer.Deserialize<WorkflowDefinition>(File.ReadAllText("workflow.json"), options)!;
 
         DefaultWorkflowActionInstanceFactory instanceFactory = new DefaultWorkflowActionInstanceFactory();
-        instanceFactory.Register("For", () => new ForMethod());
         instanceFactory.Register("ForEach", () => new ForeachMethod());
-        instanceFactory.Register("WriteVariable", () => new WriteVariableMethod());
         instanceFactory.Register("Print", () => new PrintMethod());
         instanceFactory.Register("WaitForInput", () => new WaitForInputMethod());
         instanceFactory.Register("If", () => new IfMethod());
@@ -39,11 +39,9 @@ class Program
             (dynamic)(input["B"].Value ?? 0) 
         )));
         instanceFactory.Register("Eval", () => new WorkflowFunction((input) => input));
-        instanceFactory.Register("Map", () => new MapMethod());
         instanceFactory.Register("Filter", () => new FilterMethod());
         instanceFactory.Register("Eval", () => new EvalMethod());
         instanceFactory.Register("GetGuid", () => new GetGuid());
-        instanceFactory.Register("SetVariable", () => new SetVariableMethod());
 
         WorkflowInstance instance = new WorkflowInstance(definition, instanceFactory);
 

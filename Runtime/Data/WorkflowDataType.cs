@@ -9,8 +9,8 @@ namespace Efeu.Runtime.Data
     public enum WorkflowDataType
     {
         Null,
-        Integer,
-        Long,
+        Int23,
+        Int64,
         Single,
         Double,
         Decimal,
@@ -22,6 +22,7 @@ namespace Efeu.Runtime.Data
         Array,
         Struct,
         Reference,
+
         Anything
     }
 }

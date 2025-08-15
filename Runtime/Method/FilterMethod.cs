@@ -10,42 +10,51 @@ namespace Efeu.Runtime.Method
 {
     public class FilterMethod : WorkflowMethodBase
     {
+        private class State
+        {
+            public IReadOnlyCollection<SomeData> Items = [];
+
+            public ICollection<SomeData> Result = [];
+
+            public int Index;
+        }
+
         public override WorkflowMethodState Run(WorkflowMethodContext context, CancellationToken token)
         {
             if (context.InitialRun)
             {
-                context.Data = SomeData.Struct([
-                    new ("Items", context.Input),
-                    new ("Result", SomeData.Array()),
-                    new ("Index", 0)
-                ]);
-            }
+                context.Data = SomeData.Reference(new State()
+                {
+                    Index = 0,
+                    Items = context.Input.Items,
+                    Result = []
+                });
 
-            int index = context.Data["Index"].ToInt32();
-            IReadOnlyCollection<SomeData> items = context.Data["Items"].Items;
-            List<SomeData> result = context.Data["Result"].Items.ToList();
+                if (context.Input.Items.Count == 0)
+                {
+                    context.Output = SomeData.Array();
+                    return WorkflowMethodState.Done;
+                }
 
-            if (!context.InitialRun && context.DispatchResult.ToBoolean())
-            {
-                result.Add(items.ElementAt(index-1));
-            }
-
-            if (index < items.Count)
-            {
-                context.Output = items.ElementAt(index);
-                context.Data = SomeData.Struct([
-                    new ("Items", context.Data["Items"]),
-                    new ("Result", SomeData.Array(result)),
-                    new ("Index", index+1),
-                ]);
-
+                context.Output = context.Input.Items.First();
                 return WorkflowMethodState.Dispatch;
             }
-            else
+
+            State state = (State)context.Data.Value!;
+            if (context.DispatchResult.ToBoolean())
             {
-                context.Output = SomeData.Array(result);
-                return WorkflowMethodState.Done;
+                state.Result.Add(state.Items.ElementAt(state.Index));
             }
+
+            state.Index++;
+            if (state.Index < state.Items.Count)
+            {
+                context.Output = state.Items.ElementAt(state.Index);
+                return WorkflowMethodState.Dispatch;
+            }
+
+            context.Output = SomeData.Array(state.Items);
+            return WorkflowMethodState.Done;
         }
     }
 }

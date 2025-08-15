@@ -21,7 +21,7 @@ namespace Efeu.Runtime.Method
             return WorkflowTrigger.Start();
         }
 
-        public virtual WorkflowMethodState OnSignal(WorkflowMethodContext context, CustomWorkflowSignal signal)
+        public virtual WorkflowMethodState OnTrigger(WorkflowMethodContext context, object signal)
         {
             return WorkflowMethodState.Running;
         }

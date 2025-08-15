@@ -10,6 +10,6 @@ namespace Efeu.Runtime.Method
     {
         public Task<WorkflowMethodState> RunAsync(WorkflowMethodContext context, CancellationToken token);
 
-        public WorkflowMethodState OnSignal(WorkflowMethodContext context, CustomWorkflowSignal signal);
+        public WorkflowMethodState OnTrigger(WorkflowMethodContext context, object signal);
     }
 }

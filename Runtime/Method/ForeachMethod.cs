@@ -10,35 +10,50 @@ namespace Efeu.Runtime.Method
 {
     public class ForeachMethod : WorkflowMethodBase
     {
+        private class State
+        {
+            public IEnumerable<SomeData> Items = [];
+
+            public List<SomeData> Result = [];
+
+            public int Index;
+        }
+
         public override WorkflowMethodState Run(WorkflowMethodContext context, CancellationToken token)
         {
+            State state = new State();
             if (context.InitialRun)
             {
-                if (context.Input.IsNull)
-                    return WorkflowMethodState.Done;
+                state = new State()
+                {
+                    Index = 0,
+                    Items = context.Input.Items,
+                    Result = []
+                };
 
-                if (context.Input.Items.Count == 0)
-                    return WorkflowMethodState.Done;
+                context.Data = SomeData.Reference(state);
 
-                context.Data = SomeData.Struct([
-                    new ("Items", context.Input),
-                    new ("Index", 0)
-                ]);
+                if (state.Items.Any())
+                {
+                    context.Output = SomeData.Array();
+                    return WorkflowMethodState.Done;
+                }
+
+                context.Output = state.Items.First();
+                return WorkflowMethodState.Dispatch;
             }
 
-            int index = context.Data["Index"].ToInt32();
-            SomeData items = context.Data["Items"];
-            SomeData item = items[index];
-            if (index >= items.Items.Count)
-                return WorkflowMethodState.Done;
+            state.Result.Add(context.DispatchResult);
 
-            context.Output = item;
-            index++;
-            context.Data = SomeData.Struct([
-                new ("Items", items),
-                new ("Index", index)
-            ]);
-            return WorkflowMethodState.Dispatch;
+            if (state.Index < state.Items.Count())
+            {
+                context.Output = state.Items.ElementAt(state.Index);
+                state.Index++;
+                return WorkflowMethodState.Dispatch;
+            }
+
+            context.Output = SomeData.Array(state.Result);
+            return WorkflowMethodState.Done;
         }
     }
 }

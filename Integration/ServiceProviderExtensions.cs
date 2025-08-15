@@ -14,13 +14,13 @@ namespace Efeu.Integration
     {
         public static WorkflowTrigger GetHashForSignal(this IServiceProvider provider, object signal)
         {
-            Type signalHasherType = typeof(IWorkflowTriggerHashProvider<>).MakeGenericType(signal.GetType());
-            object? service = provider.GetServices(signalHasherType);
+            //Type signalHasherType = typeof(IWorkflowTriggerHashProvider<>).MakeGenericType(signal.GetType());
+            //object? service = provider.GetServices(signalHasherType);
 
-            MethodInfo method = signalHasherType.GetMethod(nameof(IWorkflowTriggerHashProvider<object>.GetTriggerHash))!;
-            WorkflowTrigger hash = (WorkflowTrigger)method.Invoke(service, [method])!;
+            //MethodInfo method = signalHasherType.GetMethod(nameof(IWorkflowTriggerHashProvider<object>.GetTriggerHash))!;
+            //WorkflowTrigger hash = (WorkflowTrigger)method.Invoke(service, [method])!;
 
-
+            throw new Exception();
         }
     }
 }

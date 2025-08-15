@@ -12,15 +12,12 @@ namespace Efeu.Runtime.Data
 {
     public class InputEvaluationContext
     {
-        public readonly ISomeTraversableData Variables;
-
-        public readonly ISomeTraversableData WorkflowInput;
+        public readonly IWorkflowTraversible WorkflowInput;
 
         public readonly Func<int, SomeData> GetOutput;
 
-        public InputEvaluationContext(ISomeTraversableData variables, ISomeTraversableData workflowInput, Func<int, SomeData> getOutput)
+        public InputEvaluationContext(IWorkflowTraversible workflowInput, Func<int, SomeData> getOutput)
         {
-            Variables = variables;
             WorkflowInput = workflowInput;
             GetOutput = getOutput;
         }
