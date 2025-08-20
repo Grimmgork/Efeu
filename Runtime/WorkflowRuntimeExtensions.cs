@@ -9,11 +9,11 @@ using Efeu.Runtime.Signal;
 
 namespace Efeu.Runtime
 {
-    public static class WorkflowInstanceExtensions
+    public static class WorkflowRuntimeExtensions
     {
-        public static async Task RunAsync(this WorkflowInstance instance, CancellationToken token = default)
+        public static async Task RunAsync(this WorkflowRuntime instance, CancellationToken token = default)
         {
-            while (instance.State == WorkflowInstanceState.Running || instance.State == WorkflowInstanceState.Initial)
+            while (instance.State == WorkflowRuntimeState.Running)
             {
                 await instance.StepAsync(token);
             }

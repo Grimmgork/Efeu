@@ -9,7 +9,7 @@ namespace Efeu.Runtime.Method
 {
     public class GetGuid : WorkflowMethodBase
     {
-        public override WorkflowMethodState Run(WorkflowMethodContext context, CancellationToken token)
+        public override WorkflowMethodState Run(WorkflowMethodContext context)
         {
             context.Output = Guid.NewGuid().ToString();
             return WorkflowMethodState.Done;

@@ -61,7 +61,7 @@ namespace Efeu.Application.Controllers
         {
             WorkflowInstanceEntity entity = new WorkflowInstanceEntity();
             entity.Input = 42;
-            entity.State = WorkflowInstanceState.Running;
+            entity.State = WorkflowRuntimeState.Running;
             await workflowInstanceRepository.Add(entity);
         }
 

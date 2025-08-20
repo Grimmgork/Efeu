@@ -19,10 +19,10 @@ namespace Efeu.Runtime.Method
             public int Index;
         }
 
-        public override WorkflowMethodState Run(WorkflowMethodContext context, CancellationToken token)
+        public override WorkflowMethodState Run(WorkflowMethodContext context)
         {
             State state = new State();
-            if (context.InitialRun)
+            if (context.IsFirstRun)
             {
                 state = new State()
                 {
@@ -43,7 +43,7 @@ namespace Efeu.Runtime.Method
                 return WorkflowMethodState.Dispatch;
             }
 
-            state.Result.Add(context.DispatchResult);
+            state.Result.Add(context.Result);
 
             if (state.Index < state.Items.Count())
             {

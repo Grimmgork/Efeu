@@ -9,7 +9,7 @@ namespace Efeu.Runtime.Method
 {
     public class EvalMethod : WorkflowMethodBase
     {
-        public override WorkflowMethodState Run(WorkflowMethodContext context, CancellationToken token)
+        public override WorkflowMethodState Run(WorkflowMethodContext context)
         {
             context.Output = context.Input;
             return WorkflowMethodState.Done;

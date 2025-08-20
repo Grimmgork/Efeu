@@ -1,6 +1,7 @@
 ﻿using Efeu.Integration.Data;
 using Efeu.Integration.Model;
 using Efeu.Runtime;
+using Efeu.Runtime.Function;
 using Efeu.Runtime.Model;
 using Efeu.Runtime.Signal;
 using System;
@@ -18,23 +19,25 @@ namespace Efeu.Integration.Commands
         private readonly IWorkflowInstanceRepository instanceRepository;
         private readonly IWorkflowDefinitionRepository definitionRepository;
         private readonly IWorkflowDefinitionVersionRepository definitionVersionRepository;
-        private readonly IWorkflowActionInstanceFactory workflowActionInstanceFactory;
+        private readonly IWorkflowMethodProvider methodProvider;
+        private readonly IWorkflowFunctionProvider functionProvider;
 
-        public WorkflowInstanceCommands(IUnitOfWork unitOfWork, IWorkflowInstanceRepository instanceRepository, IWorkflowDefinitionRepository definitionRepository, IWorkflowDefinitionVersionRepository definitionVersionRepository, IWorkflowActionInstanceFactory workflowActionInstanceFactory)
+        public WorkflowInstanceCommands(IUnitOfWork unitOfWork, IWorkflowInstanceRepository instanceRepository, IWorkflowDefinitionRepository definitionRepository, IWorkflowDefinitionVersionRepository definitionVersionRepository, IWorkflowMethodProvider methodProvider, IWorkflowFunctionProvider functionProvider)
         {
             this.unitOfWork = unitOfWork;
             this.instanceRepository = instanceRepository;
             this.definitionRepository = definitionRepository;
             this.definitionVersionRepository = definitionVersionRepository;
-            this.workflowActionInstanceFactory = workflowActionInstanceFactory;
+            this.methodProvider = methodProvider;
+            this.functionProvider = functionProvider;
         }
 
         public async Task<WorkflowExecutionResult> ExecuteAsync(int workflowDefinitionId, CancellationToken token)
         {
             WorkflowDefinitionVersionEntity definitionVersion = await definitionVersionRepository.GetLatestVersion(workflowDefinitionId);
 
-            WorkflowInstance instance = new WorkflowInstance(definitionVersion.Definition, workflowActionInstanceFactory);
-            WorkflowInstanceExport instanceExport = instance.Export();
+            WorkflowRuntime instance = new WorkflowRuntime(definitionVersion.Definition, methodProvider, functionProvider);
+            WorkflowRuntimeExport instanceExport = instance.Export();
 
             WorkflowInstanceEntity instanceEntity = new WorkflowInstanceEntity()
             {
@@ -62,8 +65,8 @@ namespace Efeu.Integration.Commands
 
             WorkflowExecutionState executionState = exception is not null ? WorkflowExecutionState.Failed : instance.State switch
             {
-                WorkflowInstanceState.Suspended => WorkflowExecutionState.Suspended,
-                WorkflowInstanceState.Done => WorkflowExecutionState.Completed,
+                WorkflowRuntimeState.Suspended => WorkflowExecutionState.Suspended,
+                WorkflowRuntimeState.Done => WorkflowExecutionState.Completed,
                 _ => throw new Exception($"Invalid state {instance.State}")
             };
 
@@ -71,7 +74,6 @@ namespace Efeu.Integration.Commands
             instanceEntity.Output = instanceExport.Output;
             instanceEntity.ReturnStack = instanceExport.ReturnStack;
             instanceEntity.State = instanceExport.State;
-            instanceEntity.Variables = instanceExport.Variables;
             instanceEntity.MethodData = instanceExport.MethodData;
             instanceEntity.MethodOutput = instanceExport.MethodOutput;
             instanceEntity.ExecutionState = executionState;
@@ -95,18 +97,17 @@ namespace Efeu.Integration.Commands
             }
 
             WorkflowDefinitionVersionEntity definitionVersion = await definitionVersionRepository.GetByIdAsync(instanceEntity.WorkflowDefinitionVersionId);
-            WorkflowInstanceExport instanceExport = new WorkflowInstanceExport()
+            WorkflowRuntimeExport instanceExport = new WorkflowRuntimeExport()
             {
                 Input = instanceEntity.Input,
                 Output = instanceEntity.Output,
                 ReturnStack = instanceEntity.ReturnStack,
-                State = WorkflowInstanceState.Running,
-                Variables = instanceEntity.Variables,
+                State = WorkflowRuntimeState.Running,
                 MethodData = instanceEntity.MethodData,
                 MethodOutput = instanceEntity.MethodOutput
             };
 
-            WorkflowInstance instance = new WorkflowInstance(instanceExport, definitionVersion.Definition, workflowActionInstanceFactory);
+            WorkflowRuntime instance = new WorkflowRuntime(instanceExport, definitionVersion.Definition, methodProvider, functionProvider);
             Exception? exception = null;
             try
             {
@@ -121,9 +122,9 @@ namespace Efeu.Integration.Commands
 
             WorkflowExecutionState executionState = exception is not null ? WorkflowExecutionState.Failed : instance.State switch
             {
-                WorkflowInstanceState.Suspended => WorkflowExecutionState.Suspended,
-                WorkflowInstanceState.Done => WorkflowExecutionState.Completed,
-                WorkflowInstanceState.Running => WorkflowExecutionState.Paused,
+                WorkflowRuntimeState.Suspended => WorkflowExecutionState.Suspended,
+                WorkflowRuntimeState.Done => WorkflowExecutionState.Completed,
+                WorkflowRuntimeState.Running => WorkflowExecutionState.Paused,
                 _ => throw new Exception($"Invalid state {instance.State}")
             };
 
@@ -131,7 +132,6 @@ namespace Efeu.Integration.Commands
             instanceEntity.Output = instanceExport.Output;
             instanceEntity.ReturnStack = instanceExport.ReturnStack;
             instanceEntity.State = instanceExport.State;
-            instanceEntity.Variables = instanceExport.Variables;
             instanceEntity.MethodData = instanceExport.MethodData;
             instanceEntity.MethodOutput = instanceExport.MethodOutput;
             instanceEntity.ExecutionState = executionState;
@@ -155,18 +155,17 @@ namespace Efeu.Integration.Commands
             }
 
             WorkflowDefinitionVersionEntity definitionVersion = await definitionVersionRepository.GetByIdAsync(instanceEntity.WorkflowDefinitionVersionId);
-            WorkflowInstanceExport instanceExport = new WorkflowInstanceExport()
+            WorkflowRuntimeExport instanceExport = new WorkflowRuntimeExport()
             {
                 Input = instanceEntity.Input,
                 Output = instanceEntity.Output,
                 ReturnStack = instanceEntity.ReturnStack,
-                State = WorkflowInstanceState.Running,
-                Variables = instanceEntity.Variables,
+                State = WorkflowRuntimeState.Running,
                 MethodData = instanceEntity.MethodData,
                 MethodOutput = instanceEntity.MethodOutput
             };
 
-            WorkflowInstance instance = new WorkflowInstance(instanceExport, definitionVersion.Definition, workflowActionInstanceFactory);
+            WorkflowRuntime instance = new WorkflowRuntime(instanceExport, definitionVersion.Definition, methodProvider, functionProvider);
             Exception? exception = null;
             try
             {
@@ -181,9 +180,9 @@ namespace Efeu.Integration.Commands
 
             WorkflowExecutionState executionState = exception is not null ? WorkflowExecutionState.Failed : instance.State switch
             {
-                WorkflowInstanceState.Suspended => WorkflowExecutionState.Suspended,
-                WorkflowInstanceState.Done => WorkflowExecutionState.Completed,
-                WorkflowInstanceState.Running => WorkflowExecutionState.Running,
+                WorkflowRuntimeState.Suspended => WorkflowExecutionState.Suspended,
+                WorkflowRuntimeState.Done => WorkflowExecutionState.Completed,
+                WorkflowRuntimeState.Running => WorkflowExecutionState.Running,
                 _ => throw new Exception($"Invalid state {instance.State}")
             };
 
@@ -191,7 +190,6 @@ namespace Efeu.Integration.Commands
             instanceEntity.Output = instanceExport.Output;
             instanceEntity.ReturnStack = instanceExport.ReturnStack;
             instanceEntity.State = instanceExport.State;
-            instanceEntity.Variables = instanceExport.Variables;
             instanceEntity.MethodData = instanceExport.MethodData;
             instanceEntity.MethodOutput = instanceExport.MethodOutput;
             instanceEntity.ExecutionState = executionState;
@@ -206,7 +204,7 @@ namespace Efeu.Integration.Commands
             };
         }
 
-        public async Task<WorkflowExecutionResult> SendSignalAsync(int id, CustomWorkflowSignal signal)
+        public async Task<WorkflowExecutionResult> SendSignalAsync(int id, object signal)
         {
             // TODO send multiple signals if multiple triggers match
 
@@ -217,22 +215,21 @@ namespace Efeu.Integration.Commands
             }
 
             WorkflowDefinitionVersionEntity definitionVersion = await definitionVersionRepository.GetByIdAsync(instanceEntity.WorkflowDefinitionVersionId);
-            WorkflowInstanceExport instanceExport = new WorkflowInstanceExport()
+            WorkflowRuntimeExport instanceExport = new WorkflowRuntimeExport()
             {
                 Input = instanceEntity.Input,
                 Output = instanceEntity.Output,
                 ReturnStack = instanceEntity.ReturnStack,
-                State = WorkflowInstanceState.Suspended,
-                Variables = instanceEntity.Variables,
+                State = WorkflowRuntimeState.Suspended,
                 MethodData = instanceEntity.MethodData,
                 MethodOutput = instanceEntity.MethodOutput
             };
 
-            WorkflowInstance instance = new WorkflowInstance(instanceExport, definitionVersion.Definition, workflowActionInstanceFactory);
+            WorkflowRuntime instance = new WorkflowRuntime(instanceExport, definitionVersion.Definition, methodProvider, functionProvider);
             Exception? exception = null;
             try
             {
-                instance.SendSignal(signal);
+                instance.OnTrigger(signal);
                 await instance.RunAsync();
             }
             catch (Exception ex)
@@ -244,8 +241,8 @@ namespace Efeu.Integration.Commands
 
             WorkflowExecutionState executionState = exception is not null ? WorkflowExecutionState.Failed : instance.State switch
             {
-                WorkflowInstanceState.Suspended => WorkflowExecutionState.Suspended,
-                WorkflowInstanceState.Done => WorkflowExecutionState.Completed,
+                WorkflowRuntimeState.Suspended => WorkflowExecutionState.Suspended,
+                WorkflowRuntimeState.Done => WorkflowExecutionState.Completed,
                 _ => throw new Exception($"Invalid state {instance.State}")
             };
 
@@ -253,7 +250,6 @@ namespace Efeu.Integration.Commands
             instanceEntity.Output = instanceExport.Output;
             instanceEntity.ReturnStack = instanceExport.ReturnStack;
             instanceEntity.State = instanceExport.State;
-            instanceEntity.Variables = instanceExport.Variables;
             instanceEntity.MethodData = instanceExport.MethodData;
             instanceEntity.MethodOutput = instanceExport.MethodOutput;
             instanceEntity.ExecutionState = executionState;

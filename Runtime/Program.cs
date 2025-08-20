@@ -10,13 +10,13 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Efeu;
+using Efeu.Integration.Model;
 using Efeu.Runtime.Data;
 using Efeu.Runtime.Function;
 using Efeu.Runtime.Json;
 using Efeu.Runtime.Method;
 using Efeu.Runtime.Model;
-using Efeu.Runtime.Signal;
+using Efeu.Runtime.Trigger;
 
 class Program
 {
@@ -28,42 +28,53 @@ class Program
 
         WorkflowDefinition definition = JsonSerializer.Deserialize<WorkflowDefinition>(File.ReadAllText("workflow.json"), options)!;
 
-        DefaultWorkflowActionInstanceFactory instanceFactory = new DefaultWorkflowActionInstanceFactory();
-        instanceFactory.Register("ForEach", () => new ForeachMethod());
-        instanceFactory.Register("Print", () => new PrintMethod());
-        instanceFactory.Register("WaitForInput", () => new WaitForInputMethod());
-        instanceFactory.Register("If", () => new IfMethod());
-        instanceFactory.Register("If", () => new WorkflowFunction((input) => input["Condition"].ToBoolean() ? input["Then"] : input["Else"]));
-        instanceFactory.Register("+", () => new WorkflowFunction((input) => SomeData.Parse(
+        SimpleWorkflowMethodProvider methodProvider = new SimpleWorkflowMethodProvider();
+        methodProvider.Register("ForEach", () => new ForeachMethod());
+        methodProvider.Register("Print", () => new PrintMethod());
+        methodProvider.Register("WaitForInput", () => new WaitForInputMethod());
+        methodProvider.Register("If", () => new IfMethod());
+        methodProvider.Register("Filter", () => new FilterMethod());
+        methodProvider.Register("Eval", () => new EvalMethod());
+        methodProvider.Register("GetGuid", () => new GetGuid());
+
+        SimpleWorkflowFunctionProvider functionProvider = new SimpleWorkflowFunctionProvider();
+        functionProvider.Register("If", () => new WorkflowFunction((input) => input["Condition"].ToBoolean() ? input["Then"] : input["Else"]));
+        functionProvider.Register("+", () => new WorkflowFunction((input) => SomeData.Parse(
             (dynamic)(input["A"].Value ?? 0) +
             (dynamic)(input["B"].Value ?? 0) 
         )));
-        instanceFactory.Register("Eval", () => new WorkflowFunction((input) => input));
-        instanceFactory.Register("Filter", () => new FilterMethod());
-        instanceFactory.Register("Eval", () => new EvalMethod());
-        instanceFactory.Register("GetGuid", () => new GetGuid());
+        functionProvider.Register("Eval", () => new WorkflowFunction((input) => input));
 
-        WorkflowInstance instance = new WorkflowInstance(definition, instanceFactory);
+
+        SimpleWorkflowTriggerProvider triggerProvider = new SimpleWorkflowTriggerProvider();
+
+        WorkflowRuntime runtime = new WorkflowRuntime(definition, methodProvider, functionProvider, triggerProvider);
+        await runtime.AttachAsync();
 
         do
         {
-            if (instance.State == WorkflowInstanceState.Suspended)
+            if (runtime.State == WorkflowRuntimeState.Suspended)
             {
-                string message = Console.ReadLine() ?? "";
-                instance.SendSignal(new CustomWorkflowSignal()
+                if (runtime.Trigger is ConsoleInputSignal)
                 {
-                    Name = "Message",
-                    Timestamp = DateTime.Now,
-                    Payload = message
-                });
+                    string message = Console.ReadLine() ?? "";
+                    runtime.OnTrigger(new ConsoleInputSignal()
+                    {
+                        Input = Console.ReadLine() ?? ""
+                    });
+                }
+                else
+                {
+                    throw new Exception($"Unknown trigger! {runtime.Trigger}");
+                }
             }
 
-            await instance.RunAsync();
+            await runtime.RunAsync();
         }
-        while (instance.State != WorkflowInstanceState.Done);
+        while (runtime.State != WorkflowRuntimeState.Done);
         Console.WriteLine("Done!");
 
-        WorkflowInstanceExport data = instance.Export();
+        WorkflowRuntimeExport data = runtime.Export();
         Console.WriteLine(data.Output.ToString());
     }
 }

@@ -10,7 +10,7 @@ namespace Efeu.Runtime.Method
 {
     public class PrintMethod : WorkflowMethodBase
     {
-        public override WorkflowMethodState Run(WorkflowMethodContext context, CancellationToken token)
+        public override WorkflowMethodState Run(WorkflowMethodContext context)
         {
             Console.WriteLine(context.Input.ToString());
             return WorkflowMethodState.Done;

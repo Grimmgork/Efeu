@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Runtime.Signal
+namespace Efeu.Runtime.Trigger
 {
-    public class ChronRaisedSignal
+    public interface IWorkflowSignal
     {
-        public Guid Id;
+        public string GetTriggerHash();
     }
 }

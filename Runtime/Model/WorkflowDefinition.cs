@@ -7,6 +7,11 @@ using Efeu.Runtime.Data;
 
 namespace Efeu.Runtime.Model
 {
+    /// <summary>
+    /// TODO:
+    /// Entry points can be one with type <see cref="WorkflowActionNodeType.Start"/>
+    /// and all <see cref="WorkflowActionNodeType.Trigger"/> wich have no previous actions.
+    /// </summary>
     public class WorkflowDefinition
     {
         public int EntryPointId { get; set; }

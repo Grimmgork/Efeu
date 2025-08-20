@@ -26,7 +26,7 @@ namespace Efeu.Integration.Sqlite
         public async Task<IEnumerable<WorkflowInstanceEntity>> GetAllActiveAsync()
         {
              return await connection.GetTable<WorkflowInstanceEntity>()
-                .Where(i => i.State != Runtime.WorkflowInstanceState.Done)
+                .Where(i => i.State != Runtime.WorkflowRuntimeState.Done)
                 .ToArrayAsync();
         }
 

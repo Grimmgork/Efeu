@@ -9,7 +9,7 @@ using Efeu.Runtime.Signal;
 
 namespace Efeu.Runtime.Function
 {
-    public abstract class WorkflowFunctionInstanceBase : IWorkflowFunctionInstance
+    public abstract class WorkflowFunctionInstanceBase : IWorkflowFunction
     {
         public virtual SomeData Run(WorkflowFunctionContext context, SomeData input)
         {

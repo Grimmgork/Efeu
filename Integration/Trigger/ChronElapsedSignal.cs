@@ -7,10 +7,13 @@ using System.Threading.Tasks;
 
 namespace Efeu.Runtime.Trigger
 {
-    internal class ChronTrigger
+    internal class ChronElapsedSignal : IWorkflowSignal
     {
         public Guid Id;
 
-        public string ChronExpression;
+        public string GetTriggerHash()
+        {
+             return Id.ToString();
+        }
     }
 }

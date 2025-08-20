@@ -1,8 +1,8 @@
-﻿using Efeu.Runtime.Data;
+﻿using Efeu.Integration.Logic;
+using Efeu.Runtime.Data;
 using Efeu.Runtime.Function;
 using Efeu.Runtime.Method;
 using Efeu.Runtime.Model;
-using Efeu.Runtime.Signal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Efeu.Runtime
 {
-    public enum WorkflowInstanceState
+    public enum WorkflowRuntimeState
     {
         Initial,
         Running,
@@ -19,9 +19,9 @@ namespace Efeu.Runtime
         Done
     }
 
-    public class WorkflowInstanceExport
+    public class WorkflowRuntimeExport
     {
-        public WorkflowInstanceState State;
+        public WorkflowRuntimeState State;
         public int CurrentMethodId;
         public SomeData Input = new SomeData();
         public SomeData Output = new SomeData();
@@ -31,13 +31,15 @@ namespace Efeu.Runtime
         public Stack<int> ReturnStack = new Stack<int>();
     }
 
-    public class WorkflowInstance
+    public class WorkflowRuntime
     {
-        public WorkflowInstanceState State => state;
+        public WorkflowRuntimeState State => state;
+
+        public object? Trigger;
 
         private int currentMethodId;
 
-        private WorkflowInstanceState state = WorkflowInstanceState.Initial;
+        private WorkflowRuntimeState state = WorkflowRuntimeState.Initial;
         private SomeData workflowInput;
         private SomeData workflowOutput;
         private IDictionary<int, SomeData> methodData;
@@ -48,12 +50,16 @@ namespace Efeu.Runtime
         private WorkflowDefinition definition;
 
         private IWorkflowMethod currentMethodInstance;
-        private IWorkflowActionInstanceFactory instanceFactory;
 
-        public WorkflowInstance(WorkflowDefinition definition, IWorkflowActionInstanceFactory instanceFactory, SomeData input = default) 
+        private IWorkflowMethodProvider methodProvider;
+        private IWorkflowFunctionProvider functionProvider;
+        private IWorkflowTriggerProvider triggerProvider;
+
+        public WorkflowRuntime(WorkflowDefinition definition, IWorkflowMethodProvider methodProvider, IWorkflowFunctionProvider functionProvider, IWorkflowTriggerProvider triggerProvider, SomeData input = default) 
         {
             this.definition = definition;
-            this.instanceFactory = instanceFactory;
+            this.methodProvider = methodProvider;
+            this.functionProvider = functionProvider;
             this.methodData = new Dictionary<int, SomeData>();
             this.methodOutput = new Dictionary<int, SomeData>();
             this.currentMethodId = definition.EntryPointId;
@@ -63,32 +69,83 @@ namespace Efeu.Runtime
             this.dispatchResult = new SomeData();
         }
 
-        public WorkflowInstance(WorkflowInstanceExport data, WorkflowDefinition definition, IWorkflowActionInstanceFactory instanceFactory)
+        public WorkflowRuntime(WorkflowRuntimeExport import, WorkflowDefinition definition, IWorkflowMethodProvider methodProvider, IWorkflowFunctionProvider functionProvider, IWorkflowTriggerProvider triggerProvider, SomeData input = default)
         {
-            this.state = data.State;
-            this.currentMethodId = data.CurrentMethodId;
-            this.methodData = data.MethodData;
-            this.methodOutput = data.MethodOutput;
+            this.state = import.State;
+            this.currentMethodId = import.CurrentMethodId;
+            this.methodData = import.MethodData;
+            this.methodOutput = import.MethodOutput;
             this.definition = definition;
-            this.instanceFactory = instanceFactory;
-            this.workflowInput = data.Input;
-            this.workflowOutput = data.Output;
-            this.dispatchResult = data.DispatchResult;
-            this.returnStack = data.ReturnStack;
+            this.methodProvider = methodProvider;
+            this.functionProvider = functionProvider;
+            this.workflowInput = import.Input;
+            this.workflowOutput = import.Output;
+            this.dispatchResult = import.DispatchResult;
+            this.returnStack = import.ReturnStack;
         }
 
         public Task StepAsync(CancellationToken token = default)
         {
-            return state switch {
-                WorkflowInstanceState.Initial => InitializeAsync(token),
-                WorkflowInstanceState.Running => RunMethodAsync(token),
-                _ => throw new InvalidOperationException()
-            };
+            if (state != WorkflowRuntimeState.Running)
+                throw new InvalidOperationException();
+
+            if (state == WorkflowRuntimeState.Initial)
+                return InitializeAsync(token);
+
+            return RunMethodAsync(token);
         }
 
-        public void SendSignal(CustomWorkflowSignal signal)
+        private Task InitializeAsync(CancellationToken token = default)
         {
-            if (state != WorkflowInstanceState.Suspended)
+            if (currentMethodId == 0)
+            {
+                state = WorkflowRuntimeState.Done;
+                return Task.CompletedTask;
+            }
+            else
+            {
+                string methodname = definition.GetAction(currentMethodId).Name;
+                currentMethodInstance = methodProvider.GetMethod(methodname);
+                state = WorkflowRuntimeState.Running;
+                return Task.CompletedTask;
+            }
+        }
+
+        public async Task AttachAsync(CancellationToken token = default)
+        {
+            if (state != WorkflowRuntimeState.Initial)
+                throw new InvalidOperationException();
+
+            if (currentMethodId == 0)
+            {
+                state = WorkflowRuntimeState.Done;
+                return;
+            }
+            else
+            {
+                string methodname = definition.GetAction(currentMethodId).Name;
+                currentMethodInstance = methodProvider.GetMethod(methodname);
+
+                WorkflowActionNode actionNode = definition.GetAction(currentMethodId);
+                SomeData input = GetInputForMethod(actionNode);
+                WorkflowMethodContext context;
+                context = new WorkflowMethodContext(input);
+                await currentMethodInstance.AttachAsync(context, token);
+                if (context.Trigger != null)
+                {
+                    this.Trigger = context.Trigger;
+                    state = WorkflowRuntimeState.Suspended;
+                }
+                else
+                {
+                    state = WorkflowRuntimeState.Running;
+                }
+            }
+        }
+
+        public void OnTrigger(object signal)
+        {
+            if (state != WorkflowRuntimeState.Suspended)
                 throw new InvalidOperationException();
 
             WorkflowActionNode actionNode = definition.GetAction(currentMethodId);
@@ -118,31 +175,16 @@ namespace Efeu.Runtime
             }
             else if (methodState == WorkflowMethodState.Running)
             {
-                state = WorkflowInstanceState.Running;
+                state = WorkflowRuntimeState.Running;
                 return;
             }
             else if (methodState == WorkflowMethodState.Suspended)
             {
-                state = WorkflowInstanceState.Suspended;
+                state = WorkflowRuntimeState.Suspended;
                 return;
             }
         }
 
-        private Task InitializeAsync(CancellationToken token = default)
-        {
-            if (currentMethodId == 0)
-            {
-                state = WorkflowInstanceState.Done;
-                return Task.CompletedTask;
-            }
-            else
-            {
-                string methodname = definition.GetAction(currentMethodId).Name;
-                currentMethodInstance = instanceFactory.GetMethodInstance(methodname);
-                state = WorkflowInstanceState.Running;
-                return Task.CompletedTask;
-            }
-        }
 
         private void DispatchMethod()
         {
@@ -151,7 +193,7 @@ namespace Efeu.Runtime
 
             currentMethodId = actionNode.DispatchRoute;
             string methodname = definition.GetAction(currentMethodId).Name;
-            currentMethodInstance = instanceFactory.GetMethodInstance(methodname);
+            currentMethodInstance = methodProvider.GetMethod(methodname);
         }
 
         private async Task RunMethodAsync(CancellationToken token)
@@ -193,17 +235,17 @@ namespace Efeu.Runtime
             }
             else if (methodState == WorkflowMethodState.Suspended)
             {
-                state = WorkflowInstanceState.Suspended;
+                state = WorkflowRuntimeState.Suspended;
                 return;
             }
             else if (methodState == WorkflowMethodState.Running)
             {
-                state = WorkflowInstanceState.Running;
+                state = WorkflowRuntimeState.Running;
                 return;
             }
             else if (methodState == WorkflowMethodState.Dispatch)
             {
-                state = WorkflowInstanceState.Running;
+                state = WorkflowRuntimeState.Running;
                 methodOutput[currentMethodId] = context.Output;
                 DispatchMethod();
                 return;
@@ -222,7 +264,7 @@ namespace Efeu.Runtime
             if (nextRef == 0)
             {
                 workflowOutput = lastOutput;
-                state = WorkflowInstanceState.Done;
+                state = WorkflowRuntimeState.Done;
                 return;
             }
             else
@@ -231,9 +273,9 @@ namespace Efeu.Runtime
                 currentMethodId = nextRef;
 
                 string methodname = definition.GetAction(currentMethodId).Name;
-                currentMethodInstance = instanceFactory.GetMethodInstance(methodname);
+                currentMethodInstance = methodProvider.GetMethod(methodname);
 
-                state = WorkflowInstanceState.Running;
+                state = WorkflowRuntimeState.Running;
                 return;
             }
         }
@@ -251,9 +293,9 @@ namespace Efeu.Runtime
                 currentMethodId = errorHandleRef;
 
                 string methodname = definition.GetAction(currentMethodId).Name;
-                currentMethodInstance = instanceFactory.GetMethodInstance(methodname);
+                currentMethodInstance = methodProvider.GetMethod(methodname);
 
-                state = WorkflowInstanceState.Running;
+                state = WorkflowRuntimeState.Running;
                 return;
             }
         }
@@ -263,7 +305,7 @@ namespace Efeu.Runtime
             SomeData input = GetInputForFunction(node);
 
             string methodname = node.Name;
-            IWorkflowFunctionInstance workflowFunctionInstance = instanceFactory.GetFunctionInstance(methodname);
+            IWorkflowFunction workflowFunctionInstance = functionProvider.GetFunction(methodname);
             WorkflowFunctionContext context = new WorkflowFunctionContext();
             SomeData outputs = workflowFunctionInstance.Run(context, input);
             return outputs;
@@ -289,6 +331,8 @@ namespace Efeu.Runtime
             {
                 WorkflowActionNodeType.Function => GetFunctionOutput(node),
                 WorkflowActionNodeType.Method => GetMethodOutput(node),
+                WorkflowActionNodeType.Start => GetMethodOutput(node),
+                WorkflowActionNodeType.Trigger => GetMethodOutput(node),
                 // WorkflowActionNodeType.Task => throw new NotImplementedException(),
                 // WorkflowActionNodeType.WaitTask => throw new NotImplementedException(),
                 _ => throw new NotImplementedException(),
@@ -300,9 +344,9 @@ namespace Efeu.Runtime
             return methodOutput[node.Id];
         }
 
-        public WorkflowInstanceExport Export()
+        public WorkflowRuntimeExport Export()
         {
-            return new WorkflowInstanceExport()
+            return new WorkflowRuntimeExport()
             {
                 State = this.State,
                 CurrentMethodId = this.currentMethodId,

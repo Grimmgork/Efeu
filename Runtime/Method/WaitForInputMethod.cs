@@ -5,20 +5,17 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Efeu.Runtime.Data;
-using Efeu.Runtime.Signal;
 using Efeu.Runtime.Trigger;
 
 namespace Efeu.Runtime.Method
 {
     public class WaitForInputMethod : WorkflowMethodBase
     {
-        public override WorkflowMethodState Run(WorkflowMethodContext context, CancellationToken token)
+        public override WorkflowMethodState Run(WorkflowMethodContext context)
         {
             Console.WriteLine("Pls enter a value");
-            context.Trigger = new ConsoleInputTrigger()
-            {
-                CallbackId = 1
-            };
+            context.Trigger = new ConsoleInputSignal();
+
             return WorkflowMethodState.Suspended;
         }
 
@@ -26,7 +23,7 @@ namespace Efeu.Runtime.Method
         {
             if (signal is ConsoleInputSignal consoleSignal)
             {
-                context.Output = SomeData.Reference(consoleSignal);
+                context.Output = SomeData.String(consoleSignal.Input);
                 return WorkflowMethodState.Done;
             }
 

@@ -12,9 +12,15 @@ namespace Efeu.Runtime.Method
 {
     public class WorkflowMethodContext
     {
+        public readonly bool IsFirstRun;
+
         public readonly SomeData Input;
 
         public readonly SomeData InitialInput;
+
+        public readonly SomeData Result;
+
+        public object? Trigger;
 
         public SomeData Output;
 
@@ -22,17 +28,11 @@ namespace Efeu.Runtime.Method
 
         public string? Route;
 
-        public IWorkflowTrigger Trigger; // TODO
-
-        public readonly SomeData DispatchResult;
-
-        public readonly bool InitialRun;
-
         public WorkflowMethodContext(SomeData input)
         {
             Input = input;
             Output = new SomeData();
-            InitialRun = true;
+            IsFirstRun = true;
         }
 
         public WorkflowMethodContext(SomeData input, SomeData data, SomeData dispatchResult)
@@ -40,8 +40,8 @@ namespace Efeu.Runtime.Method
             Input = input;
             Data = data;
             Output = new SomeData();
-            InitialRun = false;
-            DispatchResult = dispatchResult;
+            IsFirstRun = false;
+            Result = dispatchResult;
         }
     }
 }

@@ -14,7 +14,7 @@ namespace Efeu.Integration.Model
         public bool IsProcessing { get; set; }
         public int WorkflowDefinitionVersionId { get; set; }
         public WorkflowExecutionState ExecutionState { get; set; }
-        public WorkflowInstanceState State { get; set; }
+        public WorkflowRuntimeState State { get; set; }
         public int CurrentMethodId { get; set; }
         public SomeData Input { get; set; } = new SomeData();
         public SomeData Output { get; set; } = new SomeData();

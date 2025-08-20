@@ -1,4 +1,6 @@
 ﻿using Efeu.Integration.Logic;
+using Efeu.Integration.Model;
+using Efeu.Runtime;
 using Efeu.Runtime.Signal;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -12,15 +14,36 @@ namespace Efeu.Integration
 {
     public static class ServiceProviderExtensions
     {
-        public static WorkflowTrigger GetHashForSignal(this IServiceProvider provider, object signal)
+        public static async Task<IWorkflowMethodProvider> BuildMethodProviderAsync(this IServiceProvider services)
         {
-            //Type signalHasherType = typeof(IWorkflowTriggerHashProvider<>).MakeGenericType(signal.GetType());
-            //object? service = provider.GetServices(signalHasherType);
+            IWorkflowMethodProvider? provider = services.GetService<IWorkflowMethodProvider>();
+            if (provider != null)
+                return provider;
 
-            //MethodInfo method = signalHasherType.GetMethod(nameof(IWorkflowTriggerHashProvider<object>.GetTriggerHash))!;
-            //WorkflowTrigger hash = (WorkflowTrigger)method.Invoke(service, [method])!;
+            List<WorkflowMethodDescription> result = [];
+            foreach (Task<IEnumerable<WorkflowMethodDescription>> descriptions in services.GetServices<Task<IEnumerable<WorkflowMethodDescription>>>())
+            {
+                result.AddRange(await descriptions);
+            }
 
+            foreach (WorkflowMethodDescription factory in services.GetServices<WorkflowMethodDescription>())
+            {
+                result.Add(factory);
+            }
+
+            SimpleWorkflowMethodProvider simpleProvider = new SimpleWorkflowMethodProvider();
+            foreach (WorkflowMethodDescription description in result)
+            {
+                simpleProvider.Register(description.Name, description.Factory!);
+            }
+
+            return simpleProvider;
+        }
+
+        public static Task<IWorkflowFunctionProvider> BuildFunctionProvider(this IServiceProvider services)
+        {
             throw new Exception();
         }
+
     }
 }

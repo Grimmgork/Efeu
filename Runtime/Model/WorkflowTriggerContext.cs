@@ -1,0 +1,21 @@
+﻿using Efeu.Runtime.Data;
+using Efeu.Runtime.Trigger;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Efeu.Runtime.Model
+{
+    public class WorkflowTriggerContext
+    {
+        public readonly int Id;
+
+        public readonly SomeData Input;
+
+        public SomeData Data;
+
+        public IWorkflowSignal? Hash = default;
+    }
+}

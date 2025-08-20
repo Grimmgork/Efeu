@@ -1,5 +1,4 @@
-﻿using Efeu.Runtime.Signal;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +8,6 @@ namespace Efeu.Integration.Logic
 {
     public interface IWorkflowTriggerHashProvider
     {
-        public WorkflowTrigger GetTriggerHash(object signalOrTrigger);
+        public string GetTriggerHash(object signal);
     }
 }

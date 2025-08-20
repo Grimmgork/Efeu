@@ -7,7 +7,7 @@ using Efeu.Runtime.Data;
 
 namespace Efeu.Runtime.Function
 {
-    public interface IWorkflowFunctionInstance
+    public interface IWorkflowFunction
     {
         public SomeData Run(WorkflowFunctionContext context, SomeData input);
     }

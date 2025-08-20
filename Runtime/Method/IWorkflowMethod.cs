@@ -1,4 +1,5 @@
-﻿using Efeu.Runtime.Data;
+﻿using Efeu.Integration.Logic;
+using Efeu.Runtime.Data;
 using Efeu.Runtime.Signal;
 using System;
 using System.Threading;

@@ -19,9 +19,9 @@ namespace Efeu.Runtime.Method
             public int Index;
         }
 
-        public override WorkflowMethodState Run(WorkflowMethodContext context, CancellationToken token)
+        public override WorkflowMethodState Run(WorkflowMethodContext context)
         {
-            if (context.InitialRun)
+            if (context.IsFirstRun)
             {
                 context.Data = SomeData.Reference(new State()
                 {
@@ -41,7 +41,7 @@ namespace Efeu.Runtime.Method
             }
 
             State state = (State)context.Data.Value!;
-            if (context.DispatchResult.ToBoolean())
+            if (context.Result.ToBoolean())
             {
                 state.Result.Add(state.Items.ElementAt(state.Index));
             }

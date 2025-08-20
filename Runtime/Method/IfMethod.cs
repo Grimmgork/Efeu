@@ -9,7 +9,7 @@ namespace Efeu.Runtime.Method
 {
     public class IfMethod : WorkflowMethodBase
     {
-        public override WorkflowMethodState Run(WorkflowMethodContext context, CancellationToken token)
+        public override WorkflowMethodState Run(WorkflowMethodContext context)
         {
             if (!context.Input["If"].ToBoolean())
             {

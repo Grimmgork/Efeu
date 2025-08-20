@@ -12,8 +12,10 @@ namespace Efeu.Runtime.Model
 {
     public enum WorkflowActionNodeType
     {
+        Start,
         Method,
         Function,
+        Trigger
         // Task,
         // WaitTask
     }

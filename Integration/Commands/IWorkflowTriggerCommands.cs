@@ -13,6 +13,8 @@ namespace Efeu.Integration.Commands
             // get trigger hash
             // get all instances matching the trigger
             // run all instances mathcing the trigger
+
+            throw new Exception();
         }
     }
 }

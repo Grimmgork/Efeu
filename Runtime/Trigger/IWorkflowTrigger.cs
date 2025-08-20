@@ -1,4 +1,4 @@
-﻿using Efeu.Runtime.Signal;
+﻿using Efeu.Runtime.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +9,10 @@ namespace Efeu.Integration.Logic
 {
     public interface IWorkflowTrigger
     {
-        public WorkflowTrigger GetTrigger();
+        public Task OnStartupAsync(WorkflowTriggerContext context);
+        
+        public Task DetachAsync(WorkflowTriggerContext context);
+
+        public Task AttachAsync(WorkflowTriggerContext context);
     }
 }

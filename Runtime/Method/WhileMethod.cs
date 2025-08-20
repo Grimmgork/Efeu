@@ -9,7 +9,7 @@ namespace Efeu.Runtime.Method
 {
     public class WhileMethod : WorkflowMethodBase
     {
-        public override WorkflowMethodState Run(WorkflowMethodContext context, CancellationToken token)
+        public override WorkflowMethodState Run(WorkflowMethodContext context)
         {
             if (context.Input.ToBoolean())
             {
