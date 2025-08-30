@@ -15,7 +15,9 @@ namespace Efeu.Runtime.Model
         Start,
         Method,
         Function,
-        Trigger
+        Trigger,
+        Loop,
+        Break
         // Task,
         // WaitTask
     }

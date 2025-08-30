@@ -31,11 +31,20 @@ namespace Efeu.Runtime
         public Stack<int> ReturnStack = new Stack<int>();
     }
 
+    public class WorkflowRuntimeThread
+    {
+        public Stack<int> ReturnStack = new Stack<int>();
+
+        public int CurrentMethodId;
+
+        public SomeData DispatchResult;
+
+        public List<WorkflowRuntimeThread> Threads = new List<WorkflowRuntimeThread>();
+    }
+
     public class WorkflowRuntime
     {
         public WorkflowRuntimeState State => state;
-
-        public object? Trigger;
 
         private int currentMethodId;
 
@@ -44,6 +53,7 @@ namespace Efeu.Runtime
         private SomeData workflowOutput;
         private IDictionary<int, SomeData> methodData;
         private IDictionary<int, SomeData> methodOutput;
+
         private SomeData dispatchResult;
         private Stack<int> returnStack;
 
@@ -62,7 +72,7 @@ namespace Efeu.Runtime
             this.functionProvider = functionProvider;
             this.methodData = new Dictionary<int, SomeData>();
             this.methodOutput = new Dictionary<int, SomeData>();
-            this.currentMethodId = definition.EntryPointId;
+            this.currentMethodId = definition.StartId;
             this.workflowInput = input;
             this.workflowOutput = new SomeData();
             this.returnStack = new Stack<int>();
@@ -84,13 +94,25 @@ namespace Efeu.Runtime
             this.returnStack = import.ReturnStack;
         }
 
-        public Task StepAsync(CancellationToken token = default)
+        public Task<WorkflowTriggerDescriptor[]> AttachAsync()
         {
-            if (state != WorkflowRuntimeState.Running)
+            if (state != WorkflowRuntimeState.Initial)
                 throw new InvalidOperationException();
 
+            // get all triggers
+            // attach them all
+            // return descriptors
+
+            throw new NotImplementedException();
+        }
+
+        public Task StepAsync(CancellationToken token = default)
+        {
             if (state == WorkflowRuntimeState.Initial)
                 return InitializeAsync(token);
+
+            if (state != WorkflowRuntimeState.Running)
+                throw new InvalidOperationException();
 
             return RunMethodAsync(token);
         }
@@ -111,39 +133,15 @@ namespace Efeu.Runtime
             }
         }
 
-        public async Task AttachAsync(CancellationToken token = default)
+        public void Trigger(int id, object signal)
         {
             if (state != WorkflowRuntimeState.Initial)
                 throw new InvalidOperationException();
 
-            if (currentMethodId == 0)
-            {
-                state = WorkflowRuntimeState.Done;
-                return;
-            }
-            else
-            {
-                string methodname = definition.GetAction(currentMethodId).Name;
-                currentMethodInstance = methodProvider.GetMethod(methodname);
-
-                WorkflowActionNode actionNode = definition.GetAction(currentMethodId);
-                SomeData input = GetInputForMethod(actionNode);
-                WorkflowMethodContext context;
-                context = new WorkflowMethodContext(input);
-                await currentMethodInstance.AttachAsync(context, token);
-                if (context.Trigger != null)
-                {
-                    this.Trigger = context.Trigger;
-                    state = WorkflowRuntimeState.Suspended;
-                }
-                else
-                {
-                    state = WorkflowRuntimeState.Running;
-                }
-            }
+            // send signal to trigger with id
         }
 
-        public void OnTrigger(object signal)
+        public void Signal(object signal)
         {
             if (state != WorkflowRuntimeState.Suspended)
                 throw new InvalidOperationException();
@@ -154,7 +152,7 @@ namespace Efeu.Runtime
             WorkflowMethodState methodState;
             try
             {
-                methodState = currentMethodInstance.OnTrigger(context, signal);
+                methodState = currentMethodInstance.Signal(context, signal);
             }
             catch (Exception exception)
             {

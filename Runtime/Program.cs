@@ -45,33 +45,20 @@ class Program
         )));
         functionProvider.Register("Eval", () => new WorkflowFunction((input) => input));
 
-
         SimpleWorkflowTriggerProvider triggerProvider = new SimpleWorkflowTriggerProvider();
+        // triggerProvider.Register("Cron", () => new CronTrigger())
 
         WorkflowRuntime runtime = new WorkflowRuntime(definition, methodProvider, functionProvider, triggerProvider);
-        await runtime.AttachAsync();
-
-        do
+        await runtime.RunAsync();
+        while (runtime.State == WorkflowRuntimeState.Suspended)
         {
-            if (runtime.State == WorkflowRuntimeState.Suspended)
+            string message = Console.ReadLine() ?? "";
+            await runtime.ContinueAsync(new ConsoleInputSignal()
             {
-                if (runtime.Trigger is ConsoleInputSignal)
-                {
-                    string message = Console.ReadLine() ?? "";
-                    runtime.OnTrigger(new ConsoleInputSignal()
-                    {
-                        Input = Console.ReadLine() ?? ""
-                    });
-                }
-                else
-                {
-                    throw new Exception($"Unknown trigger! {runtime.Trigger}");
-                }
-            }
-
-            await runtime.RunAsync();
+                Input = Console.ReadLine() ?? ""
+            });
         }
-        while (runtime.State != WorkflowRuntimeState.Done);
+
         Console.WriteLine("Done!");
 
         WorkflowRuntimeExport data = runtime.Export();

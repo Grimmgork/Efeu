@@ -19,7 +19,7 @@ namespace Efeu.Runtime.Method
             return WorkflowMethodState.Suspended;
         }
 
-        public override WorkflowMethodState OnTrigger(WorkflowMethodContext context, object signal)
+        public override WorkflowMethodState Signal(WorkflowMethodContext context, object signal)
         {
             if (signal is ConsoleInputSignal consoleSignal)
             {

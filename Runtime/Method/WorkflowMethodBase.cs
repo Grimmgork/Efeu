@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Efeu.Integration.Logic;
 using Efeu.Runtime.Function;
-using Efeu.Runtime.Signal;
 
 namespace Efeu.Runtime.Method
 {
@@ -34,7 +33,7 @@ namespace Efeu.Runtime.Method
             return Task.CompletedTask;
         }
 
-        public virtual WorkflowMethodState OnTrigger(WorkflowMethodContext context, object signal)
+        public virtual WorkflowMethodState Signal(WorkflowMethodContext context, object signal)
         {
             return WorkflowMethodState.Running;
         }

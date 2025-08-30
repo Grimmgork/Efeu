@@ -16,6 +16,8 @@ namespace Efeu.Runtime.Model
 
         public SomeData Data;
 
+        public SomeData Output;
+
         public IWorkflowSignal? Hash = default;
     }
 }

@@ -1,5 +1,4 @@
 ﻿using Efeu.Runtime.Data;
-using Efeu.Runtime.Signal;
 using System;
 using System.Collections.Generic;
 using System.Linq;

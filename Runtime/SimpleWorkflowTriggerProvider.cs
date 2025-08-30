@@ -15,5 +15,10 @@ namespace Efeu.Runtime
         {
             return factories[name]();
         }
+
+        public void Register(string name, Func<IWorkflowTrigger> func)
+        {
+            factories.Add(name, func);
+        }
     }
 }

@@ -1,5 +1,4 @@
-﻿using Efeu.Runtime.Signal;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,11 +8,13 @@ namespace Efeu.Runtime.Trigger
 {
     internal class ChronElapsedSignal : IWorkflowSignal
     {
-        public Guid Id;
+        public string Id = "";
+
+        public DateTimeOffset Time;
 
         public string GetTriggerHash()
         {
-             return Id.ToString();
+             return $"{nameof(ChronElapsedSignal)}#{Id.ToString()}";
         }
     }
 }

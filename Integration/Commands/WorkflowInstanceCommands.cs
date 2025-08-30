@@ -229,7 +229,7 @@ namespace Efeu.Integration.Commands
             Exception? exception = null;
             try
             {
-                instance.OnTrigger(signal);
+                instance.Signal(signal);
                 await instance.RunAsync();
             }
             catch (Exception ex)

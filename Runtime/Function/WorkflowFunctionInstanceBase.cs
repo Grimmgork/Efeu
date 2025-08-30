@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Efeu.Runtime.Data;
 using Efeu.Runtime.Method;
-using Efeu.Runtime.Signal;
 
 namespace Efeu.Runtime.Function
 {

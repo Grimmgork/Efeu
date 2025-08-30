@@ -1,6 +1,7 @@
 ﻿using Efeu.Integration.Commands;
 using Efeu.Integration.Logic;
 using Efeu.Runtime.Data;
+using Efeu.Runtime.Method;
 using Efeu.Runtime.Model;
 using Efeu.Runtime.Trigger;
 using Quartz;
@@ -22,8 +23,11 @@ namespace Efeu.Integration.Trigger
         {
             triggerCommands.SendSignal(new ChronElapsedSignal()
             {
-                Id = context.MergedJobDataMap.GetString("")
+                Id = context.MergedJobDataMap.GetString("Hash") ?? "",
+                Time = context.FireTimeUtc
             });
+
+            return Task.CompletedTask;
         }
     }
 
@@ -40,10 +44,9 @@ namespace Efeu.Integration.Trigger
         {
             Guid guid = Guid.NewGuid();
             context.Data = SomeData.String(guid.ToString());
-            context.Hash = new CHrn
 
             IJobDetail job = JobBuilder.Create<WorkflowCronElapsedJob>()
-                .UsingJobData("TaskName", "Beta")
+                .UsingJobData("Hash", guid.ToString())
                 .Build();
 
             ITrigger trigger = TriggerBuilder.Create()
@@ -62,21 +65,27 @@ namespace Efeu.Integration.Trigger
             await scheduler.UnscheduleJob(new TriggerKey(guid.ToString()));
         }
 
-        public async Task OnStartupAsync(WorkflowTriggerContext context)
+        public async Task ReattachAsync(WorkflowTriggerContext context)
         {
             Guid guid = new Guid(context.Data.ToString());
 
             IJobDetail job = JobBuilder.Create<WorkflowCronElapsedJob>()
-                .UsingJobData("Hash", guid)
+                .UsingJobData("Hash", guid.ToString())
                 .Build();
 
             ITrigger trigger = TriggerBuilder.Create()
-                .WithIdentity("trigger2")
+                .WithIdentity(guid.ToString())
                 .StartNow()
                 .WithSimpleSchedule(x => x.WithIntervalInSeconds(15).RepeatForever())
                 .Build();
 
             await scheduler.ScheduleJob(job, trigger);
+        }
+
+        public Task Signal(WorkflowTriggerContext context, object signal)
+        {
+            context.Output = SomeData.String(DateTime.Now.ToString());
+            return Task.CompletedTask;
         }
     }
 }
