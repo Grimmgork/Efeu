@@ -1,4 +1,5 @@
 ﻿using Efeu.Integration.Logic;
+using Efeu.Runtime.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,11 @@ namespace Efeu.Runtime
         public IWorkflowTrigger GetTrigger(string name)
         {
             return factories[name]();
+        }
+
+        public async Task AttachAsync(string name, SomeData input)
+        {
+
         }
 
         public void Register(string name, Func<IWorkflowTrigger> func)

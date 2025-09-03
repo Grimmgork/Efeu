@@ -1,7 +1,7 @@
 {
   "Id": 1,
   "Name": "workflow",
-  "StartId": 1,
+  "EntryPoints": [ 1 ],
   "Actions": [
     {
       "Name": "Filter",

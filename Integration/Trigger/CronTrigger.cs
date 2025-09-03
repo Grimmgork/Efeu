@@ -60,14 +60,14 @@ namespace Efeu.Integration.Trigger
 
         public async Task DetachAsync(WorkflowTriggerContext context)
         {
-            Guid guid = new Guid(context.Data.ToString());
+            Guid guid = Guid.Parse(context.Data.ToString());
 
             await scheduler.UnscheduleJob(new TriggerKey(guid.ToString()));
         }
 
-        public async Task ReattachAsync(WorkflowTriggerContext context)
+        public async Task RestoreAsync(WorkflowTriggerContext context)
         {
-            Guid guid = new Guid(context.Data.ToString());
+            Guid guid = Guid.Parse(context.Data.ToString());
 
             IJobDetail job = JobBuilder.Create<WorkflowCronElapsedJob>()
                 .UsingJobData("Hash", guid.ToString())
@@ -82,7 +82,7 @@ namespace Efeu.Integration.Trigger
             await scheduler.ScheduleJob(job, trigger);
         }
 
-        public Task Signal(WorkflowTriggerContext context, object signal)
+        public Task Trigger(WorkflowTriggerContext context, object signal)
         {
             context.Output = SomeData.String(DateTime.Now.ToString());
             return Task.CompletedTask;

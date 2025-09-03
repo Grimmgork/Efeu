@@ -40,7 +40,7 @@ namespace Efeu.Runtime.Method
                 }
 
                 context.Output = state.Items.First();
-                return WorkflowMethodState.Dispatch;
+                return WorkflowMethodState.Yield;
             }
 
             state.Result.Add(context.Result);
@@ -49,7 +49,7 @@ namespace Efeu.Runtime.Method
             {
                 context.Output = state.Items.ElementAt(state.Index);
                 state.Index++;
-                return WorkflowMethodState.Dispatch;
+                return WorkflowMethodState.Yield;
             }
 
             context.Output = SomeData.Array(state.Result);

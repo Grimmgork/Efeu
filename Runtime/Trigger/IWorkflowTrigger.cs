@@ -12,10 +12,10 @@ namespace Efeu.Integration.Logic
     {
         public Task AttachAsync(WorkflowTriggerContext context);
 
-        public Task ReattachAsync(WorkflowTriggerContext context);
+        public Task RestoreAsync(WorkflowTriggerContext context);
 
         public Task DetachAsync(WorkflowTriggerContext context);
 
-        public Task Signal(WorkflowTriggerContext context, object signal);
+        public Task Trigger(WorkflowTriggerContext context, object signal);
     }
 }

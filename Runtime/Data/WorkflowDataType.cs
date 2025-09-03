@@ -22,6 +22,7 @@ namespace Efeu.Runtime.Data
         Array,
         Struct,
         Reference,
+        Fork,
 
         Anything
     }

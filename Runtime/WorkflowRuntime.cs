@@ -3,7 +3,9 @@ using Efeu.Runtime.Data;
 using Efeu.Runtime.Function;
 using Efeu.Runtime.Method;
 using Efeu.Runtime.Model;
+using Efeu.Runtime.Trigger;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -22,76 +24,59 @@ namespace Efeu.Runtime
     public class WorkflowRuntimeExport
     {
         public WorkflowRuntimeState State;
-        public int CurrentMethodId;
         public SomeData Input = new SomeData();
         public SomeData Output = new SomeData();
         public IDictionary<int, SomeData> MethodData = new Dictionary<int, SomeData>();
         public IDictionary<int, SomeData> MethodOutput = new Dictionary<int, SomeData>();
+
+        public int CurrentMethodId;
         public SomeData DispatchResult;
         public Stack<int> ReturnStack = new Stack<int>();
     }
 
-    public class WorkflowRuntimeThread
+    public class WorkflowRuntimeScope
     {
-        public Stack<int> ReturnStack = new Stack<int>();
-
+        public WorkflowRuntimeScope? Parent;
         public int CurrentMethodId;
-
+        public bool MethodHasRun;
+        public SomeData CurrentMethodData;
+        public SomeData LastMethodOutput;
         public SomeData DispatchResult;
-
-        public List<WorkflowRuntimeThread> Threads = new List<WorkflowRuntimeThread>();
+        public WorkflowMethodState State;
+        public WorkflowTriggerHash Trigger;
+        public Dictionary<int, SomeData> MethodOutput = [];
+        public List<WorkflowRuntimeScope> Children = [];
     }
 
     public class WorkflowRuntime
     {
         public WorkflowRuntimeState State => state;
 
-        private int currentMethodId;
-
         private WorkflowRuntimeState state = WorkflowRuntimeState.Initial;
-        private SomeData workflowInput;
-        private SomeData workflowOutput;
-        private IDictionary<int, SomeData> methodData;
-        private IDictionary<int, SomeData> methodOutput;
 
-        private SomeData dispatchResult;
-        private Stack<int> returnStack;
+        private HashSet<WorkflowRuntimeScope> activeScopes = [];
 
-        private WorkflowDefinition definition;
+        private readonly WorkflowDefinition definition;
 
-        private IWorkflowMethod currentMethodInstance;
-
-        private IWorkflowMethodProvider methodProvider;
-        private IWorkflowFunctionProvider functionProvider;
-        private IWorkflowTriggerProvider triggerProvider;
+        private readonly IWorkflowMethodProvider methodProvider;
+        private readonly IWorkflowFunctionProvider functionProvider;
+        private readonly IWorkflowTriggerProvider triggerProvider;
 
         public WorkflowRuntime(WorkflowDefinition definition, IWorkflowMethodProvider methodProvider, IWorkflowFunctionProvider functionProvider, IWorkflowTriggerProvider triggerProvider, SomeData input = default) 
         {
             this.definition = definition;
             this.methodProvider = methodProvider;
             this.functionProvider = functionProvider;
-            this.methodData = new Dictionary<int, SomeData>();
-            this.methodOutput = new Dictionary<int, SomeData>();
-            this.currentMethodId = definition.StartId;
-            this.workflowInput = input;
-            this.workflowOutput = new SomeData();
-            this.returnStack = new Stack<int>();
-            this.dispatchResult = new SomeData();
+            this.triggerProvider = triggerProvider;
         }
 
         public WorkflowRuntime(WorkflowRuntimeExport import, WorkflowDefinition definition, IWorkflowMethodProvider methodProvider, IWorkflowFunctionProvider functionProvider, IWorkflowTriggerProvider triggerProvider, SomeData input = default)
         {
             this.state = import.State;
-            this.currentMethodId = import.CurrentMethodId;
-            this.methodData = import.MethodData;
-            this.methodOutput = import.MethodOutput;
             this.definition = definition;
             this.methodProvider = methodProvider;
             this.functionProvider = functionProvider;
-            this.workflowInput = import.Input;
-            this.workflowOutput = import.Output;
-            this.dispatchResult = import.DispatchResult;
-            this.returnStack = import.ReturnStack;
+            this.triggerProvider = triggerProvider;
         }
 
         public Task<WorkflowTriggerDescriptor[]> AttachAsync()
@@ -99,11 +84,30 @@ namespace Efeu.Runtime
             if (state != WorkflowRuntimeState.Initial)
                 throw new InvalidOperationException();
 
-            // get all triggers
-            // attach them all
-            // return descriptors
-
             throw new NotImplementedException();
+        }
+
+        private Task InitializeAsync(CancellationToken token = default)
+        {
+            int startMethodId = definition.Actions.Where(x => 
+                x.Type == WorkflowActionNodeType.Method && definition.EntryPoints.Contains(x.Id))
+                .FirstOrDefault()?.Id ?? 0;
+
+            if (startMethodId == 0)
+            {
+                state = WorkflowRuntimeState.Done;
+                return Task.CompletedTask;
+            }
+            else
+            {
+                activeScopes.Add(new WorkflowRuntimeScope()
+                {
+                    State = WorkflowMethodState.Running,
+                    CurrentMethodId = startMethodId,
+                });
+                state = WorkflowRuntimeState.Running;
+                return Task.CompletedTask;
+            }
         }
 
         public Task StepAsync(CancellationToken token = default)
@@ -114,193 +118,191 @@ namespace Efeu.Runtime
             if (state != WorkflowRuntimeState.Running)
                 throw new InvalidOperationException();
 
-            return RunMethodAsync(token);
-        }
-
-        private Task InitializeAsync(CancellationToken token = default)
-        {
-            if (currentMethodId == 0)
+            WorkflowRuntimeScope? scope = activeScopes.FirstOrDefault(s => s.State == WorkflowMethodState.Running);
+            if (scope == null)
             {
-                state = WorkflowRuntimeState.Done;
-                return Task.CompletedTask;
+                if (activeScopes.Any(s => s.State == WorkflowMethodState.Suspended))
+                {
+                    state = WorkflowRuntimeState.Suspended;
+                    return Task.CompletedTask;
+                }
+                else
+                {
+                    state = WorkflowRuntimeState.Done;
+                    return Task.CompletedTask;
+                }
             }
             else
             {
-                string methodname = definition.GetAction(currentMethodId).Name;
-                currentMethodInstance = methodProvider.GetMethod(methodname);
-                state = WorkflowRuntimeState.Running;
-                return Task.CompletedTask;
+                return StepAsync(scope, token);
             }
         }
 
+        /// <summary>
+        /// Starts the workflow from a trigger
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="signal"></param>
+        /// <exception cref="InvalidOperationException"></exception>
         public void Trigger(int id, object signal)
         {
             if (state != WorkflowRuntimeState.Initial)
                 throw new InvalidOperationException();
 
             // send signal to trigger with id
+            // prepare workflow to be started with this trigger
         }
 
-        public void Signal(object signal)
+        public void Signal(WorkflowTriggerHash hash, object signal)
         {
-            if (state != WorkflowRuntimeState.Suspended)
+            WorkflowTriggerHash[] hashes = hash.Expand();
+
+            // send signals to all suspended threads
+            foreach (WorkflowRuntimeScope scope in activeScopes)
+            {
+                if (scope.State == WorkflowMethodState.Suspended && hashes.Contains(scope.Trigger))
+                {
+                    WorkflowActionNode actionNode = definition.GetAction(scope.CurrentMethodId);
+                    SomeData input = GetInputForMethod(scope, actionNode);
+                    WorkflowMethodContext context =  new WorkflowMethodContext(input, scope.CurrentMethodData, scope.DispatchResult);
+                    IWorkflowMethod methodInstance = methodProvider.GetMethod(actionNode.Name);
+                    WorkflowMethodState newState = methodInstance.Signal(context, signal);
+                    MoveNext(scope, newState, context, actionNode);
+                    if (scope.State == WorkflowMethodState.Running)
+                    {
+                        state = WorkflowRuntimeState.Running;
+                    }
+                }
+            }
+        }
+
+        private async Task StepAsync(WorkflowRuntimeScope scope, CancellationToken token)
+        {
+            if (scope.State != WorkflowMethodState.Running)
                 throw new InvalidOperationException();
 
-            WorkflowActionNode actionNode = definition.GetAction(currentMethodId);
-            SomeData input = GetInputForMethod(actionNode);
-            WorkflowMethodContext context = new WorkflowMethodContext(input, methodData.GetValueOrDefault(currentMethodId), dispatchResult);
-            WorkflowMethodState methodState;
-            try
-            {
-                methodState = currentMethodInstance.Signal(context, signal);
-            }
-            catch (Exception exception)
-            {
-                MoveToHandleError(exception, actionNode.ErrorRoute);
-                return;
-            }
-
-            methodData[currentMethodId] = context.Data;
-
-            if (methodState == WorkflowMethodState.Done)
-            {
-                methodOutput[currentMethodId] = context.Output;
-
-                int nextMethodId = string.IsNullOrWhiteSpace(context.Route) ? 
-                    actionNode.DefaultRoute : actionNode.Routes[context.Route];
-                MoveNextMethodOrDone(nextMethodId, context.Output);
-                return;
-            }
-            else if (methodState == WorkflowMethodState.Running)
-            {
-                state = WorkflowRuntimeState.Running;
-                return;
-            }
-            else if (methodState == WorkflowMethodState.Suspended)
-            {
-                state = WorkflowRuntimeState.Suspended;
-                return;
-            }
-        }
-
-
-        private void DispatchMethod()
-        {
-            returnStack.Push(currentMethodId);
-            WorkflowActionNode actionNode = definition.GetAction(currentMethodId);
-
-            currentMethodId = actionNode.DispatchRoute;
-            string methodname = definition.GetAction(currentMethodId).Name;
-            currentMethodInstance = methodProvider.GetMethod(methodname);
-        }
-
-        private async Task RunMethodAsync(CancellationToken token)
-        {
-            WorkflowActionNode actionNode = definition.GetAction(currentMethodId);
-            SomeData input = GetInputForMethod(actionNode);
+            WorkflowActionNode actionNode = definition.GetAction(scope.CurrentMethodId);
+            SomeData input = GetInputForMethod(scope, actionNode);
             WorkflowMethodContext context;
-            if (methodData.ContainsKey(currentMethodId))
+            if (scope.MethodHasRun)
             {
-                context = new WorkflowMethodContext(input, methodData.GetValueOrDefault(currentMethodId), dispatchResult);
+                context = new WorkflowMethodContext(input, scope.CurrentMethodData, scope.DispatchResult);
             }
             else
             {
                 context = new WorkflowMethodContext(input);
             }
 
-            WorkflowMethodState methodState;
+            IWorkflowMethod methodInstance = methodProvider.GetMethod(actionNode.Name);
+            WorkflowMethodState newState = WorkflowMethodState.Running;
             try
             {
-                methodState = await currentMethodInstance.RunAsync(context, token);
+                newState = await methodInstance.RunAsync(context, token);
             }
-            catch (Exception exception)
+            catch (Exception)
             {
-                MoveToHandleError(exception, actionNode.ErrorRoute);
-                return;
+                if (actionNode.ErrorRoute == 0)
+                {
+                    throw;
+                }
+                else
+                {
+                    scope.CurrentMethodId = actionNode.ErrorRoute;
+                    scope.State = WorkflowMethodState.Running;
+                    return;
+                }
             }
 
-            methodData[currentMethodId] = context.Data;
+            MoveNext(scope, newState, context, actionNode);
+        }
 
-            if (methodState == WorkflowMethodState.Done)
+        private void MoveNext(WorkflowRuntimeScope scope, WorkflowMethodState newState, WorkflowMethodContext context, WorkflowActionNode actionNode)
+        {
+            scope.State = newState;
+            if (scope.State == WorkflowMethodState.Running)
             {
-                methodOutput[currentMethodId] = context.Output;
-                methodData.Remove(currentMethodId);
+                scope.MethodHasRun = true;
+                scope.CurrentMethodData = context.Data;
+            }
+            else if (scope.State == WorkflowMethodState.Suspended)
+            {
+                scope.MethodHasRun = true;
+                scope.CurrentMethodData = context.Data;
+                scope.Trigger = context.Trigger;
+            }
+            else if (scope.State == WorkflowMethodState.Yield)
+            {
+                scope.CurrentMethodData = context.Data;
+                scope.MethodHasRun = true;
+                BeginScope(scope, context.Output, actionNode.DispatchRoute);
+            }
+            else if (scope.State == WorkflowMethodState.Done)
+            {
+                scope.LastMethodOutput = context.Output;
+                int nextMethodId = 0;
+                if (context.Route == null)
+                {
+                    nextMethodId = actionNode.DefaultRoute;
+                }
+                else
+                {
+                    nextMethodId = actionNode.Routes.GetValueOrDefault(context.Route);
+                }
 
-                int nextMethodId = string.IsNullOrWhiteSpace(context.Route) ?
-                    actionNode.DefaultRoute : actionNode.Routes[context.Route];
-                MoveNextMethodOrDone(nextMethodId, context.Output);
-                return;
-            }
-            else if (methodState == WorkflowMethodState.Suspended)
-            {
-                state = WorkflowRuntimeState.Suspended;
-                return;
-            }
-            else if (methodState == WorkflowMethodState.Running)
-            {
-                state = WorkflowRuntimeState.Running;
-                return;
-            }
-            else if (methodState == WorkflowMethodState.Dispatch)
-            {
-                state = WorkflowRuntimeState.Running;
-                methodOutput[currentMethodId] = context.Output;
-                DispatchMethod();
-                return;
+                if (nextMethodId == 0)
+                {
+                    EndScope(scope, context.Output);
+                }
+                else
+                {
+                    // continue if there is a next one
+                    scope.State = WorkflowMethodState.Running;
+                    scope.CurrentMethodId = nextMethodId;
+                    scope.MethodHasRun = false;
+                }
             }
         }
 
-        private void MoveNextMethodOrDone(int nextRef, SomeData lastOutput)
+        private void BeginScope(WorkflowRuntimeScope scope, SomeData input, int initialMethodId)
         {
-            if (nextRef == 0 && returnStack.Any())
+            // create a new child scope
+            WorkflowRuntimeScope newScope = new WorkflowRuntimeScope()
             {
-                dispatchResult = lastOutput;
-                nextRef = returnStack.Pop();
-            }
+                Parent = scope,
+                CurrentMethodId = initialMethodId,
+                MethodHasRun = false,
+                State = WorkflowMethodState.Running,
+            };
 
-            // resolve next
-            if (nextRef == 0)
+            scope.Children.Add(newScope);
+            activeScopes.Remove(scope);
+            activeScopes.Add(newScope);
+        }
+
+        private void EndScope(WorkflowRuntimeScope scope, SomeData result)
+        {
+            // report back to parent scope
+            if (scope.Parent == null)
             {
-                workflowOutput = lastOutput;
-                state = WorkflowRuntimeState.Done;
-                return;
+                
             }
             else
             {
-                // move to next
-                currentMethodId = nextRef;
+                if (scope.Parent.State != WorkflowMethodState.Yield)
+                    throw new InvalidOperationException();
 
-                string methodname = definition.GetAction(currentMethodId).Name;
-                currentMethodInstance = methodProvider.GetMethod(methodname);
-
-                state = WorkflowRuntimeState.Running;
-                return;
+                scope.Parent.DispatchResult = result;
+                scope.Parent.State = WorkflowMethodState.Running;
+                scope.Parent.Children.Remove(scope);
+                activeScopes.Remove(scope);
+                activeScopes.Add(scope.Parent);
             }
         }
 
-        private void MoveToHandleError(Exception exception, int errorHandleRef)
+        private SomeData GetFunctionOutput(WorkflowRuntimeScope scope, WorkflowActionNode node)
         {
-            // resolve next
-            if (errorHandleRef == 0)
-            {
-                throw exception;
-            }
-            else
-            {
-                // move to next
-                currentMethodId = errorHandleRef;
-
-                string methodname = definition.GetAction(currentMethodId).Name;
-                currentMethodInstance = methodProvider.GetMethod(methodname);
-
-                state = WorkflowRuntimeState.Running;
-                return;
-            }
-        }
-
-        private SomeData GetFunctionOutput(WorkflowActionNode node)
-        {
-            SomeData input = GetInputForFunction(node);
+            InputEvaluationContext inputContext = new InputEvaluationContext((id) => GetOutput(scope, id), default);
+            SomeData input = node.Input.EvaluateInput(inputContext);
 
             string methodname = node.Name;
             IWorkflowFunction workflowFunctionInstance = functionProvider.GetFunction(methodname);
@@ -309,51 +311,51 @@ namespace Efeu.Runtime
             return outputs;
         }
 
-        private SomeData GetInputForFunction(WorkflowActionNode function)
+        private SomeData GetInputForMethod(WorkflowRuntimeScope scope, WorkflowActionNode method)
         {
-            return GetInputForMethod(function);
-        }
-
-        private SomeData GetInputForMethod(WorkflowActionNode method)
-        {
-            InputEvaluationContext context = new InputEvaluationContext(
-                workflowInput, GetOutput);
-
+            InputEvaluationContext context = new InputEvaluationContext((id) => GetOutput(scope, id), scope.LastMethodOutput);
             return method.Input.EvaluateInput(context);
         }
 
-        private SomeData GetOutput(int id)
+        private SomeData GetOutput(WorkflowRuntimeScope scope, int id)
         {
             WorkflowActionNode node = definition.GetAction(id);
             return node.Type switch
             {
-                WorkflowActionNodeType.Function => GetFunctionOutput(node),
-                WorkflowActionNodeType.Method => GetMethodOutput(node),
-                WorkflowActionNodeType.Start => GetMethodOutput(node),
-                WorkflowActionNodeType.Trigger => GetMethodOutput(node),
-                // WorkflowActionNodeType.Task => throw new NotImplementedException(),
-                // WorkflowActionNodeType.WaitTask => throw new NotImplementedException(),
+                WorkflowActionNodeType.Function => GetFunctionOutput(scope, node),
+                WorkflowActionNodeType.Method => GetMethodOutput(scope, node),
+                WorkflowActionNodeType.Start => GetMethodOutput(scope, node),
+                WorkflowActionNodeType.Trigger => GetMethodOutput(scope, node),
+                WorkflowActionNodeType.Write => GetMethodOutput(scope, node),
+                WorkflowActionNodeType.Fork => GetMethodOutput(scope, node),
+                // WorkflowActionNodeType.Join => throw new NotImplementedException(),
                 _ => throw new NotImplementedException(),
             };
         }
 
-        private SomeData GetMethodOutput(WorkflowActionNode node)
+        private SomeData GetMethodOutput(WorkflowRuntimeScope start, WorkflowActionNode node)
         {
-            return methodOutput[node.Id];
+            WorkflowRuntimeScope? scope = start;
+            while (scope != null)
+            {
+                if (scope.MethodOutput.TryGetValue(node.Id, out SomeData value))
+                {
+                    return value;
+                }
+                else
+                {
+                    scope = scope.Parent;
+                }
+            }
+
+            return default;
         }
 
         public WorkflowRuntimeExport Export()
         {
             return new WorkflowRuntimeExport()
             {
-                State = this.State,
-                CurrentMethodId = this.currentMethodId,
-                Input = workflowInput,
-                MethodData = methodData,
-                MethodOutput = methodOutput,
-                Output = workflowOutput,
-                DispatchResult = dispatchResult,
-                ReturnStack = returnStack
+                State = this.State
             };
         }
     }

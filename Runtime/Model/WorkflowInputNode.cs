@@ -16,6 +16,7 @@ namespace Efeu.Runtime.Model
         public SomeData Value { get; set; }
         public WorkflowInputType Type { get; set; }
         public string Name { get; set; } = "";
+        public string Definition { get; set; } = "";
         public List<WorkflowInputNode> Inputs { get; set; } = [];
     }
 }

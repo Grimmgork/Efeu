@@ -172,6 +172,11 @@ namespace Efeu.Runtime.Data
             return new SomeData(WorkflowDataType.Timestamp, value);
         }
 
+        public static SomeData Fork(int id)
+        {
+            return new SomeData(WorkflowDataType.Fork, id);
+        }
+
         public static SomeData Reference<T>(T reference)
         {
             if (reference is null) return SomeData.Null();

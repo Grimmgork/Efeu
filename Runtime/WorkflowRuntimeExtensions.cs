@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Efeu.Runtime.Data;
+using Efeu.Runtime.Trigger;
 
 namespace Efeu.Runtime
 {
@@ -12,15 +13,15 @@ namespace Efeu.Runtime
     {
         public static async Task RunAsync(this WorkflowRuntime instance, CancellationToken token = default)
         {
-            while (instance.State == WorkflowRuntimeState.Running)
+            while (instance.State == WorkflowRuntimeState.Running || instance.State == WorkflowRuntimeState.Initial)
             {
                 await instance.StepAsync(token);
             }
         }
 
-        public static Task ContinueAsync(this WorkflowRuntime instance, object signal, CancellationToken token = default)
+        public static Task ContinueAsync(this WorkflowRuntime instance, WorkflowTriggerHash hash, object signal, CancellationToken token = default)
         {
-            instance.Signal(signal);
+            instance.Signal(hash, signal);
             return instance.RunAsync(token);
         }
 

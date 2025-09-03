@@ -16,10 +16,9 @@ namespace Efeu.Runtime.Model
         Method,
         Function,
         Trigger,
-        Loop,
-        Break
-        // Task,
-        // WaitTask
+        Write,
+        Fork,
+        Join
     }
 
     public class WorkflowActionNode

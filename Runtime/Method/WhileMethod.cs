@@ -13,7 +13,7 @@ namespace Efeu.Runtime.Method
         {
             if (context.Input.ToBoolean())
             {
-                return WorkflowMethodState.Dispatch;
+                return WorkflowMethodState.Yield;
             }
 
             return WorkflowMethodState.Done;

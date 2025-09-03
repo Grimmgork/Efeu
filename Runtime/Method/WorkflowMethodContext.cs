@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Efeu.Integration.Logic;
 using Efeu.Runtime.Data;
 using Efeu.Runtime.Function;
+using Efeu.Runtime.Trigger;
 
 namespace Efeu.Runtime.Method
 {
@@ -19,7 +20,7 @@ namespace Efeu.Runtime.Method
 
         public readonly SomeData Result;
 
-        public object? Trigger;
+        public WorkflowTriggerHash Trigger;
 
         public SomeData Output;
 

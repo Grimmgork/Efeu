@@ -1,32 +1,30 @@
 {
   "Id": 1,
   "Name": "workflow",
-  "StartId": 1,
+  "EntryPoints": [ 1 ],
   "Actions": [
     {
-      "Name": "Filter",
+      "Type": "Method",
+      "Name": "Times",
       "Id": 1,
-      "DispatchRoute": 3,
+      "DispatchRoute": 2,
       "Input": {
-        "Type": "Array",
-        "Inputs": [
-          {
-            "Type": "Literal",
-            "Value": 13
-          },
-          {
-            "Type": "Literal",
-            "Value": 42
-          }
-        ]
+        "Type": "Literal",
+        "Value": 3
       }
     },
     {
-      "Name": "Eval",
+      "Type": "Method",
+      "Name": "WaitForInput",
+      "Id": 2,
+      "DefaultRoute": 3
+    },
+    {
+      "Type": "Method",
+      "Name": "Print",
       "Id": 3,
       "Input": {
-        "Type": "Literal",
-        "Value": true
+        "Type": "Pipe"
       }
     }
   ]

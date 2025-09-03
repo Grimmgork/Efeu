@@ -64,6 +64,8 @@ namespace Efeu.Runtime.Json
         {
             if (value.IsValue)
             {
+                writer.WriteStartObject();
+
                 JsonSerializer.Serialize(writer, value.Value, options);
             }
             else if (value.IsArray)

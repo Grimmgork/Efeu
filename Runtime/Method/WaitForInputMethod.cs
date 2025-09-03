@@ -14,7 +14,7 @@ namespace Efeu.Runtime.Method
         public override WorkflowMethodState Run(WorkflowMethodContext context)
         {
             Console.WriteLine("Pls enter a value");
-            context.Trigger = new ConsoleInputSignal();
+            context.Trigger = new WorkflowTriggerHash(nameof(ConsoleInputSignal));
 
             return WorkflowMethodState.Suspended;
         }

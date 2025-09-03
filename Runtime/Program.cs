@@ -21,7 +21,12 @@ using Efeu.Runtime.Trigger;
 class Program
 {
     static async Task Main(string[] args)
-    { 
+    {
+        WorkflowTriggerHash[] array = [new WorkflowTriggerHash("test"), new WorkflowTriggerHash("testa")];
+        // Console.WriteLine(array.Contains(new WorkflowTriggerHash("testa")));
+        // return;
+
+
         JsonSerializerOptions options = new JsonSerializerOptions();
         options.Converters.Add(new SomeDataJsonConverter());
         options.Converters.Add(new JsonStringEnumConverter());
@@ -36,6 +41,7 @@ class Program
         methodProvider.Register("Filter", () => new FilterMethod());
         methodProvider.Register("Eval", () => new EvalMethod());
         methodProvider.Register("GetGuid", () => new GetGuid());
+        methodProvider.Register("Times", () => new TimesMethod());
 
         SimpleWorkflowFunctionProvider functionProvider = new SimpleWorkflowFunctionProvider();
         functionProvider.Register("If", () => new WorkflowFunction((input) => input["Condition"].ToBoolean() ? input["Then"] : input["Else"]));
@@ -49,13 +55,14 @@ class Program
         // triggerProvider.Register("Cron", () => new CronTrigger())
 
         WorkflowRuntime runtime = new WorkflowRuntime(definition, methodProvider, functionProvider, triggerProvider);
+
         await runtime.RunAsync();
         while (runtime.State == WorkflowRuntimeState.Suspended)
         {
             string message = Console.ReadLine() ?? "";
-            await runtime.ContinueAsync(new ConsoleInputSignal()
+            await runtime.ContinueAsync(new WorkflowTriggerHash(nameof(ConsoleInputSignal)), new ConsoleInputSignal()
             {
-                Input = Console.ReadLine() ?? ""
+                Input = message
             });
         }
 

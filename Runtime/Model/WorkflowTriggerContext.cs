@@ -10,14 +10,12 @@ namespace Efeu.Runtime.Model
 {
     public class WorkflowTriggerContext
     {
-        public readonly int Id;
-
         public readonly SomeData Input;
 
         public SomeData Data;
 
         public SomeData Output;
 
-        public IWorkflowSignal? Hash = default;
+        public WorkflowTriggerHash Hash;
     }
 }

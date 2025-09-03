@@ -14,9 +14,9 @@ namespace Efeu.Runtime.Model
     /// </summary>
     public class WorkflowDefinition
     {
-        public int StartId { get; set; }
+        // public int StartId { get; set; }
 
-        public int[] Triggers { get; set; } = [];
+        public int[] EntryPoints { get; set; } = [];
 
         public List<WorkflowActionNode> Actions { get; set; } = [];
 

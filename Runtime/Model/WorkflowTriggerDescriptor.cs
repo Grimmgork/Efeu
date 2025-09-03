@@ -1,4 +1,5 @@
 ﻿using Efeu.Runtime.Data;
+using Efeu.Runtime.Trigger;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,6 @@ namespace Efeu.Runtime.Model
         public int Id;
         public SomeData Input;
         public SomeData Data;
-        public object Signal = new object();
+        public WorkflowTriggerHash Hash;
     }
 }

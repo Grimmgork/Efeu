@@ -37,7 +37,7 @@ namespace Efeu.Runtime.Method
                 }
 
                 context.Output = context.Input.Items.First();
-                return WorkflowMethodState.Dispatch;
+                return WorkflowMethodState.Yield;
             }
 
             State state = (State)context.Data.Value!;
@@ -50,7 +50,7 @@ namespace Efeu.Runtime.Method
             if (state.Index < state.Items.Count)
             {
                 context.Output = state.Items.ElementAt(state.Index);
-                return WorkflowMethodState.Dispatch;
+                return WorkflowMethodState.Yield;
             }
 
             context.Output = SomeData.Array(state.Items);

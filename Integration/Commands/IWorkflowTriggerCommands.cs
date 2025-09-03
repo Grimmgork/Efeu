@@ -11,6 +11,8 @@ namespace Efeu.Integration.Commands
         public Task SendSignal(object signal)
         {
             // get trigger hash
+            // get all definition mathcing the trigger
+            // start new instances for each matching trigger
             // get all instances matching the trigger
             // run all instances mathcing the trigger
 
