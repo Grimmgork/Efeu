@@ -12,6 +12,7 @@ namespace Efeu.Runtime.Model
 {
     public enum WorkflowActionNodeType
     {
+        Start,
         Trigger,
         Method,
         Function,

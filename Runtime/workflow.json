@@ -1,13 +1,14 @@
 {
   "Id": 1,
   "Name": "workflow",
-  "Start": 2,
+  "Start": 1,
   "Actions": [
     {
       "Type": "Method",
       "Name": "Times",
-      "Id": 2,
+      "Id": 1,
       "DispatchRoute": 2,
+      "DefaultRoute": 4,
       "Input": {
         "Type": "Literal",
         "Value": 3
@@ -25,6 +26,15 @@
       "Id": 3,
       "Input": {
         "Type": "Pipe"
+      }
+    },
+    {
+      "Type": "Method",
+      "Name": "Eval",
+      "Id": 4,
+      "Input": {
+        "Type": "Literal",
+        "Value": 42
       }
     }
   ]

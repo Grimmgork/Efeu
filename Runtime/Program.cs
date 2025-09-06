@@ -67,10 +67,8 @@ class Program
             });
         }
 
-        Console.WriteLine("Done!");
-
-        WorkflowRuntimeExport data = runtime.Export();
-        Console.WriteLine(data.Output.ToString());
+        Console.WriteLine("OUTPUT:");
+        Console.WriteLine(runtime.Output.ToString());
     }
 }
 

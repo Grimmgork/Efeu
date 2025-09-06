@@ -14,7 +14,7 @@ namespace Efeu.Runtime.Model
     /// </summary>
     public class WorkflowDefinition
     {
-        public int Start;
+        public int Start { get; set; }
 
         public List<WorkflowActionNode> Actions { get; set; } = [];
 
