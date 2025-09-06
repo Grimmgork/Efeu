@@ -12,7 +12,6 @@ namespace Efeu.Runtime.Model
     {
         public int Id;
         public SomeData Input;
-        public SomeData Data;
         public WorkflowTriggerHash Hash;
     }
 }

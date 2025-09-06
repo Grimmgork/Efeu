@@ -1,7 +1,6 @@
 ﻿using Efeu.Integration.Logic;
 using Efeu.Integration.Model;
 using Efeu.Runtime;
-using Efeu.Runtime.Signal;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;

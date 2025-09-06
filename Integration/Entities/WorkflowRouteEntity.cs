@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Efeu.Runtime.Data;
 
-namespace Efeu.Runtime.Model
+namespace Efeu.Integration.Entities
 {
-    public class WorkflowRouteNode
-    {
-        public string Name { get; set; } = "";
+    internal class WorkflowRouteEntity
+    { 
+        public int Id { get; set; }
+        public string Name { get; set; }
         public int To { get; set; }
     }
 }

@@ -1,12 +1,12 @@
 {
   "Id": 1,
   "Name": "workflow",
-  "EntryPoints": [ 1 ],
+  "Start": 2,
   "Actions": [
     {
       "Type": "Method",
       "Name": "Times",
-      "Id": 1,
+      "Id": 2,
       "DispatchRoute": 2,
       "Input": {
         "Type": "Literal",

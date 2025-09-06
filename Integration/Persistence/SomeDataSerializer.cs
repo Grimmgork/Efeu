@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Data
+namespace Efeu.Integration.Persistence
 {
     internal class SomeDataSerializer : ISomeDataSerializer
     {

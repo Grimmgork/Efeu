@@ -54,7 +54,8 @@ class Program
         SimpleWorkflowTriggerProvider triggerProvider = new SimpleWorkflowTriggerProvider();
         // triggerProvider.Register("Cron", () => new CronTrigger())
 
-        WorkflowRuntime runtime = new WorkflowRuntime(definition, methodProvider, functionProvider, triggerProvider);
+        WorkflowRuntimeEnvironment environment = new WorkflowRuntimeEnvironment(methodProvider, functionProvider, triggerProvider);
+        WorkflowRuntime runtime = WorkflowRuntime.Prepare(environment, definition);
 
         await runtime.RunAsync();
         while (runtime.State == WorkflowRuntimeState.Suspended)

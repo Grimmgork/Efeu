@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Model
+namespace Efeu.Integration.Entities
 {
     public class WorkflowDefinitionVersionEntity
     {

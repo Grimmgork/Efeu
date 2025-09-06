@@ -1,4 +1,4 @@
-﻿using Efeu.Integration.Data;
+﻿using Efeu.Integration.Persistence;
 using LinqToDB;
 using LinqToDB.Common;
 using LinqToDB.Data;
@@ -21,11 +21,11 @@ namespace Efeu.Integration.Sqlite
         public MigrationRunner(DataConnection connection)
         {
             this.connection = connection;
-            this.migrations = GetMigrationTypes().Select(i =>
-                (IEfeuMigration)Activator.CreateInstance(i, connection)).OrderBy(i => i.Version).ToArray();
+            this.migrations = FindMigrationTypes().Select(i =>
+                ((IEfeuMigration)Activator.CreateInstance(i, connection)!)).OrderBy(i => i.Version).ToArray();
         }
 
-        public async Task MigrateAsync(int desiredVersion)
+        public async Task MigrateToAsync(int desiredVersion)
         {
             if (migrations.Length == 0)
                 return;
@@ -72,14 +72,11 @@ namespace Efeu.Integration.Sqlite
             }
         }
 
-        private IEnumerable<TypeInfo> GetMigrationTypes()
-        {
-            return Assembly.GetAssembly(typeof(MigrationRunner)).DefinedTypes.Where(t =>
+        private IEnumerable<TypeInfo> FindMigrationTypes() => 
+                    Assembly.GetAssembly(typeof(MigrationRunner))?.DefinedTypes.Where(t =>
                     t.IsClass &&
                     !t.IsAbstract &&
-                    typeof(IEfeuMigration).IsAssignableFrom(t))
-                ;
-        }
+                    typeof(IEfeuMigration).IsAssignableFrom(t)) ?? [];
 
         public async Task<int> GetAppliedVersion()
         {

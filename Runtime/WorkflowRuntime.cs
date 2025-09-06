@@ -1,11 +1,9 @@
-﻿using Efeu.Integration.Logic;
-using Efeu.Runtime.Data;
+﻿using Efeu.Runtime.Data;
 using Efeu.Runtime.Function;
 using Efeu.Runtime.Method;
 using Efeu.Runtime.Model;
 using Efeu.Runtime.Trigger;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -45,6 +43,7 @@ namespace Efeu.Runtime
         public WorkflowMethodState State;
         public WorkflowTriggerHash Trigger;
         public Dictionary<int, SomeData> MethodOutput = [];
+        public Dictionary<string, SomeData> Variables = [];
         public List<WorkflowRuntimeScope> Children = [];
     }
 
@@ -56,65 +55,80 @@ namespace Efeu.Runtime
 
         private HashSet<WorkflowRuntimeScope> activeScopes = [];
 
-        private readonly WorkflowDefinition definition;
+        private WorkflowDefinition definition;
 
-        private readonly IWorkflowMethodProvider methodProvider;
-        private readonly IWorkflowFunctionProvider functionProvider;
-        private readonly IWorkflowTriggerProvider triggerProvider;
+        private WorkflowRuntimeEnvironment environment;
 
-        public WorkflowRuntime(WorkflowDefinition definition, IWorkflowMethodProvider methodProvider, IWorkflowFunctionProvider functionProvider, IWorkflowTriggerProvider triggerProvider, SomeData input = default) 
+        private SomeData input;
+
+        private WorkflowRuntime(WorkflowRuntimeEnvironment environment, WorkflowDefinition definition)
         {
+            this.environment = environment;
             this.definition = definition;
-            this.methodProvider = methodProvider;
-            this.functionProvider = functionProvider;
-            this.triggerProvider = triggerProvider;
         }
 
-        public WorkflowRuntime(WorkflowRuntimeExport import, WorkflowDefinition definition, IWorkflowMethodProvider methodProvider, IWorkflowFunctionProvider functionProvider, IWorkflowTriggerProvider triggerProvider, SomeData input = default)
+        public static WorkflowRuntime Prepare(WorkflowRuntimeEnvironment environment, WorkflowDefinition definition, SomeData input = default)
         {
-            this.state = import.State;
-            this.definition = definition;
-            this.methodProvider = methodProvider;
-            this.functionProvider = functionProvider;
-            this.triggerProvider = triggerProvider;
+            WorkflowRuntime runtime = new WorkflowRuntime(environment, definition);
+            runtime.Prepare(input);
+            return runtime;
         }
 
-        public Task<WorkflowTriggerDescriptor[]> AttachAsync()
+        private void Prepare(SomeData input)
         {
             if (state != WorkflowRuntimeState.Initial)
                 throw new InvalidOperationException();
 
-            throw new NotImplementedException();
-        }
-
-        private Task InitializeAsync(CancellationToken token = default)
-        {
-            int startMethodId = definition.Actions.Where(x => 
-                x.Type == WorkflowActionNodeType.Method && definition.EntryPoints.Contains(x.Id))
-                .FirstOrDefault()?.Id ?? 0;
-
+            int startMethodId = definition.Start;
             if (startMethodId == 0)
             {
-                state = WorkflowRuntimeState.Done;
-                return Task.CompletedTask;
+                this.state = WorkflowRuntimeState.Done;
             }
             else
             {
-                activeScopes.Add(new WorkflowRuntimeScope()
+                this.input = input;
+                WorkflowActionNode startActionNode = definition.GetAction(startMethodId);
+                this.activeScopes.Add(new WorkflowRuntimeScope()
                 {
                     State = WorkflowMethodState.Running,
-                    CurrentMethodId = startMethodId,
+                    CurrentMethodId = startActionNode.DefaultRoute
                 });
-                state = WorkflowRuntimeState.Running;
-                return Task.CompletedTask;
+                this.state = WorkflowRuntimeState.Running;
             }
+        }
+
+        public static WorkflowRuntime PrepareTrigger(WorkflowRuntimeEnvironment environment, WorkflowDefinition definition, int startId, object signal)
+        {
+            WorkflowRuntime runtime = new WorkflowRuntime(environment, definition);
+            runtime.PrepareTrigger(startId, signal);
+            return runtime;
+        }
+
+        private void PrepareTrigger(int startId, object signal)
+        {
+            if (state != WorkflowRuntimeState.Initial)
+                throw new InvalidOperationException();
+
+            // prepare workflow to run started by a trigger
+        }
+
+        public static WorkflowTriggerDescriptor[] GetTriggers(WorkflowRuntimeEnvironment environment, WorkflowDefinition definition)
+        {
+            WorkflowRuntime runtime = new WorkflowRuntime(environment, definition);
+            return runtime.GetTriggers();
+        }
+
+        public WorkflowTriggerDescriptor[] GetTriggers()
+        {
+            if (state != WorkflowRuntimeState.Initial)
+                throw new InvalidOperationException();
+
+            // find all triggers and evaluate its inputs
+            return [];
         }
 
         public Task StepAsync(CancellationToken token = default)
         {
-            if (state == WorkflowRuntimeState.Initial)
-                return InitializeAsync(token);
-
             if (state != WorkflowRuntimeState.Running)
                 throw new InvalidOperationException();
 
@@ -138,21 +152,6 @@ namespace Efeu.Runtime
             }
         }
 
-        /// <summary>
-        /// Starts the workflow from a trigger
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="signal"></param>
-        /// <exception cref="InvalidOperationException"></exception>
-        public void Trigger(int id, object signal)
-        {
-            if (state != WorkflowRuntimeState.Initial)
-                throw new InvalidOperationException();
-
-            // send signal to trigger with id
-            // prepare workflow to be started with this trigger
-        }
-
         public void Signal(WorkflowTriggerHash hash, object signal)
         {
             WorkflowTriggerHash[] hashes = hash.Expand();
@@ -165,7 +164,7 @@ namespace Efeu.Runtime
                     WorkflowActionNode actionNode = definition.GetAction(scope.CurrentMethodId);
                     SomeData input = GetInputForMethod(scope, actionNode);
                     WorkflowMethodContext context =  new WorkflowMethodContext(input, scope.CurrentMethodData, scope.DispatchResult);
-                    IWorkflowMethod methodInstance = methodProvider.GetMethod(actionNode.Name);
+                    IWorkflowMethod methodInstance = environment.MethodProvider.GetMethod(actionNode.Name);
                     WorkflowMethodState newState = methodInstance.Signal(context, signal);
                     MoveNext(scope, newState, context, actionNode);
                     if (scope.State == WorkflowMethodState.Running)
@@ -193,7 +192,7 @@ namespace Efeu.Runtime
                 context = new WorkflowMethodContext(input);
             }
 
-            IWorkflowMethod methodInstance = methodProvider.GetMethod(actionNode.Name);
+            IWorkflowMethod methodInstance = environment.MethodProvider.GetMethod(actionNode.Name);
             WorkflowMethodState newState = WorkflowMethodState.Running;
             try
             {
@@ -239,6 +238,8 @@ namespace Efeu.Runtime
             else if (scope.State == WorkflowMethodState.Done)
             {
                 scope.LastMethodOutput = context.Output;
+                scope.MethodOutput[scope.CurrentMethodId] = context.Output;
+
                 int nextMethodId = 0;
                 if (context.Route == null)
                 {
@@ -301,11 +302,11 @@ namespace Efeu.Runtime
 
         private SomeData GetFunctionOutput(WorkflowRuntimeScope scope, WorkflowActionNode node)
         {
-            InputEvaluationContext inputContext = new InputEvaluationContext((id) => GetOutput(scope, id), default);
+            InputEvaluationContext inputContext = new InputEvaluationContext((id) => GetOutput(scope, id), (name) => GetVariable(scope, name), default);
             SomeData input = node.Input.EvaluateInput(inputContext);
 
             string methodname = node.Name;
-            IWorkflowFunction workflowFunctionInstance = functionProvider.GetFunction(methodname);
+            IWorkflowFunction workflowFunctionInstance = environment.FunctionProvider.GetFunction(methodname);
             WorkflowFunctionContext context = new WorkflowFunctionContext();
             SomeData outputs = workflowFunctionInstance.Run(context, input);
             return outputs;
@@ -313,8 +314,26 @@ namespace Efeu.Runtime
 
         private SomeData GetInputForMethod(WorkflowRuntimeScope scope, WorkflowActionNode method)
         {
-            InputEvaluationContext context = new InputEvaluationContext((id) => GetOutput(scope, id), scope.LastMethodOutput);
+            InputEvaluationContext context = new InputEvaluationContext((id) => GetOutput(scope, id), (name) => GetVariable(scope, name), scope.LastMethodOutput);
             return method.Input.EvaluateInput(context);
+        }
+
+        private SomeData GetVariable(WorkflowRuntimeScope start, string name)
+        {
+            WorkflowRuntimeScope? scope = start;
+            while (scope != null)
+            {
+                if (scope.Variables.TryGetValue(name, out SomeData value))
+                {
+                    return value;
+                }
+                else
+                {
+                    scope = scope.Parent;
+                }
+            }
+
+            return default;
         }
 
         private SomeData GetOutput(WorkflowRuntimeScope scope, int id)
@@ -324,7 +343,7 @@ namespace Efeu.Runtime
             {
                 WorkflowActionNodeType.Function => GetFunctionOutput(scope, node),
                 WorkflowActionNodeType.Method => GetMethodOutput(scope, node),
-                WorkflowActionNodeType.Start => GetMethodOutput(scope, node),
+                // WorkflowActionNodeType.Start => GetMethodOutput(scope, node),
                 WorkflowActionNodeType.Trigger => GetMethodOutput(scope, node),
                 WorkflowActionNodeType.Write => GetMethodOutput(scope, node),
                 WorkflowActionNodeType.Fork => GetMethodOutput(scope, node),
@@ -357,6 +376,18 @@ namespace Efeu.Runtime
             {
                 State = this.State
             };
+        }
+
+        public static WorkflowRuntime Import(WorkflowRuntimeEnvironment environment, WorkflowDefinition definition, WorkflowRuntimeExport export)
+        {
+            WorkflowRuntime runtime = new WorkflowRuntime(environment, definition);
+            runtime.Import(export);
+            return runtime;
+        }
+
+        private void Import(WorkflowRuntimeExport export)
+        {
+            // do export in reverse
         }
     }
 }

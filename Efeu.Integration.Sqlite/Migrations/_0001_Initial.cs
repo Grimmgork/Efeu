@@ -1,4 +1,4 @@
-﻿using Efeu.Integration.Data;
+﻿using Efeu.Integration.Persistence;
 using LinqToDB;
 using LinqToDB.Data;
 using System;

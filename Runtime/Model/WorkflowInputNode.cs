@@ -10,7 +10,8 @@ namespace Efeu.Runtime.Model
 {
     public class WorkflowInputNode
     {
-        // public int Id { get; set; }
+        public int Id { get; set; }
+        public int ParentId { get; set; }
         public int ActionId { get; set; }
         public DataTraversal Traversal { get; set; }
         public SomeData Value { get; set; }

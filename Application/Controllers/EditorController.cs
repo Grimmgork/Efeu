@@ -1,6 +1,6 @@
 ﻿using Efeu.Integration.Commands;
-using Efeu.Integration.Data;
-using Efeu.Integration.Model;
+using Efeu.Integration.Persistence;
+using Efeu.Integration.Entities;
 using Efeu.Runtime;
 using Efeu.Runtime.Data;
 using Efeu.Runtime.Json;
@@ -27,11 +27,6 @@ namespace Efeu.Application.Controllers
             this.workflowInstanceCommands = workflowInstanceCommands;
         }
 
-        public IActionResult Index()
-        {
-            return View();
-        }
-
         [HttpPost]
         [Route("ImportFile")]
         public IActionResult ImportFile(IFormFile file)
@@ -46,7 +41,6 @@ namespace Efeu.Application.Controllers
             try
             {
                 WorkflowDefinition definition = JsonSerializer.Deserialize<WorkflowDefinition>(file.OpenReadStream(), options);
-
                 return PartialView("Editor", definition);
             }
             catch (Exception)

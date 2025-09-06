@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Data
+namespace Efeu.Integration.Persistence
 {
     public interface IEfeuMigration
     {

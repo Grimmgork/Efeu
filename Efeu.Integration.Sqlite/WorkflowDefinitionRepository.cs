@@ -1,5 +1,5 @@
-﻿using Efeu.Integration.Data;
-using Efeu.Integration.Model;
+﻿using Efeu.Integration.Persistence;
+using Efeu.Integration.Entities;
 using Efeu.Integration.Sqlite;
 using Efeu.Runtime.Model;
 using LinqToDB;

@@ -1,4 +1,5 @@
-﻿using Efeu.Integration.Data;
+﻿using Efeu.Integration.Persistence;
+using Efeu.Integration.Entities;
 using Efeu.Integration.Model;
 using LinqToDB;
 using LinqToDB.Data;

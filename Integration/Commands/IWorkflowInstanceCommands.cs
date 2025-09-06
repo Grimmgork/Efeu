@@ -1,6 +1,5 @@
 ﻿using Efeu.Integration.Model;
 using Efeu.Runtime;
-using Efeu.Runtime.Signal;
 using System;
 using System.Collections.Generic;
 using System.Linq;

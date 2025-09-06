@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Data
+namespace Efeu.Integration.Persistence
 {
     public interface IEfeuMigrationRunner
     {
         public int[] GetAllVersions();
 
-        public Task MigrateAsync(int version = 0);
+        public Task MigrateToAsync(int version = 0);
 
         public Task<IEfeuMigration> GetMigrationInstance(int version);
 

@@ -16,9 +16,12 @@ namespace Efeu.Runtime.Data
 
         public readonly SomeData LastOutput;
 
-        public InputEvaluationContext(Func<int, SomeData> getOutput, SomeData lastOutput)
+        public readonly Func<string, SomeData> GetVariable;
+
+        public InputEvaluationContext(Func<int, SomeData> getOutput, Func<string, SomeData> getVariable, SomeData lastOutput)
         {
             GetOutput = getOutput;
+            GetVariable = getVariable;
             LastOutput = lastOutput;
         }
     }

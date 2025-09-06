@@ -1,9 +1,9 @@
-﻿using Efeu.Integration.Data;
+﻿using Efeu.Integration.Persistence;
+using Efeu.Integration.Entities;
 using Efeu.Integration.Model;
 using Efeu.Runtime;
 using Efeu.Runtime.Function;
 using Efeu.Runtime.Model;
-using Efeu.Runtime.Signal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,8 +21,9 @@ namespace Efeu.Integration.Commands
         private readonly IWorkflowDefinitionVersionRepository definitionVersionRepository;
         private readonly IWorkflowMethodProvider methodProvider;
         private readonly IWorkflowFunctionProvider functionProvider;
+        private readonly IWorkflowTriggerProvider triggerProvider;
 
-        public WorkflowInstanceCommands(IUnitOfWork unitOfWork, IWorkflowInstanceRepository instanceRepository, IWorkflowDefinitionRepository definitionRepository, IWorkflowDefinitionVersionRepository definitionVersionRepository, IWorkflowMethodProvider methodProvider, IWorkflowFunctionProvider functionProvider)
+        public WorkflowInstanceCommands(IUnitOfWork unitOfWork, IWorkflowInstanceRepository instanceRepository, IWorkflowDefinitionRepository definitionRepository, IWorkflowDefinitionVersionRepository definitionVersionRepository, IWorkflowMethodProvider methodProvider, IWorkflowFunctionProvider functionProvider, IWorkflowTriggerProvider triggerProvider)
         {
             this.unitOfWork = unitOfWork;
             this.instanceRepository = instanceRepository;
@@ -30,13 +31,14 @@ namespace Efeu.Integration.Commands
             this.definitionVersionRepository = definitionVersionRepository;
             this.methodProvider = methodProvider;
             this.functionProvider = functionProvider;
+            this.triggerProvider = triggerProvider;
         }
 
         public async Task<WorkflowExecutionResult> ExecuteAsync(int workflowDefinitionId, CancellationToken token)
         {
             WorkflowDefinitionVersionEntity definitionVersion = await definitionVersionRepository.GetLatestVersion(workflowDefinitionId);
 
-            WorkflowRuntime instance = new WorkflowRuntime(definitionVersion.Definition, methodProvider, functionProvider);
+            WorkflowRuntime instance = new WorkflowRuntime(definitionVersion.Definition, methodProvider, functionProvider, triggerProvider);
             WorkflowRuntimeExport instanceExport = instance.Export();
 
             WorkflowInstanceEntity instanceEntity = new WorkflowInstanceEntity()
@@ -107,7 +109,7 @@ namespace Efeu.Integration.Commands
                 MethodOutput = instanceEntity.MethodOutput
             };
 
-            WorkflowRuntime instance = new WorkflowRuntime(instanceExport, definitionVersion.Definition, methodProvider, functionProvider);
+            WorkflowRuntime instance = WorkflowRuntime.Import(instanceExport, definitionVersion.Definition, methodProvider, functionProvider, triggerProvider);
             Exception? exception = null;
             try
             {
@@ -165,7 +167,7 @@ namespace Efeu.Integration.Commands
                 MethodOutput = instanceEntity.MethodOutput
             };
 
-            WorkflowRuntime instance = new WorkflowRuntime(instanceExport, definitionVersion.Definition, methodProvider, functionProvider);
+            WorkflowRuntime instance = WorkflowRuntime.Import(instanceExport, definitionVersion.Definition, methodProvider, functionProvider, triggerProvider);
             Exception? exception = null;
             try
             {
@@ -225,11 +227,11 @@ namespace Efeu.Integration.Commands
                 MethodOutput = instanceEntity.MethodOutput
             };
 
-            WorkflowRuntime instance = new WorkflowRuntime(instanceExport, definitionVersion.Definition, methodProvider, functionProvider);
+            WorkflowRuntime instance = WorkflowRuntime.Import(instanceExport, definitionVersion.Definition, methodProvider, functionProvider, triggerProvider);
             Exception? exception = null;
             try
             {
-                instance.Signal(signal);
+                instance.Signal(default, signal);
                 await instance.RunAsync();
             }
             catch (Exception ex)

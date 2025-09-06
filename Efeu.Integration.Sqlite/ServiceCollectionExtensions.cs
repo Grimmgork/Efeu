@@ -1,5 +1,5 @@
-﻿using Efeu.Integration.Data;
-using Efeu.Integration.Model;
+﻿using Efeu.Integration.Persistence;
+using Efeu.Integration.Entities;
 using Efeu.Integration.Sqlite;
 using Efeu.Runtime.Data;
 using Efeu.Runtime.Json;
@@ -38,7 +38,7 @@ namespace Efeu.Integration.Sqlite
             JsonSerializerOptions jsonOptions = new JsonSerializerOptions();
             jsonOptions.Converters.Add(new SomeDataJsonConverter());
 
-            ISomeDataSerializer someDataSerializer = services.GetRequiredService<ISomeDataSerializer>();
+            // ISomeDataSerializer someDataSerializer = services.GetRequiredService<ISomeDataSerializer>();
 
             var builder = new FluentMappingBuilder();
             builder.MappingSchema.SetConverter<SomeData, DataParameter>(c => ConvertToJson(c, jsonOptions));
@@ -93,6 +93,9 @@ namespace Efeu.Integration.Sqlite
         {
             services.AddScoped((servicesProvider) => 
                 ConfigureConnection(servicesProvider, connectionString, schema));
+
+            services.AddScoped((servicesProvider) =>
+                (DataConnection)ConfigureConnection(servicesProvider, connectionString, schema));
 
             services.AddScoped<UnitOfWork>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();

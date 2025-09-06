@@ -1,5 +1,5 @@
 using Efeu.Integration;
-using Efeu.Integration.Data;
+using Efeu.Integration.Persistence;
 using Efeu.Integration.Model;
 using Efeu.Integration.Sqlite;
 using Efeu.Runtime.Function;
@@ -75,7 +75,7 @@ namespace Efeu.Application
             using (var scope = app.ApplicationServices.CreateScope())
             {
                 IEfeuMigrationRunner migrationRunner = scope.ServiceProvider.GetRequiredService<IEfeuMigrationRunner>();
-                migrationRunner.MigrateAsync().GetAwaiter().GetResult();
+                migrationRunner.MigrateToAsync().GetAwaiter().GetResult();
             }
             Console.WriteLine("Done!");
         }

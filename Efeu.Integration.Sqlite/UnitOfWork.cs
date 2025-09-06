@@ -1,4 +1,4 @@
-﻿using Efeu.Integration.Data;
+﻿using Efeu.Integration.Persistence;
 using LinqToDB.Data;
 using System;
 using System.Collections.Generic;
@@ -23,6 +23,9 @@ namespace Efeu.Integration.Sqlite
 
         public async Task ExecuteAsync(IsolationLevel isolationLevel, Func<Task> action)
         {
+            if (connection.Transaction != null)
+                throw new InvalidOperationException("Another Transaction has already started!");
+
             await connection.BeginTransactionAsync(isolationLevel);
             try
             {

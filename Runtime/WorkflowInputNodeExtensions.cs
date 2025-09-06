@@ -37,6 +37,11 @@ namespace Efeu.Runtime
             {
                 return context.LastOutput;
             }
+            else
+            if (node.Type == WorkflowInputType.Variable)
+            {
+
+            }
 
             throw new NotImplementedException();
         }

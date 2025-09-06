@@ -24,11 +24,5 @@ namespace Efeu.Runtime
             instance.Signal(hash, signal);
             return instance.RunAsync(token);
         }
-
-        public static Task TriggerAsync(this WorkflowRuntime instance, int id, object signal, CancellationToken token = default)
-        {
-            instance.Trigger(id, signal);
-            return instance.RunAsync(token);
-        }
     }
 }
