@@ -16,6 +16,7 @@ namespace Efeu.Runtime.Json
             if (reader.TokenType == JsonTokenType.StartObject)
             {
                 reader.Read();
+
                 List<KeyValuePair<string, SomeData>> properties = new List<KeyValuePair<string, SomeData>>();
                 while (reader.TokenType != JsonTokenType.EndObject)
                 {
@@ -64,8 +65,6 @@ namespace Efeu.Runtime.Json
         {
             if (value.IsValue)
             {
-                writer.WriteStartObject();
-
                 JsonSerializer.Serialize(writer, value.Value, options);
             }
             else if (value.IsArray)

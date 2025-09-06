@@ -13,7 +13,6 @@ namespace Efeu.Runtime.Model
         Struct,
         Output,
         Variable, // TODO
-        Input, // TODO
         Pipe,
     }
 }

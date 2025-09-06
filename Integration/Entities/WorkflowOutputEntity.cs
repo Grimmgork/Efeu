@@ -1,6 +1,10 @@
 ﻿namespace Efeu.Integration.Entities
 {
-    internal class WorkflowOutputEntity
+    public class WorkflowOutputEntity
     {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int To { get; set; }
+        public uint RunningNumber { get; set; }
     }
 }

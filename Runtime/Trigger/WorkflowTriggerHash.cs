@@ -45,14 +45,10 @@ namespace Efeu.Runtime.Trigger
             return Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(Arguments.Prepend(Type))));
         }
 
-        public override int GetHashCode()
+        public static WorkflowTriggerHash FromString(string hash)
         {
-            return ToString()?.GetHashCode() ?? 0.GetHashCode();
-        }
-
-        public override bool Equals([NotNullWhen(true)] object? obj)
-        {
-            return base.Equals(obj);
+            string[] segments = JsonSerializer.Deserialize<string[]>(Convert.FromBase64String(hash)) ?? [];
+            return new WorkflowTriggerHash(segments.First(), segments.Skip(1).ToArray());
         }
 
         public bool Equals(WorkflowTriggerHash obj)

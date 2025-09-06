@@ -167,7 +167,7 @@ namespace Efeu.Runtime.Data
             return new SomeData(WorkflowDataType.Decimal, value);
         }
 
-        public static SomeData Timestamp(DateTime? value)
+        public static SomeData Timestamp(DateTimeOffset? value)
         {
             return new SomeData(WorkflowDataType.Timestamp, value);
         }
@@ -301,6 +301,11 @@ namespace Efeu.Runtime.Data
         }
 
         public DateTime ToDateTime()
+        {
+            return Convert.ToDateTime(scalarValue);
+        }
+
+        public DateTimeOffset ToDateTimeOffset()
         {
             return Convert.ToDateTime(scalarValue);
         }

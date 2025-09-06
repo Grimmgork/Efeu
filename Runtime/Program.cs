@@ -22,15 +22,10 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        WorkflowTriggerHash[] array = [new WorkflowTriggerHash("test"), new WorkflowTriggerHash("testa")];
-        // Console.WriteLine(array.Contains(new WorkflowTriggerHash("testa")));
-        // return;
-
-
         JsonSerializerOptions options = new JsonSerializerOptions();
         options.Converters.Add(new SomeDataJsonConverter());
         options.Converters.Add(new JsonStringEnumConverter());
-
+        
         WorkflowDefinition definition = JsonSerializer.Deserialize<WorkflowDefinition>(File.ReadAllText("workflow.json"), options)!;
 
         SimpleWorkflowMethodProvider methodProvider = new SimpleWorkflowMethodProvider();
