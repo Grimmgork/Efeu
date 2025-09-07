@@ -12,16 +12,8 @@ namespace Efeu.Integration.Entities
     public class WorkflowInstanceEntity
     {
         public int Id { get; set; }
-        public bool IsProcessing { get; set; }
         public int WorkflowDefinitionVersionId { get; set; }
         public WorkflowExecutionState ExecutionState { get; set; }
-        public WorkflowRuntimeState State { get; set; }
-        public int CurrentMethodId { get; set; }
-        public SomeData Input { get; set; } = new SomeData();
-        public SomeData Output { get; set; } = new SomeData();
-        public IDictionary<int, SomeData> MethodData { get; set; } = new Dictionary<int, SomeData>();
-        public IDictionary<int, SomeData> MethodOutput { get; set; } = new Dictionary<int, SomeData>();
-        public SomeData DispatchResult { get; set; }
-        public Stack<int> ReturnStack { get; set; } = new Stack<int>();
+        public WorkflowRuntimeExport Export { get; set; } = new WorkflowRuntimeExport();
     }
 }

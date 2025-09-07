@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Logic
+namespace Efeu.Integration.Sqlite.Serialization
 {
-    public interface IWorkflowTriggerHashProvider
+    internal class WorkflowRuntimeExportSerializer
     {
-        public string GetTriggerHash(object signal);
     }
 }

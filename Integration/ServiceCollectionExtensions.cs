@@ -5,7 +5,6 @@ using Efeu.Runtime.Data;
 using Efeu.Runtime.Function;
 using Efeu.Runtime.Method;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -58,30 +57,30 @@ namespace Efeu.Integration
 
         public static void AddEfeu(this IServiceCollection services)
         {
-            SimpleWorkflowMethodProvider methodProvider = new SimpleWorkflowMethodProvider();
-            methodProvider.Register("ForEach", () => new ForeachMethod());
-            methodProvider.Register("Print", () => new PrintMethod());
-            methodProvider.Register("WaitForInput", () => new WaitForInputMethod());
-            methodProvider.Register("If", () => new IfMethod());
-            methodProvider.Register("Filter", () => new FilterMethod());
-            methodProvider.Register("Eval", () => new EvalMethod());
-            methodProvider.Register("GetGuid", () => new GetGuid());
-            methodProvider.Register("Times", () => new TimesMethod());
+            //SimpleWorkflowMethodProvider methodProvider = new SimpleWorkflowMethodProvider();
+            //methodProvider.Register("ForEach", () => new ForeachMethod());
+            //methodProvider.Register("Print", () => new PrintMethod());
+            //methodProvider.Register("WaitForInput", () => new WaitForInputMethod());
+            //methodProvider.Register("If", () => new IfMethod());
+            //methodProvider.Register("Filter", () => new FilterMethod());
+            //methodProvider.Register("Eval", () => new EvalMethod());
+            //methodProvider.Register("GetGuid", () => new GetGuid());
+            //methodProvider.Register("Times", () => new TimesMethod());
 
-            SimpleWorkflowFunctionProvider functionProvider = new SimpleWorkflowFunctionProvider();
-            functionProvider.Register("If", () => new WorkflowFunction((input) => input["Condition"].ToBoolean() ? input["Then"] : input["Else"]));
-            functionProvider.Register("+", () => new WorkflowFunction((input) => SomeData.Parse(
-                (dynamic)(input["A"].Value ?? 0) +
-                (dynamic)(input["B"].Value ?? 0)
-            )));
-            functionProvider.Register("Eval", () => new WorkflowFunction((input) => input));
+            //SimpleWorkflowFunctionProvider functionProvider = new SimpleWorkflowFunctionProvider();
+            //functionProvider.Register("If", () => new WorkflowFunction((input) => input["Condition"].ToBoolean() ? input["Then"] : input["Else"]));
+            //functionProvider.Register("+", () => new WorkflowFunction((input) => SomeData.Parse(
+            //    (dynamic)(input["A"].Value ?? 0) +
+            //    (dynamic)(input["B"].Value ?? 0)
+            //)));
+            //functionProvider.Register("Eval", () => new WorkflowFunction((input) => input));
 
-            SimpleWorkflowTriggerProvider triggerProvider = new SimpleWorkflowTriggerProvider();
-            // triggerProvider.Register("Cron", () => new CronTrigger())
+            //SimpleWorkflowTriggerProvider triggerProvider = new SimpleWorkflowTriggerProvider();
+            //// triggerProvider.Register("Cron", () => new CronTrigger())
 
-            services.AddScoped<IWorkflowMethodProvider, SimpleWorkflowMethodProvider>();
-            services.AddScoped<IWorkflowFunctionProvider, SimpleWorkflowFunctionProvider>();
-            services.AddScoped<IWorkflowTriggerProvider, SimpleWorkflowTriggerProvider>();
+            //services.AddScoped<IWorkflowMethodProvider, SimpleWorkflowMethodProvider>();
+            //services.AddScoped<IWorkflowFunctionProvider, SimpleWorkflowFunctionProvider>();
+            //services.AddScoped<IWorkflowTriggerProvider, SimpleWorkflowTriggerProvider>();
 
             services.AddScoped<IWorkflowDefinitionCommands, WorkflowDefinitionCommands>();
             services.AddScoped<IWorkflowInstanceCommands, WorkflowInstanceCommands>();

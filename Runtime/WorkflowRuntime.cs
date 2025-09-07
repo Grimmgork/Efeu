@@ -23,7 +23,7 @@ namespace Efeu.Runtime
     public class WorkflowRuntimeExport
     {
         public WorkflowRuntimeState State;
-        public WorkflowRuntimeScopeExport RootScope = new WorkflowRuntimeScopeExport();
+        public WorkflowRuntimeScope RootScope = new WorkflowRuntimeScope();
 
         [JsonIgnore] 
         public SomeData Output => RootScope.LastMethodOutput;
@@ -39,7 +39,7 @@ namespace Efeu.Runtime
         public WorkflowTriggerHash Trigger;
         public Dictionary<int, SomeData> MethodOutput = [];
         public Dictionary<string, SomeData> Variables = [];
-        public List<WorkflowRuntimeScope> Children = [];
+        public List<WorkflowRuntimeScopeExport> Children = [];
     }
 
     public class WorkflowRuntimeScope
@@ -121,10 +121,10 @@ namespace Efeu.Runtime
             }
         }
 
-        public static WorkflowRuntime PrepareTrigger(WorkflowRuntimeEnvironment environment, WorkflowDefinition definition, int startId, object signal)
+        public static WorkflowRuntime PrepareTrigger(WorkflowRuntimeEnvironment environment, WorkflowDefinition definition, int striggerId, object signal)
         {
             WorkflowRuntime runtime = new WorkflowRuntime(environment, definition);
-            runtime.PrepareTrigger(startId, signal);
+            runtime.PrepareTrigger(striggerId, signal);
             return runtime;
         }
 
@@ -410,7 +410,8 @@ namespace Efeu.Runtime
         {
             return new WorkflowRuntimeExport()
             {
-                State = this.State
+                State = this.State,
+                RootScope = this.rootScope
             };
         }
 
@@ -424,6 +425,8 @@ namespace Efeu.Runtime
         private void Import(WorkflowRuntimeExport export)
         {
             // do export in reverse
+
+            throw new NotImplementedException();
         }
     }
 }

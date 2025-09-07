@@ -14,8 +14,8 @@ namespace Efeu.Runtime.Trigger
 
     public struct WorkflowTriggerHash
     {
-        public readonly string Type = "";
-        public readonly string[] Arguments = [];
+        public readonly string Type;
+        public readonly string[] Arguments;
 
         public bool IsEmpty => string.IsNullOrEmpty(Type);
 
@@ -42,13 +42,13 @@ namespace Efeu.Runtime.Trigger
 
         public override string? ToString()
         {
-            return Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(Arguments.Prepend(Type))));
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(Arguments?.Prepend(Type) ?? [""])));
         }
 
         public static WorkflowTriggerHash FromString(string hash)
         {
             string[] segments = JsonSerializer.Deserialize<string[]>(Convert.FromBase64String(hash)) ?? [];
-            return new WorkflowTriggerHash(segments.First(), segments.Skip(1).ToArray());
+            return new WorkflowTriggerHash(segments.FirstOrDefault() ?? "", segments?.Skip(1).ToArray() ?? []);
         }
 
         public bool Equals(WorkflowTriggerHash obj)

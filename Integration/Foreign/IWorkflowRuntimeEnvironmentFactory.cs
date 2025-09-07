@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Services
+namespace Efeu.Integration.Foreign
 {
-    public interface IWorkflowMethodProviderFactory
+    public interface IWorkflowRuntimeEnvironmentFactory
     {
-        public IWorkflowMethodProvider CreateAsync();
+        public Task<WorkflowRuntimeEnvironment> CreateAsync();
     }
 }

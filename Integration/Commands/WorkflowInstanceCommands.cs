@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Efeu.Integration.Foreign;
 
 namespace Efeu.Integration.Commands
 {
@@ -17,37 +18,31 @@ namespace Efeu.Integration.Commands
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly IWorkflowInstanceRepository instanceRepository;
-        private readonly IWorkflowDefinitionRepository definitionRepository;
         private readonly IWorkflowDefinitionVersionRepository definitionVersionRepository;
-        private readonly IWorkflowMethodProvider methodProvider;
-        private readonly IWorkflowFunctionProvider functionProvider;
-        private readonly IWorkflowTriggerProvider triggerProvider;
 
-        public WorkflowInstanceCommands(IUnitOfWork unitOfWork, IWorkflowInstanceRepository instanceRepository, IWorkflowDefinitionRepository definitionRepository, IWorkflowDefinitionVersionRepository definitionVersionRepository, IWorkflowMethodProvider methodProvider, IWorkflowFunctionProvider functionProvider, IWorkflowTriggerProvider triggerProvider)
+        private readonly IWorkflowRuntimeEnvironmentFactory environmentFactory;
+
+        public WorkflowInstanceCommands(IUnitOfWork unitOfWork, IWorkflowInstanceRepository instanceRepository, IWorkflowDefinitionVersionRepository definitionVersionRepository, IWorkflowRuntimeEnvironmentFactory environmentFactory)
         {
             this.unitOfWork = unitOfWork;
             this.instanceRepository = instanceRepository;
-            this.definitionRepository = definitionRepository;
             this.definitionVersionRepository = definitionVersionRepository;
-            this.methodProvider = methodProvider;
-            this.functionProvider = functionProvider;
-            this.triggerProvider = triggerProvider;
+            this.environmentFactory = environmentFactory;
         }
 
         public async Task<WorkflowExecutionResult> ExecuteAsync(int workflowDefinitionId, CancellationToken token)
         {
             WorkflowDefinitionVersionEntity definitionVersion = await definitionVersionRepository.GetLatestVersion(workflowDefinitionId);
 
-            WorkflowRuntime instance = new WorkflowRuntime(definitionVersion.Definition, methodProvider, functionProvider, triggerProvider);
+            WorkflowRuntimeEnvironment environment = await environmentFactory.CreateAsync();
+            WorkflowRuntime instance = WorkflowRuntime.Prepare(environment, definitionVersion.Definition);
             WorkflowRuntimeExport instanceExport = instance.Export();
 
             WorkflowInstanceEntity instanceEntity = new WorkflowInstanceEntity()
             {
                 WorkflowDefinitionVersionId = definitionVersion.Id,
-                CurrentMethodId = instanceExport.CurrentMethodId,
-                Input = instanceExport.Input,
                 ExecutionState = WorkflowExecutionState.Running,
-                IsProcessing = true
+                Export = instanceExport,
             };
 
             int instanceId = await instanceRepository.Add(instanceEntity);
@@ -72,12 +67,6 @@ namespace Efeu.Integration.Commands
                 _ => throw new Exception($"Invalid state {instance.State}")
             };
 
-            instanceEntity.Input = instanceExport.Input;
-            instanceEntity.Output = instanceExport.Output;
-            instanceEntity.ReturnStack = instanceExport.ReturnStack;
-            instanceEntity.State = instanceExport.State;
-            instanceEntity.MethodData = instanceExport.MethodData;
-            instanceEntity.MethodOutput = instanceExport.MethodOutput;
             instanceEntity.ExecutionState = executionState;
 
             await instanceRepository.Update(instanceEntity);
@@ -98,18 +87,14 @@ namespace Efeu.Integration.Commands
                 throw new Exception("Instance is not in the correct state!");
             }
 
+            WorkflowRuntimeEnvironment environment = await environmentFactory.CreateAsync();
             WorkflowDefinitionVersionEntity definitionVersion = await definitionVersionRepository.GetByIdAsync(instanceEntity.WorkflowDefinitionVersionId);
             WorkflowRuntimeExport instanceExport = new WorkflowRuntimeExport()
             {
-                Input = instanceEntity.Input,
-                Output = instanceEntity.Output,
-                ReturnStack = instanceEntity.ReturnStack,
                 State = WorkflowRuntimeState.Running,
-                MethodData = instanceEntity.MethodData,
-                MethodOutput = instanceEntity.MethodOutput
             };
 
-            WorkflowRuntime instance = WorkflowRuntime.Import(instanceExport, definitionVersion.Definition, methodProvider, functionProvider, triggerProvider);
+            WorkflowRuntime instance = WorkflowRuntime.Import(environment, definitionVersion.Definition, instanceExport);
             Exception? exception = null;
             try
             {
@@ -130,12 +115,8 @@ namespace Efeu.Integration.Commands
                 _ => throw new Exception($"Invalid state {instance.State}")
             };
 
-            instanceEntity.Input = instanceExport.Input;
             instanceEntity.Output = instanceExport.Output;
-            instanceEntity.ReturnStack = instanceExport.ReturnStack;
             instanceEntity.State = instanceExport.State;
-            instanceEntity.MethodData = instanceExport.MethodData;
-            instanceEntity.MethodOutput = instanceExport.MethodOutput;
             instanceEntity.ExecutionState = executionState;
 
             await instanceRepository.Update(instanceEntity);
@@ -156,18 +137,14 @@ namespace Efeu.Integration.Commands
                 throw new Exception("Instance is not in the correct state!");
             }
 
+            WorkflowRuntimeEnvironment environment = await environmentFactory.CreateAsync();
             WorkflowDefinitionVersionEntity definitionVersion = await definitionVersionRepository.GetByIdAsync(instanceEntity.WorkflowDefinitionVersionId);
             WorkflowRuntimeExport instanceExport = new WorkflowRuntimeExport()
             {
-                Input = instanceEntity.Input,
-                Output = instanceEntity.Output,
-                ReturnStack = instanceEntity.ReturnStack,
                 State = WorkflowRuntimeState.Running,
-                MethodData = instanceEntity.MethodData,
-                MethodOutput = instanceEntity.MethodOutput
             };
 
-            WorkflowRuntime instance = WorkflowRuntime.Import(instanceExport, definitionVersion.Definition, methodProvider, functionProvider, triggerProvider);
+            WorkflowRuntime instance = WorkflowRuntime.Import(environment, definitionVersion.Definition, instanceExport);
             Exception? exception = null;
             try
             {
@@ -188,12 +165,8 @@ namespace Efeu.Integration.Commands
                 _ => throw new Exception($"Invalid state {instance.State}")
             };
 
-            instanceEntity.Input = instanceExport.Input;
             instanceEntity.Output = instanceExport.Output;
-            instanceEntity.ReturnStack = instanceExport.ReturnStack;
             instanceEntity.State = instanceExport.State;
-            instanceEntity.MethodData = instanceExport.MethodData;
-            instanceEntity.MethodOutput = instanceExport.MethodOutput;
             instanceEntity.ExecutionState = executionState;
 
             await instanceRepository.Update(instanceEntity);
@@ -216,18 +189,14 @@ namespace Efeu.Integration.Commands
                 throw new Exception("Instance is not in the correct state!");
             }
 
+            WorkflowRuntimeEnvironment environment = await environmentFactory.CreateAsync();
             WorkflowDefinitionVersionEntity definitionVersion = await definitionVersionRepository.GetByIdAsync(instanceEntity.WorkflowDefinitionVersionId);
             WorkflowRuntimeExport instanceExport = new WorkflowRuntimeExport()
             {
-                Input = instanceEntity.Input,
-                Output = instanceEntity.Output,
-                ReturnStack = instanceEntity.ReturnStack,
                 State = WorkflowRuntimeState.Suspended,
-                MethodData = instanceEntity.MethodData,
-                MethodOutput = instanceEntity.MethodOutput
             };
 
-            WorkflowRuntime instance = WorkflowRuntime.Import(instanceExport, definitionVersion.Definition, methodProvider, functionProvider, triggerProvider);
+            WorkflowRuntime instance = WorkflowRuntime.Import(environment, definitionVersion.Definition, instanceExport);
             Exception? exception = null;
             try
             {
@@ -248,12 +217,8 @@ namespace Efeu.Integration.Commands
                 _ => throw new Exception($"Invalid state {instance.State}")
             };
 
-            instanceEntity.Input = instanceExport.Input;
             instanceEntity.Output = instanceExport.Output;
-            instanceEntity.ReturnStack = instanceExport.ReturnStack;
             instanceEntity.State = instanceExport.State;
-            instanceEntity.MethodData = instanceExport.MethodData;
-            instanceEntity.MethodOutput = instanceExport.MethodOutput;
             instanceEntity.ExecutionState = executionState;
 
             await instanceRepository.Update(instanceEntity);

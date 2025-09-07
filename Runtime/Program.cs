@@ -1,6 +1,16 @@
 ﻿// See https://aka.ms/new-console-template for more information
 namespace Efeu.Runtime;
 
+using Efeu.Integration.Model;
+using Efeu.Runtime.Data;
+using Efeu.Runtime.Function;
+using Efeu.Runtime.Json;
+using Efeu.Runtime.Method;
+using Efeu.Runtime.Model;
+using Efeu.Runtime.Trigger;
+using MessagePack;
+using MessagePack.Formatters;
+using MessagePack.Resolvers;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,13 +20,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Efeu.Integration.Model;
-using Efeu.Runtime.Data;
-using Efeu.Runtime.Function;
-using Efeu.Runtime.Json;
-using Efeu.Runtime.Method;
-using Efeu.Runtime.Model;
-using Efeu.Runtime.Trigger;
 
 class Program
 {
@@ -49,7 +52,9 @@ class Program
         SimpleWorkflowTriggerProvider triggerProvider = new SimpleWorkflowTriggerProvider();
         // triggerProvider.Register("Cron", () => new CronTrigger())
 
-        WorkflowRuntimeEnvironment environment = new WorkflowRuntimeEnvironment(methodProvider, functionProvider, triggerProvider);
+        ConsoleWorkflowOutbox outbox = new ConsoleWorkflowOutbox();
+
+        WorkflowRuntimeEnvironment environment = new WorkflowRuntimeEnvironment(methodProvider, functionProvider, triggerProvider, outbox);
         WorkflowRuntime runtime = WorkflowRuntime.Prepare(environment, definition);
 
         await runtime.RunAsync();
@@ -66,21 +71,3 @@ class Program
         Console.WriteLine(runtime.Output.ToString());
     }
 }
-
-// [inp] Name.Name
-// [inp] Name.Name
-// [var] Name.Name[0]
-// [exp] (Name)
-
-// a name is a series of .Name and/or array indexers [2]
-
-// (inp :name.name)
-// (inp :name.name.name[0].name)
-// (var :name)
-// (:name a b (+ a b))
-// (map (inp :name.name) (: a b (+ a b)))
-// (+ 1 2)
-// (name 1 2)
-// (name 1 2)
-// (name 2 3)
-

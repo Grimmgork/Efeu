@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace Efeu.Runtime.Data
 {
@@ -102,7 +103,7 @@ namespace Efeu.Runtime.Data
             this.structFields = new Dictionary<string, SomeData>(fields);
         }
 
-        public SomeData(WorkflowDataType type, object? value = null)
+        private SomeData(WorkflowDataType type, object? value = null)
         {
             if (value is not null)
             {
@@ -110,6 +111,16 @@ namespace Efeu.Runtime.Data
                 DataType = type;
             }
         }
+
+
+        public SomeData(WorkflowDataType dataType, object? value, IReadOnlyCollection<SomeData> arrayItems, IReadOnlyDictionary<string, SomeData> structFields)
+        {
+            DataType = dataType;
+            this.scalarValue = value;
+            this.arrayItems = arrayItems;
+            this.structFields = structFields;
+        }
+
 
         public SomeData this[string name]
         {

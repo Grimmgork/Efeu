@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Persistence
 {
-    public interface IUnitOfWork
+    internal interface IUnitOfWork
     {
         public Task ExecuteAsync(Func<Task> action);
 

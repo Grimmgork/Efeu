@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Efeu.Integration.Foreign;
+using Efeu.Application.Services;
 
 namespace Efeu.Application
 {
@@ -40,6 +42,9 @@ namespace Efeu.Application
                     options.JsonSerializerOptions.Converters.Add(new SomeDataJsonConverter());
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });
+
+            services.AddScoped<IWorkflowRuntimeEnvironmentFactory, WorkflowRuntimeEnvironmentFactory>();
+
             services.AddEfeu();
             services.AddEfeuSqlite("Data Source=data.db");
         }

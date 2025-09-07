@@ -16,6 +16,7 @@ namespace Efeu.Runtime.Model
         Trigger,
         Method,
         Function,
+        Send, // TODO send outbox
         Wait, // wait for trigger
         Write,
         Fork,

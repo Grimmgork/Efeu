@@ -14,11 +14,18 @@ namespace Efeu.Runtime
 
         public readonly IWorkflowTriggerProvider TriggerProvider;
 
-        public WorkflowRuntimeEnvironment(IWorkflowMethodProvider methodProvider, IWorkflowFunctionProvider functionProvider, IWorkflowTriggerProvider triggerProvider)
+        public readonly IWorkflowOutbox Outbox;
+
+        public WorkflowRuntimeEnvironment(
+            IWorkflowMethodProvider methodProvider, 
+            IWorkflowFunctionProvider functionProvider, 
+            IWorkflowTriggerProvider triggerProvider, 
+            IWorkflowOutbox outbox)
         {
             MethodProvider = methodProvider;
             FunctionProvider = functionProvider;
             TriggerProvider = triggerProvider;
+            Outbox = outbox;
         }
     }
 }
