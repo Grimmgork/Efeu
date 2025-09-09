@@ -25,6 +25,17 @@ class Program
 {
     static async Task Main(string[] args)
     {
+        EfeuValue value = EfeuValue.Array([1, 2, 3]);
+        value.Push(42);
+        value.As<EfeuArray>();
+        value.Call(5, 42);
+        value.Call(10);
+
+
+        value.Each((value) => Console.WriteLine(value));
+
+        return;
+
         JsonSerializerOptions options = new JsonSerializerOptions();
         options.Converters.Add(new SomeDataJsonConverter());
         options.Converters.Add(new JsonStringEnumConverter());

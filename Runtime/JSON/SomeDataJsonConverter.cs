@@ -63,7 +63,7 @@ namespace Efeu.Runtime.Json
 
         public override void Write(Utf8JsonWriter writer, SomeData value, JsonSerializerOptions options)
         {
-            if (value.IsValue)
+            if (value.IsScalar)
             {
                 JsonSerializer.Serialize(writer, value.Value, options);
             }

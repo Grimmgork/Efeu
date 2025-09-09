@@ -64,7 +64,9 @@ namespace Efeu.Runtime.Data
         public bool IsNull => DataType == WorkflowDataType.Null;
         public bool IsStruct => DataType == WorkflowDataType.Struct;
         public bool IsArray => DataType == WorkflowDataType.Array;
-        public bool IsValue => DataType != WorkflowDataType.Struct && DataType != WorkflowDataType.Array;
+        public bool IsScalar => DataType != WorkflowDataType.Struct && DataType != WorkflowDataType.Array;
+        public bool IsNumeric => DataType == WorkflowDataType.Int23 || DataType == WorkflowDataType.Int64 || DataType == WorkflowDataType.Decimal || DataType == WorkflowDataType.Single || DataType == WorkflowDataType.Double;
+        public bool IsReference => DataType == WorkflowDataType.Reference;
 
         public WorkflowTraversalNodeType NodeType
         {
@@ -126,7 +128,7 @@ namespace Efeu.Runtime.Data
         {
             get
             {
-                return structFields.GetValueOrDefault(name);
+                return GetField(name).Evaluate();
             }
         }
 
@@ -134,7 +136,7 @@ namespace Efeu.Runtime.Data
         {
             get
             {
-                return arrayItems.ElementAtOrDefault(index);
+                return GetIndex(index).Evaluate();
             }
         }
 
@@ -188,9 +190,10 @@ namespace Efeu.Runtime.Data
             return new SomeData(WorkflowDataType.Fork, id);
         }
 
-        public static SomeData Reference<T>(T reference)
+        public static SomeData Reference<T>(T reference) where T : class
         {
             if (reference is null) return SomeData.Null();
+            if (!reference.GetType().IsClass) throw new InvalidCastException("Cannot cast non reference type to reference.");
             return new SomeData(WorkflowDataType.Reference, reference);
         }
 
@@ -204,32 +207,33 @@ namespace Efeu.Runtime.Data
             {
                 return someData;
             }
-            else if (value is IDictionary properties)
-            {
-                return SomeData.Struct(
-                     properties.Cast<DictionaryEntry>().Select(p => 
-                        new KeyValuePair<string, SomeData>((string)p.Key, SomeData.Parse(p.Value))));
-            }
-            else if (value is IEnumerable items and not string)
-            {
-                return SomeData.Array(items.Cast<object>().Select(i => 
-                    SomeData.Parse(i)));
-            }
+            //else if (value is IReadOnlyDictionary<> properties)
+            //{
+            //    return SomeData.Struct(
+            //         properties.Cast<DictionaryEntry>().Select(p => 
+            //            new KeyValuePair<string, SomeData>((string)p.Key, SomeData.Parse(p.Value))));
+            //}
+            //else if (value is IEnumerable items and not string)
+            //{
+            //    return SomeData.Array(items.Cast<object>().Select(i => 
+            //        SomeData.Parse(i)));
+            //}
             else
             {
                 return value switch
                 {
-                    UInt16  v => Int64(v),
-                    UInt32  v => Int64(v),
-                    Int16   v => Int32(v),
-                    Int32   v => Int32(v),
-                    Int64   v => Int64(v),
-                    String  v => String(v),
+                    UInt16 v => Int64(v),
+                    UInt32 v => Int64(v),
+                    Int16 v => Int32(v),
+                    Int32 v => Int32(v),
+                    Int64 v => Int64(v),
+                    String v => String(v),
                     Boolean v => Boolean(v),
-                    Single  v => Single(v),
-                    Double  v => Double(v),
+                    Single v => Single(v),
+                    Double v => Double(v),
                     Decimal v => Decimal(v),
-                    _ => Reference(value)
+                    DateTime v => Timestamp(v),
+                    _ => value.GetType().IsClass ? Reference(value) : throw new InvalidCastException($"Cant parse type {value.GetType()} as {nameof(SomeData)}.")
                 };
             }
         }
@@ -265,7 +269,7 @@ namespace Efeu.Runtime.Data
         }
 
         public static explicit operator Int32(SomeData value) => value.ToInt32();
-        public static explicit operator String(SomeData value) => value.ToString();
+        public static explicit operator String(SomeData value) => value.ToString() ?? "";
         public static explicit operator Boolean(SomeData value) => value.ToBoolean();
 
         public static implicit operator SomeData(Int32 value) => SomeData.Int32(value);
@@ -364,7 +368,7 @@ namespace Efeu.Runtime.Data
             }
         }
 
-        public new string ToString()
+        public override string? ToString()
         {
             if (IsNull)
                 return "NULL";
@@ -454,6 +458,25 @@ namespace Efeu.Runtime.Data
         public SomeData Evaluate()
         {
             return this;
+        }
+
+        public override int GetHashCode()
+        {
+            if (IsNull)
+                throw new NullReferenceException();
+
+            if (IsArray)
+            {
+                return arrayItems.GetHashCode();
+            }
+            else if (IsStruct)
+            {
+                return structFields.GetHashCode();
+            }
+            else
+            {
+                return scalarValue!.GetHashCode();
+            }
         }
     }
 }
