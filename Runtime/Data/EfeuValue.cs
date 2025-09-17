@@ -1,14 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Numerics;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace Efeu.Runtime.Data
 {
@@ -21,7 +16,7 @@ namespace Efeu.Runtime.Data
         Object = 4,
     }
 
-    public struct EfeuValue
+    public readonly struct EfeuValue
     {
         public readonly EfeuValueTag Tag;
         private readonly long integer;
@@ -30,7 +25,7 @@ namespace Efeu.Runtime.Data
         public EfeuValue(long i) {
             Tag = EfeuValueTag.Integer;
             obj = null;
-            integer = i; 
+            integer = i;
         }
         public EfeuValue(bool b) {
             Tag = b ? EfeuValueTag.True : EfeuValueTag.False;
@@ -39,7 +34,7 @@ namespace Efeu.Runtime.Data
         }
         public EfeuValue(EfeuObject obj) {
             Tag = EfeuValueTag.Object;
-            this.obj = obj; 
+            this.obj = obj;
             integer = 0;
         }
 
@@ -48,6 +43,7 @@ namespace Efeu.Runtime.Data
         public static implicit operator EfeuValue(bool b) => new EfeuValue(b);
         public static implicit operator EfeuValue(double d) => new EfeuValue(new EfeuFloat(d));
         public static implicit operator EfeuValue(decimal d) => new EfeuValue(new EfeuDecimal(d));
+        public static implicit operator EfeuValue(string s) => new EfeuValue(new EfeuString(s));
         public static implicit operator EfeuValue(DateTime dt) => new EfeuValue(new EfeuTime(dt));
         public static implicit operator EfeuValue(EfeuObject obj) => new EfeuValue(obj);
 
@@ -55,7 +51,20 @@ namespace Efeu.Runtime.Data
         {
             if (value is null)
             {
-                return EfeuValue.Nil(); 
+                return EfeuValue.Nil();
+            }
+            if (value is IDictionary dictionary)
+            {
+                return new EfeuHash(dictionary.Cast<DictionaryEntry>().Select(p =>
+                            new KeyValuePair<string, EfeuValue>((string)p.Key, EfeuValue.Parse(p.Value))));
+            }
+            if (value is IEnumerable enumerable and not string)
+            {
+                EfeuArray array = new EfeuArray();
+                foreach (object item in enumerable)
+                    array.Push(EfeuValue.Parse(item));
+
+                return array;
             }
             return value switch
             {
@@ -73,46 +82,41 @@ namespace Efeu.Runtime.Data
             };
         }
 
-        public static EfeuValue operator ++(EfeuValue value)
-        {
-            if (value.Tag == EfeuValueTag.Integer)
-            {
-                return value.ToLong() + 1;
-            }
-            else if (value.Tag == EfeuValueTag.Object)
-            {
-                return value.AsObject().Increment();
-            }
-            else
-            {
-                throw new InvalidOperationException();
-            }
-        }
 
-        public static EfeuValue operator --(EfeuValue value)
-        {
-            if (value.Tag == EfeuValueTag.Integer)
-            {
-                return value.ToLong() - 1;
-            }
-            else if (value.Tag == EfeuValueTag.Object)
-            {
-                return value.AsObject().Decrement();
-            }
-            else
-            {
-                throw new InvalidOperationException();
-            }
-        }
 
         public bool IsNil()
         {
             return Tag == EfeuValueTag.Nil;
         }
 
+        public bool IsObject()
+        {
+            return Tag == EfeuValueTag.Object;
+        }
+
         public int ToInt()
         {
             return (Int32)ToLong();
+        }
+
+        public EfeuValue First()
+        {
+            if (Tag == EfeuValueTag.Object)
+            {
+                obj!.First();
+            }
+
+            throw new InvalidOperationException();
+        }
+
+        public EfeuValue Last()
+        {
+            if (Tag == EfeuValueTag.Object)
+            {
+                obj!.Last();
+            }
+
+            throw new InvalidOperationException();
         }
 
         public IEnumerable<EfeuValue> Each()
@@ -134,6 +138,25 @@ namespace Efeu.Runtime.Data
             {
                 process(item);
             }
+        }
+
+        public void Each(Action<EfeuValue, int> process)
+        {
+            int index = 0;
+            foreach (EfeuValue item in Each())
+            {
+                process(item, index);
+            }
+        }
+
+        public IEnumerable<KeyValuePair<string, EfeuValue>> Fields()
+        {
+            if (Tag == EfeuValueTag.Object)
+            {
+                return obj!.Fields();
+            }
+
+            return [];
         }
 
         public int Length()
@@ -214,7 +237,7 @@ namespace Efeu.Runtime.Data
             throw new InvalidCastException("Value is not a double.");
         }
 
-        public bool ToBoolean()
+        public bool ToBool()
         {
             if (Tag == EfeuValueTag.True)
             {
@@ -238,6 +261,32 @@ namespace Efeu.Runtime.Data
             }
 
             throw new InvalidCastException("Value is not a bool.");
+        }
+
+        public decimal ToDecimal()
+        {
+            if (Tag == EfeuValueTag.Integer)
+            {
+                return integer;
+            }
+            else if (Tag == EfeuValueTag.Object)
+            {
+                return obj!.ToDecimal();
+            }
+            else if (Tag == EfeuValueTag.Nil)
+            {
+                return 0;
+            }
+            else if (Tag == EfeuValueTag.True)
+            {
+                return 1;
+            }
+            else if (Tag == EfeuValueTag.False)
+            {
+                return 0;
+            }
+
+            throw new InvalidCastException("Value is not a decimal.");
         }
 
         public override string ToString()
@@ -306,7 +355,6 @@ namespace Efeu.Runtime.Data
             }
         }
 
-
         public EfeuValue Call(string field)
         {
             if (Tag == EfeuValueTag.Object)
@@ -324,6 +372,19 @@ namespace Efeu.Runtime.Data
             if (Tag == EfeuValueTag.Object)
             {
                 obj!.Call(field, value);
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
+        }
+
+        public void Call(string field, Func<EfeuValue, EfeuValue> func)
+        {
+            if (Tag == EfeuValueTag.Object)
+            {
+                EfeuValue value = obj!.Call(field);
+                obj!.Call(field, func(value));
             }
             else
             {
@@ -367,6 +428,16 @@ namespace Efeu.Runtime.Data
             }
         }
 
+        public EfeuValue Shift()
+        {
+            return AsObject().Shift();
+        }
+
+        public void Unshift(params EfeuValue[] items)
+        {
+            AsObject().Unshift(items);
+        }
+
         public EfeuValue Pop()
         {
             if (Tag == EfeuValueTag.Object)
@@ -377,387 +448,110 @@ namespace Efeu.Runtime.Data
             return EfeuValue.Nil();
         }
 
-        public static EfeuValue Wrap<T>(T wrappee) where T : class
+        public EfeuValue Clone()
         {
-            if (wrappee is EfeuObject obj)
+            if (Tag == EfeuValueTag.Object)
             {
-                return obj;
+                return obj!.Clone();
             }
-
-            return new EfeuWrapper(wrappee);
-        }
-
-        public static EfeuValue Array(params EfeuValue[] items)
-        {
-            return new EfeuArray(items);
-        }
-
-        public static EfeuValue Array(IEnumerable<EfeuValue> items)
-        {
-            return new EfeuArray(items);
-        }
-
-        public static EfeuValue Hash()
-        {
-            return new EfeuHash();
+            else
+            {
+                return this;
+            }
         }
 
         public static EfeuValue Nil()
         {
             return default;
         }
-    }
 
-    public abstract class EfeuObject
-    {
-        public string Name => this.GetType().Name;
-
-        public virtual EfeuValue Call(string field)
+        public override bool Equals([NotNullWhen(true)] object? obj)
         {
-            return EfeuValue.Nil();
-        }
-
-        public virtual void Call(string field, EfeuValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual void Call(int index, EfeuValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual EfeuValue Call(int index)
-        {
-            return EfeuValue.Nil();
-        }
-
-        public virtual EfeuValue Increment()
-        {
-            return ToLong() + 1;
-        }
-
-        public virtual EfeuValue Decrement()
-        {
-            return ToLong() - 1;
-        }
-
-        public virtual void Push(EfeuValue item)
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual EfeuValue Pop()
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual long ToLong()
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual bool ToBoolean()
-        {
-            return ToLong() == 0;
-        }
-
-        public virtual decimal ToDecimal()
-        {
-            return ToLong();
-        }
-
-        public virtual double ToDouble()
-        {
-            return ToLong();
-        }
-
-        public override string ToString()
-        {
-            return $"<{Name}>";
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
-    }
-
-    public class EfeuString : EfeuObject
-    {
-        private readonly string Text;
-
-        public EfeuString(string value) 
-        {
-            this.Text = value; 
-        }
-
-        public override string ToString()
-        {
-            return Text;
-        }
-
-        public override int GetHashCode()
-        {
-            return Text.GetHashCode();
-        }
-    }
-
-    public class EfeuFloat : EfeuObject
-    {
-        public readonly double Value;
-
-        public EfeuFloat(double value)
-        {
-            this.Value = value;
-        }
-
-        public override bool ToBoolean()
-        {
-            return Value == 0;
-        }
-
-        public override double ToDouble()
-        {
-            return Value;
-        }
-
-        public override decimal ToDecimal()
-        {
-            return (decimal)Value;
-        }
-
-        public override string ToString()
-        {
-            return Value.ToString();
-        }
-
-        public override int GetHashCode()
-        {
-            return Value.GetHashCode();
-        }
-    }
-
-    public class EfeuDecimal : EfeuObject
-    {
-        public readonly decimal Value;
-
-        public EfeuDecimal(decimal value)
-        {
-            Value = value;
-        }
-
-        public override double ToDouble()
-        {
-            return (double)Value;
-        }
-
-        public override bool ToBoolean()
-        {
-            return Value == 0;
-        }
-
-        public override decimal ToDecimal()
-        {
-            return Value;
-        }
-
-        public override long ToLong()
-        {
-            return (long)Value;
-        }
-
-        public override string ToString()
-        {
-            return Value.ToString();
-        }
-
-        public override int GetHashCode()
-        {
-            return Value.GetHashCode();
-        }
-    }
-    public class EfeuWrapper : EfeuObject
-    {
-        public readonly object Wrappee;
-
-        public EfeuWrapper(object wrappee)
-        {
-            this.Wrappee = wrappee;
-        }
-
-        public override EfeuValue Call(string field)
-        {
-            Type type = Wrappee.GetType();
-            return EfeuValue.Parse(type.GetProperty(field)?.GetValue(Wrappee, null));
-        }
-
-        public override EfeuValue Call(int index)
-        {
-            dynamic obj = Wrappee;
-            return EfeuValue.Parse(obj[index]);
-        }
-
-        public override bool ToBoolean()
-        {
-            return Convert.ToBoolean(Wrappee);
-        }
-
-        public override decimal ToDecimal()
-        {
-            return Convert.ToDecimal(Wrappee);
-        }
-
-        public override double ToDouble()
-        {
-            return Convert.ToDouble(Wrappee);
-        }
-
-        public override long ToLong()
-        {
-            return Convert.ToInt64(Wrappee);
-        }
-
-        public override string ToString()
-        {
-            return Wrappee.ToString() ?? "";
-        }
-    }
-
-    public class EfeuTime : EfeuObject
-    {
-        public readonly DateTimeOffset Timestamp;
-
-        public EfeuTime(long seconds, int milliseconds = 0)
-        {
-            Timestamp = DateTimeOffset.FromUnixTimeSeconds(seconds).AddMilliseconds(milliseconds);
-        }
-
-        public EfeuTime()
-        {
-            Timestamp = DateTimeOffset.MinValue;
-        }
-
-        public EfeuTime(DateTime dt)
-        {
-            Timestamp = dt;
-        }
-
-        public EfeuTime(DateTimeOffset timestamp)
-        {
-            Timestamp = timestamp;
-        }
-
-        public static EfeuTime Now => new EfeuTime(DateTimeOffset.Now);
-
-        public override long ToLong()
-        {
-            return Timestamp.ToUnixTimeSeconds();
-        }
-
-        public override string ToString()
-        {
-            return Timestamp.ToLocalTime().ToString();
-        }
-    }
-
-    public class EfeuHash : EfeuObject
-    {
-        public readonly IDictionary<string, EfeuValue> Fields = new Dictionary<string, EfeuValue>();
-
-        public EfeuValue this[string field]
-        {
-            get
+            if (obj is EfeuValue efeuValue)
             {
-                return Fields.GetValueOrDefault(field, default);
+                if (this.Tag == EfeuValueTag.Nil)
+                {
+                    return efeuValue.Tag == EfeuValueTag.Nil;
+                }
+
+                if (this.Tag == EfeuValueTag.True)
+                {
+                    return efeuValue.Tag != EfeuValueTag.True;
+                }
+
+                if (this.Tag == EfeuValueTag.False)
+                {
+                    return efeuValue.Tag != EfeuValueTag.False;
+                }
+
+                if (this.Tag == EfeuValueTag.Integer)
+                {
+                    return this.integer == efeuValue.ToLong();
+                }
+
+                if (this.Tag == EfeuValueTag.Object)
+                {
+                    return this.obj!.Equals(efeuValue.AsObject());
+                }
             }
-            set
+
+            return base.Equals(obj);
+        }
+
+        public static EfeuValue operator +(EfeuValue left, EfeuValue right) => default;
+
+        public static EfeuValue operator -(EfeuValue left, EfeuValue right) => default;
+
+        public static EfeuValue operator *(EfeuValue left, EfeuValue right) => default;
+
+        public static EfeuValue operator /(EfeuValue left, EfeuValue right) => default;
+
+        public static EfeuValue operator %(EfeuValue left, EfeuValue right) => default;
+
+        public static EfeuValue operator <(EfeuValue left, EfeuValue right) => default;
+
+        public static EfeuValue operator >(EfeuValue left, EfeuValue right) => default;
+
+        public static EfeuValue operator ==(EfeuValue left, EfeuValue right) => left.Equals(right);
+
+        public static EfeuValue operator !=(EfeuValue left, EfeuValue right) => !left.Equals(right);
+
+        public static bool operator true(EfeuValue x) => x.ToBool();
+
+        public static bool operator false(EfeuValue x) => !x.ToBool();
+
+        public static bool operator !(EfeuValue x) => !x;
+
+        public static EfeuValue operator ++(EfeuValue value)
+        {
+            if (value.Tag == EfeuValueTag.Integer)
             {
-                Fields[field] = value;
+                return value.ToLong() + 1;
+            }
+            else if (value.Tag == EfeuValueTag.Object)
+            {
+                return value.AsObject().Increment();
+            }
+            else
+            {
+                throw new InvalidOperationException();
             }
         }
 
-        public override EfeuValue Call(string field)
+        public static EfeuValue operator --(EfeuValue value)
         {
-            return Fields.GetValueOrDefault(field, EfeuValue.Nil());
-        }
-
-        public override void Call(string field, EfeuValue value)
-        {
-            Fields[field] = value;
-        }
-    }
-
-    public class EfeuArray : EfeuObject, IEnumerable<EfeuValue>
-    {
-        public readonly IList<EfeuValue> Items = new List<EfeuValue>();
-
-        public int Length => Items.Count;
-
-        public EfeuValue this[int index]
-        {
-            get
+            if (value.Tag == EfeuValueTag.Integer)
             {
-                return Items.ElementAtOrDefault(index);
+                return value.ToLong() - 1;
             }
-            set
+            else if (value.Tag == EfeuValueTag.Object)
             {
-                Items[index] = value;
+                return value.AsObject().Decrement();
             }
-        }
-
-        public EfeuArray(IEnumerable<EfeuValue> items)
-        {
-            foreach (EfeuValue item in items)
-                Items.Add(item);
-        }
-
-        public EfeuArray(params EfeuValue[] items)
-        {
-            foreach (EfeuValue item in items)
-                Items.Add(item);
-        }
-
-        public EfeuArray()
-        {
-
-        }
-
-        public override EfeuValue Call(int index)
-        {
-            return Items.ElementAtOrDefault(index);
-        }
-
-        public override void Call(int index, EfeuValue value)
-        {
-            Items[index] = value;
-        }
-
-        public override void Push(EfeuValue value)
-        {
-            Items.Add(value);
-        }
-
-        public override EfeuValue Pop()
-        {
-            EfeuValue item = Items[Items.Count - 1];
-            Items.RemoveAt(Items.Count - 1);
-            return item;
-        }
-
-        public void Prepend(EfeuValue value)
-        {
-            Items.Prepend(value);
-        }
-
-        public IEnumerator<EfeuValue> GetEnumerator()
-        {
-            return Items.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
+            else
+            {
+                throw new InvalidOperationException();
+            }
         }
     }
 }

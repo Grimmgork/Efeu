@@ -23,7 +23,7 @@ namespace Efeu.Runtime.Method
         {
             if (signal is ConsoleInputSignal consoleSignal)
             {
-                context.Output = SomeData.String(consoleSignal.Input);
+                context.Output = consoleSignal.Input;
                 return WorkflowMethodState.Done;
             }
 

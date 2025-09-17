@@ -12,36 +12,35 @@ namespace Efeu.Runtime.Method
 {
     public class WorkflowMethodContext
     {
-        public readonly bool IsFirstRun;
+        public bool IsFirstRun => Times == 0;
 
-        public readonly SomeData Input;
+        public readonly int Times;
 
-        public readonly SomeData InitialInput;
+        public readonly EfeuValue Input;
 
-        public readonly SomeData Result;
+        public readonly EfeuValue Result;
 
         public WorkflowTriggerHash Trigger;
 
-        public SomeData Output;
+        public EfeuValue Output;
 
-        public SomeData Data;
+        public EfeuValue Data;
 
         public string? Route;
 
-        public WorkflowMethodContext(SomeData input)
+        public WorkflowMethodContext(EfeuValue input)
         {
             Input = input;
-            Output = new SomeData();
-            IsFirstRun = true;
+            Output = new EfeuValue();
         }
 
-        public WorkflowMethodContext(SomeData input, SomeData data, SomeData dispatchResult)
+        public WorkflowMethodContext(EfeuValue input, EfeuValue data, EfeuValue result, int times)
         {
             Input = input;
             Data = data;
-            Output = new SomeData();
-            IsFirstRun = false;
-            Result = dispatchResult;
+            Output = new EfeuValue();
+            Result = result;
+            Times = times;
         }
     }
 }

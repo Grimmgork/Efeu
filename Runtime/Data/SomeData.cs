@@ -20,11 +20,11 @@ namespace Efeu.Runtime.Data
     {
         public WorkflowTraversalNodeType NodeType { get; }
 
-        public IWorkflowTraversible GetField(string name);
+        public IWorkflowTraversible Call(string name);
 
-        public IWorkflowTraversible GetIndex(int index);
+        public IWorkflowTraversible Call(int index);
 
-        public SomeData Evaluate();
+        public SomeData Eval();
     }
 
     public static class WorkflowTraversableExtensions
@@ -37,16 +37,16 @@ namespace Efeu.Runtime.Data
                 if (node.NodeType != WorkflowTraversalNodeType.Struct)
                     throw new InvalidOperationException("Node is not a struct!");
 
-                node = node.GetField(segment.Property);
+                node = node.Call(segment.Property);
                 if (segment.IsIndex)
                 {
                     if (node.NodeType != WorkflowTraversalNodeType.Array)
                         throw new InvalidOperationException("Node is not a array!");
 
-                    node = node.GetIndex(segment.Index);
+                    node = node.Call(segment.Index);
                 }
             }
-            return node.Evaluate();
+            return node.Eval();
         }
     }
 
@@ -128,7 +128,7 @@ namespace Efeu.Runtime.Data
         {
             get
             {
-                return GetField(name).Evaluate();
+                return Call(name).Eval();
             }
         }
 
@@ -136,7 +136,7 @@ namespace Efeu.Runtime.Data
         {
             get
             {
-                return GetIndex(index).Evaluate();
+                return Call(index).Eval();
             }
         }
 
@@ -412,7 +412,7 @@ namespace Efeu.Runtime.Data
             }
         }
 
-        public IWorkflowTraversible GetField(string name)
+        public IWorkflowTraversible Call(string name)
         {
             if (DataType == WorkflowDataType.Reference)
             {
@@ -437,7 +437,7 @@ namespace Efeu.Runtime.Data
             }
         }
 
-        public IWorkflowTraversible GetIndex(int index)
+        public IWorkflowTraversible Call(int index)
         {
             if (DataType == WorkflowDataType.Reference)
             {
@@ -455,7 +455,7 @@ namespace Efeu.Runtime.Data
             return SomeData.Parse(obj?[index]);
         }
 
-        public SomeData Evaluate()
+        public SomeData Eval()
         {
             return this;
         }

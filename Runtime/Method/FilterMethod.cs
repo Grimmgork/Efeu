@@ -10,50 +10,41 @@ namespace Efeu.Runtime.Method
 {
     public class FilterMethod : WorkflowMethodBase
     {
-        private class State
-        {
-            public IReadOnlyCollection<SomeData> Items = [];
-
-            public ICollection<SomeData> Result = [];
-
-            public int Index;
-        }
-
         public override WorkflowMethodState Run(WorkflowMethodContext context)
         {
             if (context.IsFirstRun)
             {
-                context.Data = SomeData.Reference(new State()
+                if (context.Input.As<EfeuArray>().Count() == 0)
                 {
-                    Index = 0,
-                    Items = context.Input.Items,
-                    Result = []
-                });
-
-                if (context.Input.Items.Count == 0)
-                {
-                    context.Output = SomeData.Array();
+                    context.Output = new EfeuArray();
                     return WorkflowMethodState.Done;
                 }
 
-                context.Output = context.Input.Items.First();
+                context.Data = new EfeuHash([
+                    new ("result", new EfeuArray()),
+                    new ("index", 0)
+                ]);
+
+                context.Output = context.Input.First();
                 return WorkflowMethodState.Yield;
             }
 
-            State state = (State)context.Data.Value!;
-            if (context.Result.ToBoolean())
+            if (context.Result)
             {
-                state.Result.Add(state.Items.ElementAt(state.Index));
+                int index = context.Data.Call("index").ToInt();
+                EfeuValue item = context.Input.Call(index);
+                context.Data.Call("result").Push(item);
             }
 
-            state.Index++;
-            if (state.Index < state.Items.Count)
+            context.Data.Call("index", (value) => value++);
+            if (context.Data.Call("index") < context.Input.Length())
             {
-                context.Output = state.Items.ElementAt(state.Index);
+                int index = context.Data.Call("index").ToInt();
+                context.Output = context.Input.Call(index);
                 return WorkflowMethodState.Yield;
             }
 
-            context.Output = SomeData.Array(state.Items);
+            context.Output = context.Data.Call("result");
             return WorkflowMethodState.Done;
         }
     }

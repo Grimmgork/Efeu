@@ -12,13 +12,13 @@ namespace Efeu.Runtime.Data
 {
     public class InputEvaluationContext
     {
-        public readonly Func<int, SomeData> GetOutput;
+        public readonly Func<int, EfeuValue> GetOutput;
 
-        public readonly SomeData LastOutput;
+        public readonly EfeuValue LastOutput;
 
-        public readonly Func<string, SomeData> GetVariable;
+        public readonly Func<string, EfeuValue> GetVariable;
 
-        public InputEvaluationContext(Func<int, SomeData> getOutput, Func<string, SomeData> getVariable, SomeData lastOutput)
+        public InputEvaluationContext(Func<int, EfeuValue> getOutput, Func<string, EfeuValue> getVariable, EfeuValue lastOutput)
         {
             GetOutput = getOutput;
             GetVariable = getVariable;

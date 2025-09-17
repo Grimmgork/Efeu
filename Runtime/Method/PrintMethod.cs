@@ -12,7 +12,7 @@ namespace Efeu.Runtime.Method
     {
         public override WorkflowMethodState Run(WorkflowMethodContext context)
         {
-            Console.WriteLine(context.Input.ToString());
+            Console.WriteLine(context.Input);
             return WorkflowMethodState.Done;
         }
     }

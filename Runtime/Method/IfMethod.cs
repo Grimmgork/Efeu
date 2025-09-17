@@ -11,7 +11,7 @@ namespace Efeu.Runtime.Method
     {
         public override WorkflowMethodState Run(WorkflowMethodContext context)
         {
-            if (!context.Input["If"].ToBoolean())
+            if (!context.Input.Call("If"))
             {
                 context.Route = "Else";
             }

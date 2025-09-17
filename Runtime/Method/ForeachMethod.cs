@@ -10,49 +10,30 @@ namespace Efeu.Runtime.Method
 {
     public class ForeachMethod : WorkflowMethodBase
     {
-        private class State
-        {
-            public IEnumerable<SomeData> Items = [];
-
-            public List<SomeData> Result = [];
-
-            public int Index;
-        }
-
         public override WorkflowMethodState Run(WorkflowMethodContext context)
         {
-            State state = new State();
             if (context.IsFirstRun)
             {
-                state = new State()
-                {
-                    Index = 0,
-                    Items = context.Input.Items,
-                    Result = []
-                };
+                context.Data = new EfeuArray();
 
-                context.Data = SomeData.Reference(state);
-
-                if (state.Items.Any())
+                if (context.Input.Length() == 0)
                 {
-                    context.Output = SomeData.Array();
+                    context.Output = new EfeuArray();
                     return WorkflowMethodState.Done;
                 }
 
-                context.Output = state.Items.First();
+                context.Output = context.Input.First();
                 return WorkflowMethodState.Yield;
             }
 
-            state.Result.Add(context.Result);
-
-            if (state.Index < state.Items.Count())
+            context.Data.Call("result").Push(context.Result);
+            if (context.Times < context.Input.Length())
             {
-                context.Output = state.Items.ElementAt(state.Index);
-                state.Index++;
+                context.Output = context.Input.Call(context.Times);
                 return WorkflowMethodState.Yield;
             }
 
-            context.Output = SomeData.Array(state.Result);
+            context.Output = context.Data.Call("result");
             return WorkflowMethodState.Done;
         }
     }

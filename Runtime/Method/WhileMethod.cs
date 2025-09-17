@@ -11,7 +11,7 @@ namespace Efeu.Runtime.Method
     {
         public override WorkflowMethodState Run(WorkflowMethodContext context)
         {
-            if (context.Input.ToBoolean())
+            if (context.Input.ToBool())
             {
                 return WorkflowMethodState.Yield;
             }

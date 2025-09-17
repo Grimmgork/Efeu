@@ -9,19 +9,19 @@ namespace Efeu.Runtime.Function
 {
     public class WorkflowFunction : WorkflowFunctionInstanceBase
     {
-        private Func<WorkflowFunctionContext, SomeData, SomeData> run;
+        private Func<WorkflowFunctionContext, EfeuValue, EfeuValue> run;
 
-        public WorkflowFunction(Func<SomeData, SomeData> run)
+        public WorkflowFunction(Func<EfeuValue, EfeuValue> run)
         {
             this.run = (context, input) => run(input);
         }
 
-        public WorkflowFunction(Func<WorkflowFunctionContext, SomeData, SomeData> run)
+        public WorkflowFunction(Func<WorkflowFunctionContext, EfeuValue, EfeuValue> run)
         {
             this.run = run;
         }
 
-        public sealed override SomeData Run(WorkflowFunctionContext context, SomeData inputs)
+        public sealed override EfeuValue Run(WorkflowFunctionContext context, EfeuValue inputs)
         {
             return run.Invoke(context, inputs);
         }

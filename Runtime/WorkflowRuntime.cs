@@ -3,6 +3,7 @@ using Efeu.Runtime.Function;
 using Efeu.Runtime.Method;
 using Efeu.Runtime.Model;
 using Efeu.Runtime.Trigger;
+using MessagePack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,25 +21,39 @@ namespace Efeu.Runtime
         Done
     }
 
+    [MessagePackObject]
     public class WorkflowRuntimeExport
     {
+        [Key(0)]
         public WorkflowRuntimeState State;
-        public WorkflowRuntimeScope RootScope = new WorkflowRuntimeScope();
-
-        [JsonIgnore] 
-        public SomeData Output => RootScope.LastMethodOutput;
+        [Key(1)]
+        public WorkflowRuntimeScopeExport RootScope = new WorkflowRuntimeScopeExport();
+        [IgnoreMember]
+        public EfeuValue Output => RootScope.LastMethodOutput;
     }
 
+    [MessagePackObject]
     public class WorkflowRuntimeScopeExport
     {
+        [Key(0)]
         public int CurrentMethodId;
-        public SomeData? CurrentMethodData;
-        public SomeData LastMethodOutput;
-        public SomeData DispatchResult;
+        [Key(1)]
+        public EfeuValue CurrentMethodData;
+        [Key(2)]
+        public int Times;
+        [Key(3)]
+        public EfeuValue LastMethodOutput;
+        [Key(4)]
+        public EfeuValue DispatchResult;
+        [Key(5)]
         public WorkflowMethodState State;
+        [Key(6)]
         public WorkflowTriggerHash Trigger;
-        public Dictionary<int, SomeData> MethodOutput = [];
-        public Dictionary<string, SomeData> Variables = [];
+        [Key(7)]
+        public Dictionary<int, EfeuValue> MethodOutput = [];
+        [Key(8)]
+        public Dictionary<string, EfeuValue> Variables = [];
+        [Key(9)]
         public List<WorkflowRuntimeScopeExport> Children = [];
     }
 
@@ -46,21 +61,59 @@ namespace Efeu.Runtime
     {
         public WorkflowRuntimeScope? Parent;
         public int CurrentMethodId;
-        public SomeData? CurrentMethodData;
-        public SomeData LastMethodOutput;
-        public SomeData DispatchResult;
+        public int Times;
+        public EfeuValue CurrentMethodData;
+        public EfeuValue LastMethodOutput;
+        public EfeuValue DispatchResult;
         public WorkflowMethodState State;
         public WorkflowTriggerHash Trigger;
-        public Dictionary<int, SomeData> MethodOutput = [];
-        public Dictionary<string, SomeData> Variables = [];
+        public Dictionary<int, EfeuValue> MethodOutput = [];
+        public Dictionary<string, EfeuValue> Variables = [];
         public List<WorkflowRuntimeScope> Children = [];
+
+        public WorkflowRuntimeScopeExport Export()
+        {
+            return new WorkflowRuntimeScopeExport()
+            {
+                CurrentMethodId = CurrentMethodId,
+                CurrentMethodData = CurrentMethodData,
+                Times = Times,
+                LastMethodOutput = LastMethodOutput,
+                DispatchResult = DispatchResult,
+                State = State,
+                Trigger = Trigger,
+                MethodOutput = MethodOutput,
+                Variables = Variables,
+                Children = Children.Select(x => x.Export()).ToList()
+            };
+        }
+
+        public static WorkflowRuntimeScope Import(WorkflowRuntimeScopeExport export, WorkflowRuntimeScope? parent = null)
+        {
+            WorkflowRuntimeScope scope = new WorkflowRuntimeScope()
+            {
+                Parent = parent,
+                CurrentMethodId = export.CurrentMethodId,
+                CurrentMethodData = export.CurrentMethodData,
+                Times = export.Times,
+                LastMethodOutput = export.LastMethodOutput,
+                DispatchResult = export.DispatchResult,
+                State = export.State,
+                Trigger = export.Trigger,
+                MethodOutput = export.MethodOutput,
+                Variables = export.Variables,
+            };
+
+            scope.Children = export.Children.Select((i) => WorkflowRuntimeScope.Import(i, scope)).ToList();
+            return scope;
+        }
     }
 
     public class WorkflowRuntime
     {
         public WorkflowRuntimeState State => state;
 
-        public SomeData Output => rootScope.LastMethodOutput;
+        public EfeuValue Output => rootScope.LastMethodOutput;
 
         private WorkflowRuntimeState state = WorkflowRuntimeState.Initial;
 
@@ -76,14 +129,14 @@ namespace Efeu.Runtime
             this.definition = definition;
         }
 
-        public static WorkflowRuntime Prepare(WorkflowRuntimeEnvironment environment, WorkflowDefinition definition, SomeData input = default)
+        public static WorkflowRuntime Prepare(WorkflowRuntimeEnvironment environment, WorkflowDefinition definition, EfeuValue input = default)
         {
             WorkflowRuntime runtime = new WorkflowRuntime(environment, definition);
             runtime.Prepare(input);
             return runtime;
         }
 
-        private void Prepare(SomeData input)
+        private void Prepare(EfeuValue input)
         {
             if (state != WorkflowRuntimeState.Initial)
                 throw new InvalidOperationException();
@@ -100,7 +153,7 @@ namespace Efeu.Runtime
                 {
                     rootScope = new WorkflowRuntimeScope()
                     {
-                        MethodOutput = new Dictionary<int, SomeData>([
+                        MethodOutput = new Dictionary<int, EfeuValue>([
                             new (startActionNode.Id, input)
                         ]),
                         State = WorkflowMethodState.Running,
@@ -186,8 +239,8 @@ namespace Efeu.Runtime
                 if (scope.State == WorkflowMethodState.Suspended && hashes.Contains(scope.Trigger))
                 {
                     WorkflowActionNode actionNode = definition.GetAction(scope.CurrentMethodId);
-                    SomeData input = GetInputForMethod(scope, actionNode);
-                    WorkflowMethodContext context =  new WorkflowMethodContext(input, scope.CurrentMethodData ?? default, scope.DispatchResult);
+                    EfeuValue input = GetInputForMethod(scope, actionNode);
+                    WorkflowMethodContext context =  new WorkflowMethodContext(input, scope.CurrentMethodData, scope.DispatchResult, scope.Times);
                     IWorkflowMethod methodInstance = environment.MethodProvider.GetMethod(actionNode.Name);
                     WorkflowMethodState newState = methodInstance.Signal(context, signal);
                     MoveNext(scope, newState, context, actionNode);
@@ -205,9 +258,9 @@ namespace Efeu.Runtime
                 throw new InvalidOperationException();
 
             WorkflowActionNode actionNode = definition.GetAction(scope.CurrentMethodId);
-            SomeData input = GetInputForMethod(scope, actionNode);
+            EfeuValue input = GetInputForMethod(scope, actionNode);
             WorkflowMethodContext context;
-            if (scope.CurrentMethodData == null)
+            if (scope.Times == 0)
             {
                 // run method for first time
                 context = new WorkflowMethodContext(input);
@@ -215,7 +268,7 @@ namespace Efeu.Runtime
             else
             {
                 // run method multiple times
-                context = new WorkflowMethodContext(input, scope.CurrentMethodData.Value, scope.DispatchResult);
+                context = new WorkflowMethodContext(input, scope.CurrentMethodData, scope.DispatchResult, scope.Times);
             }
 
             IWorkflowMethod methodInstance = environment.MethodProvider.GetMethod(actionNode.Name);
@@ -223,6 +276,7 @@ namespace Efeu.Runtime
             try
             {
                 newState = await methodInstance.RunAsync(context, token);
+                scope.Times++;
             }
             catch (Exception)
             {
@@ -261,6 +315,7 @@ namespace Efeu.Runtime
             {
                 scope.LastMethodOutput = context.Output;
                 scope.MethodOutput[scope.CurrentMethodId] = context.Output;
+                scope.Times = 0;
 
                 int nextMethodId = 0;
                 if (context.Route == null)
@@ -281,12 +336,12 @@ namespace Efeu.Runtime
                     // continue if there is a next one
                     scope.State = WorkflowMethodState.Running;
                     scope.CurrentMethodId = nextMethodId;
-                    scope.CurrentMethodData = null;
+                    scope.CurrentMethodData = EfeuValue.Nil();
                 }
             }
         }
 
-        private void BeginScope(WorkflowRuntimeScope scope, SomeData input, int initialMethodId)
+        private void BeginScope(WorkflowRuntimeScope scope, EfeuValue input, int initialMethodId)
         {
             // create a new child scope
             WorkflowRuntimeScope newScope = new WorkflowRuntimeScope()
@@ -301,7 +356,7 @@ namespace Efeu.Runtime
             activeScopes.Add(newScope);
         }
 
-        private void EndScope(WorkflowRuntimeScope scope, SomeData result)
+        private void EndScope(WorkflowRuntimeScope scope, EfeuValue result)
         {
             // report back to parent scope
             if (scope.Parent != null)
@@ -317,30 +372,30 @@ namespace Efeu.Runtime
             }
         }
 
-        private SomeData GetFunctionOutput(WorkflowRuntimeScope scope, WorkflowActionNode node)
+        private EfeuValue GetFunctionOutput(WorkflowRuntimeScope scope, WorkflowActionNode node)
         {
             InputEvaluationContext inputContext = new InputEvaluationContext((id) => GetOutput(scope, id), (name) => GetVariable(scope, name), default);
-            SomeData input = node.Input.EvaluateInput(inputContext);
+            EfeuValue input = node.Input.EvaluateInput(inputContext);
 
             string methodname = node.Name;
             IWorkflowFunction workflowFunctionInstance = environment.FunctionProvider.GetFunction(methodname);
             WorkflowFunctionContext context = new WorkflowFunctionContext();
-            SomeData outputs = workflowFunctionInstance.Run(context, input);
+            EfeuValue outputs = workflowFunctionInstance.Run(context, input);
             return outputs;
         }
 
-        private SomeData GetInputForMethod(WorkflowRuntimeScope scope, WorkflowActionNode method)
+        private EfeuValue GetInputForMethod(WorkflowRuntimeScope scope, WorkflowActionNode method)
         {
             InputEvaluationContext context = new InputEvaluationContext((id) => GetOutput(scope, id), (name) => GetVariable(scope, name), scope.LastMethodOutput);
             return method.Input.EvaluateInput(context);
         }
 
-        private SomeData GetVariable(WorkflowRuntimeScope start, string name)
+        private EfeuValue GetVariable(WorkflowRuntimeScope start, string name)
         {
             WorkflowRuntimeScope? scope = start;
             while (scope != null)
             {
-                if (scope.Variables.TryGetValue(name, out SomeData value))
+                if (scope.Variables.TryGetValue(name, out EfeuValue value))
                 {
                     return value;
                 }
@@ -353,7 +408,7 @@ namespace Efeu.Runtime
             return default;
         }
 
-        private void SetVariable(WorkflowRuntimeScope start, string name, SomeData value)
+        private void SetVariable(WorkflowRuntimeScope start, string name, EfeuValue value)
         {
             WorkflowRuntimeScope? scope = start;
             while (scope != null)
@@ -372,7 +427,7 @@ namespace Efeu.Runtime
             start.Variables[name] = value;
         }
 
-        private SomeData GetOutput(WorkflowRuntimeScope scope, int id)
+        private EfeuValue GetOutput(WorkflowRuntimeScope scope, int id)
         {
             WorkflowActionNode node = definition.GetAction(id);
             return node.Type switch
@@ -388,12 +443,12 @@ namespace Efeu.Runtime
             };
         }
 
-        private SomeData GetMethodOutput(WorkflowRuntimeScope start, WorkflowActionNode node)
+        private EfeuValue GetMethodOutput(WorkflowRuntimeScope start, WorkflowActionNode node)
         {
             WorkflowRuntimeScope? scope = start;
             while (scope != null)
             {
-                if (scope.MethodOutput.TryGetValue(node.Id, out SomeData value))
+                if (scope.MethodOutput.TryGetValue(node.Id, out EfeuValue value))
                 {
                     return value;
                 }
@@ -411,7 +466,7 @@ namespace Efeu.Runtime
             return new WorkflowRuntimeExport()
             {
                 State = this.State,
-                RootScope = this.rootScope
+                RootScope = this.rootScope.Export()
             };
         }
 
@@ -424,9 +479,8 @@ namespace Efeu.Runtime
 
         private void Import(WorkflowRuntimeExport export)
         {
-            // do export in reverse
-
-            throw new NotImplementedException();
+            this.state = export.State;
+            this.rootScope = WorkflowRuntimeScope.Import(export.RootScope);
         }
     }
 }

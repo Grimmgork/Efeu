@@ -9,6 +9,8 @@ namespace Efeu.Runtime.Function
 {
     public class WorkflowFunctionContext
     {
+        public readonly EfeuValue Input;
 
+        public readonly Func<EfeuValue, EfeuValue> Yield = (input) => input;
     }
 }

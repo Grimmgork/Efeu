@@ -10,7 +10,7 @@ namespace Efeu.Runtime.Function
 {
     public abstract class WorkflowFunctionInstanceBase : IWorkflowFunction
     {
-        public virtual SomeData Run(WorkflowFunctionContext context, SomeData input)
+        public virtual EfeuValue Run(WorkflowFunctionContext context, EfeuValue input)
         {
             throw new NotImplementedException();
         }

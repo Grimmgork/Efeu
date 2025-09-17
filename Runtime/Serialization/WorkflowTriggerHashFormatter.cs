@@ -8,9 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Runtime
+namespace Efeu.Runtime.Serialization
 {
-    internal class WorkflowTriggerHashMessagePackFormatter : IMessagePackFormatter<WorkflowTriggerHash>
+    internal class WorkflowTriggerHashFormatter : IMessagePackFormatter<WorkflowTriggerHash>
     {
         public WorkflowTriggerHash Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {

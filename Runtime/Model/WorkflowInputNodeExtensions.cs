@@ -10,7 +10,7 @@ namespace Efeu.Runtime.Model
 {
     public static class WorkflowInputNodeExtensions
     {
-        public static SomeData EvaluateInput(this WorkflowInputNode node, InputEvaluationContext context)
+        public static EfeuValue EvaluateInput(this WorkflowInputNode node, InputEvaluationContext context)
         {
             if (node.Type == WorkflowInputType.Literal)
             {
@@ -19,12 +19,12 @@ namespace Efeu.Runtime.Model
             else
             if (node.Type == WorkflowInputType.Array)
             {
-                return SomeData.Array(node.Inputs.Select(i => i.EvaluateInput(context)));
+                return new EfeuArray(node.Inputs.Select(i => i.EvaluateInput(context)));
             }
             else
             if (node.Type == WorkflowInputType.Struct)
             {
-                return SomeData.Struct(node.Inputs.Select(i => new KeyValuePair<string, SomeData>(i.Name, i.EvaluateInput(context))));
+                return new EfeuHash(node.Inputs.Select(i => new KeyValuePair<string, EfeuValue>(i.Name, i.EvaluateInput(context))));
             }
             else
             if (node.Type == WorkflowInputType.Output)
@@ -39,7 +39,7 @@ namespace Efeu.Runtime.Model
             else
             if (node.Type == WorkflowInputType.Variable)
             {
-
+                // TODO
             }
 
             throw new NotImplementedException();

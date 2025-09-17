@@ -17,9 +17,9 @@ namespace Efeu.Runtime.Method
                 context.Data = 0;
             }
 
-            if (context.Data.ToInt32() < context.Input.ToInt32())
+            if (context.Data.ToInt() < context.Input.ToInt())
             {
-                context.Data = context.Data.ToInt32() + 1;
+                context.Data++;
                 return Task.FromResult(WorkflowMethodState.Yield);
             }
             else
