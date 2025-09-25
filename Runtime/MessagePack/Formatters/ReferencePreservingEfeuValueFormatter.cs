@@ -1,4 +1,5 @@
 ﻿using Efeu.Runtime.Data;
+using Efeu.Runtime.Serialization;
 using MessagePack;
 using MessagePack.Formatters;
 using System;
@@ -7,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Runtime.Serialization
+namespace Efeu.Runtime.MessagePack.Formatters
 {
     public class ReferencePreservingEfeuValueFormatter : IMessagePackFormatter<EfeuValue>
     {
@@ -24,7 +25,7 @@ namespace Efeu.Runtime.Serialization
 
         public ReferencePreservingEfeuValueFormatter()
         {
-            this.typeRegistry = new WellKnownTypeRegistry();
+            typeRegistry = new WellKnownTypeRegistry();
         }
 
         public EfeuValue Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)

@@ -62,9 +62,9 @@ namespace Efeu.Runtime
         public WorkflowRuntimeScope? Parent;
         public int CurrentMethodId;
         public int Times;
-        public EfeuValue CurrentMethodData;
+        public EfeuValue CurrentMethodData; 
         public EfeuValue LastMethodOutput;
-        public EfeuValue DispatchResult;
+        public EfeuValue DispatchResult; 
         public WorkflowMethodState State;
         public WorkflowTriggerHash Trigger;
         public Dictionary<int, EfeuValue> MethodOutput = [];

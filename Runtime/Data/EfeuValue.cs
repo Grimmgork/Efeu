@@ -82,8 +82,6 @@ namespace Efeu.Runtime.Data
             };
         }
 
-
-
         public bool IsNil()
         {
             return Tag == EfeuValueTag.Nil;

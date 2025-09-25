@@ -1,4 +1,6 @@
 ﻿using Efeu.Runtime.Data;
+using Efeu.Runtime.MessagePack.Formatters;
+using Efeu.Runtime.Serialization;
 using MessagePack;
 using MessagePack.Formatters;
 using MessagePack.Resolvers;
@@ -8,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Runtime.Serialization
+namespace Efeu.Runtime.MessagePack
 {
     public class WorkflowRuntimeExportMessagePackSerializer : IWorkflowRuntimeExportSerializer
     {
@@ -29,7 +31,7 @@ namespace Efeu.Runtime.Serialization
         public WorkflowRuntimeExportMessagePackSerializer(params IMessagePackFormatter[] formatters)
         {
             this.formatters = this.formatters.Concat(formatters).ToArray();
-            this.typeRegistry = WellKnownTypeRegistry.WithEfeuTypes();
+            typeRegistry = WellKnownTypeRegistry.WithEfeuTypes();
         }
 
         private MessagePackSerializerOptions GetSerializerOptions()

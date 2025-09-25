@@ -17,7 +17,7 @@ namespace Efeu.Runtime
             return factories[name]();
         }
 
-        public async Task AttachAsync(string name, SomeData input)
+        public async Task AttachAsync(string name, EfeuValue input)
         {
 
         }

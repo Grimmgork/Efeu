@@ -11,7 +11,7 @@ namespace Efeu.Runtime.Model
     public class WorkflowTriggerDescriptor
     {
         public int Id;
-        public SomeData Input;
+        public EfeuValue Input;
         public WorkflowTriggerHash Hash;
     }
 }

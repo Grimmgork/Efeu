@@ -7,9 +7,9 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Efeu.Runtime.Data;
 
-namespace Efeu.Runtime.Json
+namespace Efeu.Runtime.JSON.Converters
 {
-    public class SomeDataTraversalJsonConverter : JsonConverter<DataTraversal>
+    public class DataTraversalJsonConverter : JsonConverter<DataTraversal>
     {
         public override DataTraversal Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {

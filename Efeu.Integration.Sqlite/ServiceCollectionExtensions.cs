@@ -46,7 +46,7 @@ namespace Efeu.Integration.Sqlite
             builder.MappingSchema.SetConverter<Stack<int>, DataParameter>(c => ConvertToJson(c, jsonOptions));
             builder.MappingSchema.SetConverter<WorkflowDefinition, DataParameter>(c => ConvertToJson(c, jsonOptions));
 
-            builder.MappingSchema.SetConverter<string, SomeData>(i => ConvertFromJson<SomeData>(i, jsonOptions));
+            builder.MappingSchema.SetConverter<string, EfeuValue>(i => ConvertFromJson<SomeData>(i, jsonOptions));
             builder.MappingSchema.SetConverter<string, Stack<int>>(i => ConvertFromJson<Stack<int>>(i, jsonOptions));
             builder.MappingSchema.SetConverter<string, IDictionary<int, SomeData>>(i => ConvertFromJson<IDictionary<int, SomeData>>(i, jsonOptions));
             builder.MappingSchema.SetConverter<string, WorkflowDefinition>(i => ConvertFromJson<WorkflowDefinition>(i, jsonOptions));

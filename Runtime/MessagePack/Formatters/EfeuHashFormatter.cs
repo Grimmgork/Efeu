@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Runtime.Serialization
+namespace Efeu.Runtime.MessagePack.Formatters
 {
     public class EfeuHashFormatter : IMessagePackFormatter<EfeuHash?>
     {

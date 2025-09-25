@@ -32,6 +32,11 @@ namespace Efeu.Runtime.Data
             return EfeuValue.Parse(obj[index]);
         }
 
+        public override void Call(int index, EfeuValue value)
+        {
+            base.Call(index, value);
+        }
+
         public override bool ToBoolean()
         {
             return Convert.ToBoolean(Wrappee);

@@ -1,4 +1,6 @@
 ﻿using Efeu.Runtime.Data;
+using Efeu.Runtime.MessagePack.Formatters;
+using Efeu.Runtime.Serialization;
 using MessagePack;
 using MessagePack.Formatters;
 using MessagePack.Resolvers;
@@ -9,7 +11,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Runtime.Serialization
+namespace Efeu.Runtime.MessagePack
 {
     public class ReferencePreservingEfeuValueResolver : IFormatterResolver
     {

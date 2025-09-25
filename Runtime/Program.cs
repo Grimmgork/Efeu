@@ -1,18 +1,18 @@
 ﻿// See https://aka.ms/new-console-template for more information
 namespace Efeu.Runtime;
 
+using Antlr4.Runtime;
 using Efeu.Integration.Model;
 using Efeu.Runtime.Data;
 using Efeu.Runtime.Function;
-using Efeu.Runtime.Json;
 using Efeu.Runtime.JSON;
+using Efeu.Runtime.JSON.Converters;
 using Efeu.Runtime.Method;
 using Efeu.Runtime.Model;
 using Efeu.Runtime.Serialization;
 using Efeu.Runtime.Trigger;
 using MessagePack;
 using MessagePack.Formatters;
-using MessagePack.Resolvers;
 using System;
 using System.Buffers.Text;
 using System.Collections;
@@ -29,6 +29,17 @@ class Program
 {
     static async Task Main(string[] args)
     {
+        var input = "call SomeInterop with";
+        var inputStream = new AntlrInputStream(input);
+        var lexer = new EfeuGrammarLexer(inputStream);
+        var tokens = new CommonTokenStream(lexer);
+        var parser = new EfeuGrammarParser(tokens);
+
+        var tree = parser.line(); // start rule
+
+        Console.WriteLine(tree.ToStringTree(parser));
+        return;
+
         JsonSerializerOptions options = new JsonSerializerOptions();
         options.Converters.Add(new EfeuValueJsonConverter());
         options.Converters.Add(new JsonStringEnumConverter());

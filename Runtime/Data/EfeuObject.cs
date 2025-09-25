@@ -114,5 +114,10 @@ namespace Efeu.Runtime.Data
         {
             return base.GetHashCode();
         }
+
+        public EfeuValue Eval()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

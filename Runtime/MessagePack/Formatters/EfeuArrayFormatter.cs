@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Efeu.Runtime.Serialization
+namespace Efeu.Runtime.MessagePack.Formatters
 {
     public class EfeuArrayFormatter : IMessagePackFormatter<EfeuArray?>
     {

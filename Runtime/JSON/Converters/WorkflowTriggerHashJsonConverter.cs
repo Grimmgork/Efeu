@@ -8,7 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace Efeu.Runtime.JSON
+namespace Efeu.Runtime.JSON.Converters
 {
     public class WorkflowTriggerHashJsonConverter : JsonConverter<WorkflowTriggerHash>
     {
