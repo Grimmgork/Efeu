@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace Efeu.Runtime.Data
 {
     public abstract class EfeuObject
     {
-        public string Name => this.GetType().Name;
+        public string TypeName => this.GetType().Name;
 
         public virtual EfeuValue Call(string field)
         {
@@ -40,6 +41,11 @@ namespace Efeu.Runtime.Data
             return ToLong() - 1;
         }
 
+        public virtual int Length()
+        {
+            throw new NotImplementedException();
+        }
+
         public virtual EfeuValue Last()
         {
             throw new NotImplementedException();
@@ -50,7 +56,17 @@ namespace Efeu.Runtime.Data
             throw new NotImplementedException();
         }
 
-        public virtual void Push(EfeuValue item)
+        public virtual IEnumerable<EfeuValue> Each()
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual EfeuValue Pop()
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual void Push(params EfeuValue[] values)
         {
             throw new NotImplementedException();
         }
@@ -60,17 +76,7 @@ namespace Efeu.Runtime.Data
             throw new NotImplementedException();
         }
 
-        public virtual void Unshift()
-        {
-            throw new NotImplementedException();
-        }
-
         public virtual void Unshift(params EfeuValue[] values)
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual EfeuValue Pop()
         {
             throw new NotImplementedException();
         }
@@ -95,6 +101,11 @@ namespace Efeu.Runtime.Data
             return ToLong();
         }
 
+        public override string ToString()
+        {
+            return $"<{TypeName}>";
+        }
+
         public virtual IEnumerable<KeyValuePair<string, EfeuValue>> Fields()
         {
             return [];
@@ -105,14 +116,44 @@ namespace Efeu.Runtime.Data
             throw new NotImplementedException();
         }
 
-        public override string ToString()
-        {
-            return $"<{Name}>";
-        }
-
         public override int GetHashCode()
         {
             return base.GetHashCode();
+        }
+
+        public virtual EfeuValue Add(EfeuValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual EfeuValue Subtract(EfeuValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual EfeuValue Multiply(EfeuValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual EfeuValue Divide(EfeuValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual EfeuValue Modulo(EfeuValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual EfeuValue GreaterThan(EfeuValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual EfeuValue LessThan(EfeuValue value)
+        {
+            throw new NotImplementedException();
         }
 
         public EfeuValue Eval()

@@ -10,6 +10,6 @@ namespace Efeu.Runtime
     {
         public Task SendAsync(object message);
 
-        public Task SendMultipleAsync(object message);
+        public Task SendMultipleAsync(params object[] messages);
     }
 }

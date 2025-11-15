@@ -40,7 +40,7 @@ namespace Efeu.Runtime
         [Key(1)]
         public EfeuValue CurrentMethodData;
         [Key(2)]
-        public int Times;
+        public int Iterations;
         [Key(3)]
         public EfeuValue LastMethodOutput;
         [Key(4)]
@@ -61,7 +61,7 @@ namespace Efeu.Runtime
     {
         public WorkflowRuntimeScope? Parent;
         public int CurrentMethodId;
-        public int Times;
+        public int Iterations;
         public EfeuValue CurrentMethodData; 
         public EfeuValue LastMethodOutput;
         public EfeuValue DispatchResult; 
@@ -77,7 +77,7 @@ namespace Efeu.Runtime
             {
                 CurrentMethodId = CurrentMethodId,
                 CurrentMethodData = CurrentMethodData,
-                Times = Times,
+                Iterations = Iterations,
                 LastMethodOutput = LastMethodOutput,
                 DispatchResult = DispatchResult,
                 State = State,
@@ -95,7 +95,7 @@ namespace Efeu.Runtime
                 Parent = parent,
                 CurrentMethodId = export.CurrentMethodId,
                 CurrentMethodData = export.CurrentMethodData,
-                Times = export.Times,
+                Iterations = export.Iterations,
                 LastMethodOutput = export.LastMethodOutput,
                 DispatchResult = export.DispatchResult,
                 State = export.State,
@@ -157,7 +157,7 @@ namespace Efeu.Runtime
                             new (startActionNode.Id, input)
                         ]),
                         State = WorkflowMethodState.Running,
-                        CurrentMethodId = startActionNode.DefaultRoute
+                        CurrentMethodId = startActionNode.Then
                     };
                 }
                 else
@@ -240,7 +240,7 @@ namespace Efeu.Runtime
                 {
                     WorkflowActionNode actionNode = definition.GetAction(scope.CurrentMethodId);
                     EfeuValue input = GetInputForMethod(scope, actionNode);
-                    WorkflowMethodContext context =  new WorkflowMethodContext(input, scope.CurrentMethodData, scope.DispatchResult, scope.Times);
+                    WorkflowMethodContext context =  new WorkflowMethodContext(input, scope.CurrentMethodData, scope.DispatchResult, scope.Iterations);
                     IWorkflowMethod methodInstance = environment.MethodProvider.GetMethod(actionNode.Name);
                     WorkflowMethodState newState = methodInstance.Signal(context, signal);
                     MoveNext(scope, newState, context, actionNode);
@@ -260,7 +260,7 @@ namespace Efeu.Runtime
             WorkflowActionNode actionNode = definition.GetAction(scope.CurrentMethodId);
             EfeuValue input = GetInputForMethod(scope, actionNode);
             WorkflowMethodContext context;
-            if (scope.Times == 0)
+            if (scope.Iterations == 0)
             {
                 // run method for first time
                 context = new WorkflowMethodContext(input);
@@ -268,7 +268,7 @@ namespace Efeu.Runtime
             else
             {
                 // run method multiple times
-                context = new WorkflowMethodContext(input, scope.CurrentMethodData, scope.DispatchResult, scope.Times);
+                context = new WorkflowMethodContext(input, scope.CurrentMethodData, scope.DispatchResult, scope.Iterations);
             }
 
             IWorkflowMethod methodInstance = environment.MethodProvider.GetMethod(actionNode.Name);
@@ -276,17 +276,17 @@ namespace Efeu.Runtime
             try
             {
                 newState = await methodInstance.RunAsync(context, token);
-                scope.Times++;
+                scope.Iterations++;
             }
             catch (Exception)
             {
-                if (actionNode.ErrorRoute == 0)
+                if (actionNode.Error == 0)
                 {
                     throw;
                 }
                 else
                 {
-                    scope.CurrentMethodId = actionNode.ErrorRoute;
+                    scope.CurrentMethodId = actionNode.Error;
                     return;
                 }
             }
@@ -309,18 +309,18 @@ namespace Efeu.Runtime
             else if (scope.State == WorkflowMethodState.Yield)
             {
                 scope.CurrentMethodData = context.Data;
-                BeginScope(scope, context.Output, actionNode.DispatchRoute);
+                BeginScope(scope, context.Output, actionNode.Dispatch);
             }
             else if (scope.State == WorkflowMethodState.Done)
             {
                 scope.LastMethodOutput = context.Output;
                 scope.MethodOutput[scope.CurrentMethodId] = context.Output;
-                scope.Times = 0;
+                scope.Iterations = 0;
 
                 int nextMethodId = 0;
                 if (context.Route == null)
                 {
-                    nextMethodId = actionNode.DefaultRoute;
+                    nextMethodId = actionNode.Then;
                 }
                 else
                 {
@@ -432,12 +432,11 @@ namespace Efeu.Runtime
             WorkflowActionNode node = definition.GetAction(id);
             return node.Type switch
             {
-                WorkflowActionNodeType.Function => GetFunctionOutput(scope, node),
-                WorkflowActionNodeType.Method => GetMethodOutput(scope, node),
+                // WorkflowActionNodeType.Function => GetFunctionOutput(scope, node),
+                WorkflowActionNodeType.Call => GetMethodOutput(scope, node),
                 // WorkflowActionNodeType.Start => GetMethodOutput(scope, node),
                 WorkflowActionNodeType.Trigger => GetMethodOutput(scope, node),
-                WorkflowActionNodeType.Write => GetMethodOutput(scope, node),
-                WorkflowActionNodeType.Fork => GetMethodOutput(scope, node),
+                WorkflowActionNodeType.Start => GetMethodOutput(scope, node),
                 // WorkflowActionNodeType.Join => throw new NotImplementedException(),
                 _ => throw new NotImplementedException(),
             };

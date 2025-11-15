@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Efeu.Application", "Applica
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Efeu.Integration.Sqlite", "Efeu.Integration.Sqlite\Efeu.Integration.Sqlite.csproj", "{E52BA2E5-20C9-44D4-8AAA-121A4735CF60}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Efeu.Router", "Efeu.Router\Efeu.Router.csproj", "{E49648A6-1ED4-4DAB-AB0C-ECAD8ED2F218}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{E52BA2E5-20C9-44D4-8AAA-121A4735CF60}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E52BA2E5-20C9-44D4-8AAA-121A4735CF60}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E52BA2E5-20C9-44D4-8AAA-121A4735CF60}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E49648A6-1ED4-4DAB-AB0C-ECAD8ED2F218}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E49648A6-1ED4-4DAB-AB0C-ECAD8ED2F218}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E49648A6-1ED4-4DAB-AB0C-ECAD8ED2F218}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E49648A6-1ED4-4DAB-AB0C-ECAD8ED2F218}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

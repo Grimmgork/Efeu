@@ -8,41 +8,46 @@ namespace Efeu.Runtime.Data
 {
     public class EfeuDecimal : EfeuObject
     {
-        public readonly decimal Value;
+        private readonly decimal value;
 
         public EfeuDecimal(decimal value)
         {
-            Value = value;
+            this.value = value;
         }
 
         public override double ToDouble()
         {
-            return (double)Value;
+            return (double)value;
         }
 
         public override bool ToBoolean()
         {
-            return Value == 0;
+            return value == 0;
         }
 
         public override decimal ToDecimal()
         {
-            return Value;
+            return value;
         }
 
         public override long ToLong()
         {
-            return (long)Value;
+            return (long)value;
+        }
+
+        public override EfeuValue Add(EfeuValue value)
+        {
+            return value.ToDecimal() + value.ToDecimal();
         }
 
         public override string ToString()
         {
-            return Value.ToString();
+            return value.ToString();
         }
 
         public override int GetHashCode()
         {
-            return Value.GetHashCode();
+            return value.GetHashCode();
         }
     }
 }

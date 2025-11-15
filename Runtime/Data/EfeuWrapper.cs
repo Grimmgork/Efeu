@@ -34,7 +34,7 @@ namespace Efeu.Runtime.Data
 
         public override void Call(int index, EfeuValue value)
         {
-            base.Call(index, value);
+            Call(index, value);
         }
 
         public override bool ToBoolean()

@@ -14,13 +14,15 @@ namespace Efeu.Runtime.Model
     {
         Start,
         Trigger,
-        Method,
-        Function,
-        Send, // TODO send outbox
+        Call, // call method
+        For,
+        While,
+        Repeat,
+        If,
+        Unless,
         Wait, // wait for trigger
-        Write,
-        Fork,
-        Join
+        Join,
+        Either
     }
 
     public class WorkflowActionNode
@@ -30,9 +32,10 @@ namespace Efeu.Runtime.Model
         public string Name { get; set; } = "";
         public int XPos { get; set; }
         public int YPos { get; set; }
-        public int DispatchRoute { get; set; }
-        public int DefaultRoute { get; set; }
-        public int ErrorRoute { get; set; }
+        public int Dispatch { get; set; }
+        public int Then { get; set; }
+        public int Error { get; set; }
+        public string Script { get; set; } = "";
         public WorkflowInputNode Input { get; set; } = new WorkflowInputNode();
         public WorkflowOutputNode Output { get; set; } = new WorkflowOutputNode();
         public WorkflowOutputNode DispatchOutput { get; set; } = new WorkflowOutputNode();

@@ -5,10 +5,11 @@ line
     ;
 
 stat
-    : assignmentStat      
-    | forStat             
-    | callStat             
-    | exprStat             
+    : assignmentStat NL      
+    | forStat NL         
+    | callStat NL          
+    | exprStat NL
+    | letExprStat NL
     ;
 
 assignmentStat
@@ -16,11 +17,11 @@ assignmentStat
     ;
 
 input
-    : INPUT expr
+    : FIELD expr
     ;
 
 forStat
-    : FOR VAR IN expr
+    : FOR variable IN expr
     ;
 
 callStat
@@ -32,8 +33,16 @@ exprStat
     : expr
     ;
 
+letExprStat
+    : letExpr+ expr
+    ;
+
+letExpr
+    : LET ID BE expr
+    ;
+
 traversal
-    : VAR member*
+    : variable member*
     ;
 
 member
@@ -41,36 +50,67 @@ member
     | '[' expr ']'
     ;
 
-expr
-    : atom
-    | traversal
+variable
+    : '@' ID
     ;
 
-atom
-    : VAR             #varExpr
+arrayLiteral
+    : '[' expr (COMMA expr)* ']'
+    ;
+
+hashLiteral
+    : '{' (FIELD expr)* '}' 
+    ;
+
+expr
+    : literal postfixOp*        #literalExpr
+    | funcCall postfixOp*       #funcExpr
+    | traversal postfixOp*      #traversalExpr
+    ;
+
+literal
+    : NIL             #nilExpr
+    | variable        #varExpr
     | INT             #intExpr
     | STRING          #stringExpr
-    | funcCall        #funcExpr
+    | arrayLiteral    #arrayExpr
+    | hashLiteral     #hashExpr
     ;
 
 funcCall
     : ID LPAREN (expr (COMMA expr)*)? RPAREN
     ;
 
+postfixOp
+    : ID block?
+    ;
+
+block
+    : DO expr END
+    ;
+
 // Lexer rules (keywords first!)
+END     : 'end';
+LET     : 'let';
+BE      : 'be';
 SET     : 'set';
 FOR     : 'for';
 CALL    : 'call';
+AWAIT   : 'await';
 IN      : 'in';
 TO      : 'to';
+DO      : 'do';
+NIL     : 'nil';
 WITH    : 'with';
-INPUT   : ID ':' ;
-VAR     : '@' [a-zA-Z_][a-zA-Z0-9_]* ;
-ID      : [a-zA-Z_][a-zA-Z0-9_]* ;
-DOT     : '.';
+FIELD   : ID ':' ;
+OP      : [+*/-mod~] ;
 INT     : [0-9]+ ;
+ID      : [a-zA-Z_][a-zA-Z0-9_]* ;
+NAME    : ':' ID ;
+DOT     : '.';
 STRING  : '"' (~["\r\n])* '"' ;
 LPAREN  : '(' ;
 RPAREN  : ')' ;
 COMMA   : ',' ;
+NL      : ('\r\n'|'\n'|'\r') ;
 WS      : [ \t\r\n]+ -> skip ;

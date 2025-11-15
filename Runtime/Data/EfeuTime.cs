@@ -8,38 +8,48 @@ namespace Efeu.Runtime.Data
 {
     public class EfeuTime : EfeuObject
     {
-        public readonly DateTimeOffset Timestamp;
+        private readonly DateTimeOffset timestamp;
 
         public EfeuTime(long seconds, int milliseconds = 0)
         {
-            Timestamp = DateTimeOffset.FromUnixTimeSeconds(seconds).AddMilliseconds(milliseconds);
+            timestamp = DateTimeOffset.FromUnixTimeSeconds(seconds).AddMilliseconds(milliseconds);
         }
 
         public EfeuTime()
         {
-            Timestamp = DateTimeOffset.MinValue;
+            timestamp = DateTimeOffset.MinValue;
         }
 
-        public EfeuTime(DateTime dt)
+        public EfeuTime(DateTime timestamp)
         {
-            Timestamp = dt;
+            this.timestamp = timestamp;
         }
 
         public EfeuTime(DateTimeOffset timestamp)
         {
-            Timestamp = timestamp;
+            this.timestamp = timestamp;
         }
 
         public static EfeuTime Now => new EfeuTime(DateTimeOffset.Now);
 
         public override long ToLong()
         {
-            return Timestamp.ToUnixTimeSeconds();
+            return timestamp.ToUnixTimeMilliseconds();
         }
 
         public override string ToString()
         {
-            return Timestamp.ToLocalTime().ToString();
+            return timestamp.ToLocalTime().ToString();
+        }
+
+        public DateTimeOffset ToDateTimeOffset()
+        {
+            return timestamp;
+        }
+
+        public DateTime ToDateTime()
+        {
+            return timestamp.UtcDateTime;
         }
     }
 }

@@ -8,36 +8,41 @@ namespace Efeu.Runtime.Data
 {
     public class EfeuFloat : EfeuObject
     {
-        public readonly double Value;
+        private readonly double value;
 
         public EfeuFloat(double value)
         {
-            this.Value = value;
+            this.value = value;
         }
 
         public override bool ToBoolean()
         {
-            return Value == 0;
+            return value == 0;
         }
 
         public override double ToDouble()
         {
-            return Value;
+            return value;
         }
 
         public override decimal ToDecimal()
         {
-            return (decimal)Value;
+            return (decimal)value;
+        }
+
+        public override EfeuValue Add(EfeuValue value)
+        {
+            return this.value + value.ToDouble();
         }
 
         public override string ToString()
         {
-            return Value.ToString();
+            return value.ToString();
         }
 
         public override int GetHashCode()
         {
-            return Value.GetHashCode();
+            return value.GetHashCode();
         }
     }
 }

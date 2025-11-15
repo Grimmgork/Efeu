@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Efeu.Runtime.Data
 {
-    public class EfeuHash : EfeuObject
+    public class EfeuHash : EfeuObject, IEnumerable<KeyValuePair<string, EfeuValue>>, IEnumerable<EfeuValue>
     {
         public readonly IDictionary<string, EfeuValue> Hash = new Dictionary<string, EfeuValue>();
 
@@ -46,6 +47,27 @@ namespace Efeu.Runtime.Data
         {
             return Hash;
         }
-    }
 
+        public override IEnumerable<EfeuValue> Each()
+        {
+            return Hash.Select(x => (EfeuValue)new EfeuArray([
+                x.Key, x.Value
+            ]));
+        }
+
+        public IEnumerator<KeyValuePair<string, EfeuValue>> GetEnumerator()
+        {
+            return Hash.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        IEnumerator<EfeuValue> IEnumerable<EfeuValue>.GetEnumerator()
+        {
+            return Each().GetEnumerator();
+        }
+    }
 }

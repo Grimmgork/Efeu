@@ -2,6 +2,7 @@
 namespace Efeu.Runtime;
 
 using Antlr4.Runtime;
+using Antlr4.Runtime.Tree;
 using Efeu.Integration.Model;
 using Efeu.Runtime.Data;
 using Efeu.Runtime.Function;
@@ -9,6 +10,7 @@ using Efeu.Runtime.JSON;
 using Efeu.Runtime.JSON.Converters;
 using Efeu.Runtime.Method;
 using Efeu.Runtime.Model;
+using Efeu.Runtime.Script;
 using Efeu.Runtime.Serialization;
 using Efeu.Runtime.Trigger;
 using MessagePack;
@@ -29,21 +31,30 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        var input = "call SomeInterop with";
-        var inputStream = new AntlrInputStream(input);
-        var lexer = new EfeuGrammarLexer(inputStream);
-        var tokens = new CommonTokenStream(lexer);
-        var parser = new EfeuGrammarParser(tokens);
+        EfeuValue a = 10.6d;
+        EfeuValue b = new EfeuDecimal(2);
 
-        var tree = parser.line(); // start rule
+        a.AsHash();
+        b.AsArray();
 
-        Console.WriteLine(tree.ToStringTree(parser));
+        Console.WriteLine(a + b);
         return;
+
+
+        //WorkflowActionNode node = new WorkflowActionNode()
+        //{
+        //    Script = "let name be [ { name: 10 }, 23, 42] map do nil end map \n let name be nil"
+        //};
+
+        //node.Lower();
+
+        //Console.WriteLine("kek!");
+        //return;
+
 
         JsonSerializerOptions options = new JsonSerializerOptions();
         options.Converters.Add(new EfeuValueJsonConverter());
         options.Converters.Add(new JsonStringEnumConverter());
-        
         WorkflowDefinition definition = JsonSerializer.Deserialize<WorkflowDefinition>(File.ReadAllText("workflow.json"), options)!;
 
         SimpleWorkflowMethodProvider methodProvider = new SimpleWorkflowMethodProvider();
@@ -66,7 +77,7 @@ class Program
         SimpleWorkflowTriggerProvider triggerProvider = new SimpleWorkflowTriggerProvider();
         // triggerProvider.Register("Cron", () => new CronTrigger())
 
-        ConsoleWorkflowOutbox outbox = new ConsoleWorkflowOutbox();
+        IWorkflowOutbox outbox = new ConsoleWorkflowOutbox();
 
         WorkflowRuntimeEnvironment environment = new WorkflowRuntimeEnvironment(methodProvider, functionProvider, triggerProvider, outbox);
         WorkflowRuntime runtime = WorkflowRuntime.Prepare(environment, definition);
@@ -83,8 +94,8 @@ class Program
 
         Console.WriteLine("DONE:");
         WorkflowRuntimeExport export = runtime.Export();
-        IWorkflowRuntimeExportSerializer serializer = new WorkflowRuntimeExportMessagePackSerializer();
 
+        IWorkflowRuntimeExportSerializer serializer = new WorkflowRuntimeExportMessagePackSerializer();
         byte[] bytes = serializer.Serialize(export);
         // Console.WriteLine(Convert.ToBase64String(bytes));
         WorkflowRuntimeExport clone = serializer.Deserialize(bytes);

@@ -19,5 +19,8 @@ namespace Efeu.Runtime.Model
         public string Name { get; set; } = "";
         public string Definition { get; set; } = "";
         public List<WorkflowInputNode> Inputs { get; set; } = [];
+
+        [JsonIgnore]
+        public Func<InputEvaluationContext, EfeuValue> Func { get; set; } = (_) => default;
     }
 }

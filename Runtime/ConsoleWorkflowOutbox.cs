@@ -13,7 +13,7 @@ namespace Efeu.Runtime
             throw new NotImplementedException();
         }
 
-        public Task SendMultipleAsync(object message)
+        public Task SendMultipleAsync(params object[] messages)
         {
             throw new NotImplementedException();
         }

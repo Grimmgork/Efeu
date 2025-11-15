@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Efeu.Runtime.Data;
+using Efeu.Runtime.Script;
 
 namespace Efeu.Runtime.Function
 {

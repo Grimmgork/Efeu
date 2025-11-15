@@ -163,7 +163,7 @@ namespace Efeu.Runtime.Data
             {
                 if (obj is EfeuArray array)
                 {
-                    return array.Length;
+                    return array.Length();
                 }
                 if (obj is ICollection<EfeuValue> collection)
                 {
@@ -327,6 +327,16 @@ namespace Efeu.Runtime.Data
         {
             EfeuObject obj = AsObject();
             return (T)obj;
+        }
+
+        public EfeuHash AsHash()
+        {
+            return As<EfeuHash>();
+        }
+
+        public EfeuArray AsArray()
+        {
+            return As<EfeuArray>();
         }
 
         public override int GetHashCode()
@@ -496,19 +506,89 @@ namespace Efeu.Runtime.Data
             return base.Equals(obj);
         }
 
-        public static EfeuValue operator +(EfeuValue left, EfeuValue right) => default;
+        public static EfeuValue operator +(EfeuValue left, EfeuValue right)
+        {
+            if (left.Tag == EfeuValueTag.Object)
+            {
+                return left.AsObject().Add(right);
+            }
+            else
+            {
+                return left.ToDecimal() + right.ToDecimal();
+            }
+        }
 
-        public static EfeuValue operator -(EfeuValue left, EfeuValue right) => default;
+        public static EfeuValue operator -(EfeuValue left, EfeuValue right)
+        {
+            if (left.Tag == EfeuValueTag.Object)
+            {
+                return left.AsObject().Subtract(right);
+            }
+            else
+            {
+                return left.ToDecimal() - right.ToDecimal();
+            }
+        }
 
-        public static EfeuValue operator *(EfeuValue left, EfeuValue right) => default;
+        public static EfeuValue operator *(EfeuValue left, EfeuValue right)
+        {
+            if (left.Tag == EfeuValueTag.Object)
+            {
+                return left.AsObject().Multiply(right);
+            }
+            else
+            {
+                return left.ToDecimal() * right.ToDecimal();
+            }
+        }
 
-        public static EfeuValue operator /(EfeuValue left, EfeuValue right) => default;
+        public static EfeuValue operator /(EfeuValue left, EfeuValue right)
+        {
+            if (left.Tag == EfeuValueTag.Object)
+            {
+                return left.AsObject().Divide(right);
+            }
+            else
+            {
+                return left.ToDecimal() / right.ToDecimal();
+            }
+        }
 
-        public static EfeuValue operator %(EfeuValue left, EfeuValue right) => default;
+        public static EfeuValue operator %(EfeuValue left, EfeuValue right)
+        {
+            if (left.Tag == EfeuValueTag.Object)
+            {
+                return left.AsObject().Modulo(right);
+            }
+            else
+            {
+                return left.ToDecimal() % right.ToDecimal();
+            }
+        }
 
-        public static EfeuValue operator <(EfeuValue left, EfeuValue right) => default;
+        public static EfeuValue operator <(EfeuValue left, EfeuValue right)
+        {
+            if (left.Tag == EfeuValueTag.Object)
+            {
+                return left.AsObject().LessThan(right);
+            }
+            else
+            {
+                return left.ToDecimal() < right.ToDecimal();
+            }
+        }
 
-        public static EfeuValue operator >(EfeuValue left, EfeuValue right) => default;
+        public static EfeuValue operator >(EfeuValue left, EfeuValue right)
+        {
+            if (left.Tag == EfeuValueTag.Object)
+            {
+                return left.AsObject().GreaterThan(right);
+            }
+            else
+            {
+                return left.ToDecimal() > right.ToDecimal();
+            }
+        }
 
         public static EfeuValue operator ==(EfeuValue left, EfeuValue right) => left.Equals(right);
 

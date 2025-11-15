@@ -56,6 +56,11 @@ namespace Efeu.Runtime.Data
                     index++;
                 }
 
+                if (path[index] == '@')
+                {
+                    index++;
+                }
+
                 StringBuilder sb = new StringBuilder();
                 for (; index < path.Length; index++)
                 {
@@ -125,7 +130,7 @@ namespace Efeu.Runtime.Data
                 {
                     list.Add(ParseIndex());
                 }
-                else if (path[index] == '.' || IsValidNameChar(path[index]))
+                else if (path[index] == '.' || path[index] == '@' || IsValidNameChar(path[index]))
                 {
                     list.Add(ParseName());
                 }

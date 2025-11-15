@@ -11,8 +11,6 @@ namespace Efeu.Runtime.Data
     {
         public readonly IList<EfeuValue> Items = new List<EfeuValue>();
 
-        public int Length => Items.Count;
-
         public EfeuValue this[int index]
         {
             get
@@ -35,11 +33,6 @@ namespace Efeu.Runtime.Data
             Items = new List<EfeuValue>(items);
         }
 
-        public EfeuArray()
-        {
-
-        }
-
         public override EfeuValue Call(int index)
         {
             return Items.ElementAtOrDefault(index);
@@ -50,9 +43,22 @@ namespace Efeu.Runtime.Data
             Items[index] = value;
         }
 
-        public override void Push(EfeuValue value)
+        public override int Length()
         {
-            Items.Add(value);
+            return Items.Count;
+        }
+
+        public override void Push(params EfeuValue[] values)
+        {
+            foreach (EfeuValue value in values)
+                Items.Add(value);
+        }
+
+        public override EfeuValue Pop()
+        {
+            EfeuValue item = Items[Items.Count - 1];
+            Items.RemoveAt(Items.Count - 1);
+            return item;
         }
 
         public override EfeuValue Shift()
@@ -69,16 +75,10 @@ namespace Efeu.Runtime.Data
             }
         }
 
-        public override EfeuValue Pop()
+        public override void Unshift(params EfeuValue[] values)
         {
-            EfeuValue item = Items[Items.Count - 1];
-            Items.RemoveAt(Items.Count - 1);
-            return item;
-        }
-
-        public void Prepend(EfeuValue value)
-        {
-            Items.Prepend(value);
+            foreach (EfeuValue value in values.Reverse())
+                Items.Prepend(value); // TODO
         }
 
         public override EfeuValue Clone()

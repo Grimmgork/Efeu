@@ -1,5 +1,6 @@
 ﻿using Efeu.Runtime.Data;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -81,11 +82,30 @@ namespace Efeu.Runtime.JSON.Converters
             }
             else if (value.Tag == EfeuValueTag.Object)
             {
-                WriteArray(writer, value, options);
+                if (value.AsObject() is EfeuArray array)
+                {
+                    WriteArray(writer, array, options);
+                }
+                else if (value.AsObject() is EfeuHash hash)
+                {
+                    WriteStruct(writer, hash, options);
+                }
+                else if (value.AsObject() is EfeuFloat single)
+                {
+                    writer.WriteNumberValue(single.ToDecimal());
+                }
+                else if (value.AsObject() is EfeuDecimal dec)
+                {
+                    writer.WriteNumberValue(dec.ToDecimal());
+                }
+                else if (value.AsObject() is EfeuString str)
+                {
+                    writer.WriteStringValue(str.ToString());
+                }
             }
         }
 
-        private void WriteArray(Utf8JsonWriter writer, EfeuValue value, JsonSerializerOptions options)
+        private void WriteArray(Utf8JsonWriter writer, EfeuArray value, JsonSerializerOptions options)
         {
             writer.WriteStartArray();
             foreach (EfeuValue item in value.Each())
@@ -93,7 +113,7 @@ namespace Efeu.Runtime.JSON.Converters
             writer.WriteEndArray();
         }
 
-        private void WriteStruct(Utf8JsonWriter writer, EfeuValue value, JsonSerializerOptions options)
+        private void WriteStruct(Utf8JsonWriter writer, EfeuHash value, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
             foreach (KeyValuePair<string, EfeuValue> prop in value.Fields())
