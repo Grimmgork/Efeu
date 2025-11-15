@@ -22,7 +22,9 @@ namespace Efeu.Router
 
         public string Name = "";
 
-        public EfeuValue Expression;
+        // public EfeuValue Expression;
+
+        public Func<BehaviourScope, EfeuValue> Expression = (_) => default;
 
         public Dictionary<string, EfeuValue> Match = new Dictionary<string, EfeuValue>();
 

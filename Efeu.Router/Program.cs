@@ -19,6 +19,11 @@ namespace Efeu.Router
                 Id = "definition1",
                 Steps = [
                     new () {
+                        Type = BehaviourStepType.Let,
+                        Name = "Value",
+                        Expression = (scope) => false
+                    },
+                    new () {
                         Type = BehaviourStepType.Emit,
                         Name = "HelloWorld"
                     },
@@ -28,7 +33,7 @@ namespace Efeu.Router
                         Do = [
                             new () {
                                 Type = BehaviourStepType.If,
-                                Expression = false,
+                                Expression = (scope) => scope.GetConstant("Value"),
                                 Do = [
                                     new () {
                                         Type = BehaviourStepType.Emit,
