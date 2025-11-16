@@ -22,18 +22,25 @@ namespace Efeu.Router
 
         public string Name = "";
 
-        // public EfeuValue Expression;
+        public Func<BehaviourExpressionContext, EfeuValue> Input = (_) => default;
 
-        public Func<BehaviourScope, EfeuValue> Expression = (_) => default;
-
-        public Dictionary<string, EfeuValue> Match = new Dictionary<string, EfeuValue>();
+        public BehaviourMessageMatch[] Where = [];
 
         public BehaviourDefinitionStep[] Do = [];
 
         public BehaviourDefinitionStep[] Else = [];
     }
 
+    public class BehaviourMessageMatch
+    {
+        public string Field = "";
 
+        public int Index = 0;
+
+        public Func<BehaviourExpressionContext, EfeuValue> Value = (_) => default;
+
+        public BehaviourMessageMatch[] Fields = [];
+    }
 
     public enum BehaviourStepType
     {
@@ -43,6 +50,7 @@ namespace Efeu.Router
         Call,
         Await,
         If,
+        Unless,
         For
     }
 }

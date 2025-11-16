@@ -21,7 +21,7 @@ namespace Efeu.Router
                     new () {
                         Type = BehaviourStepType.Let,
                         Name = "Value",
-                        Expression = (scope) => false
+                        Input = (context) => false
                     },
                     new () {
                         Type = BehaviourStepType.Emit,
@@ -33,7 +33,7 @@ namespace Efeu.Router
                         Do = [
                             new () {
                                 Type = BehaviourStepType.If,
-                                Expression = (scope) => scope.GetConstant("Value"),
+                                Input = (context) => context.Constant("Value"),
                                 Do = [
                                     new () {
                                         Type = BehaviourStepType.Emit,
@@ -56,18 +56,15 @@ namespace Efeu.Router
                 ]
             };
             
-            BehaviourRuntime behaviour1 = new BehaviourRuntime(definition, Guid.NewGuid().ToString());
-            behaviour1.Run();
-
+            BehaviourRuntime behaviour1 = BehaviourRuntime.Run(definition, Guid.NewGuid().ToString());
             BehaviourTrigger trigger = behaviour1.Triggers.First();
-            BehaviourRuntime behaviour2 = new BehaviourRuntime(definition, trigger, new EfeuMessage()
+
+            BehaviourRuntime behaviour2 = BehaviourRuntime.RunTrigger(definition, trigger, new EfeuMessage()
             {
                  Tag = EfeuMessageTag.Data,
                  Name = "ConsoleInput",
                  InstanceId = trigger.InstanceId,
             });
-
-            behaviour2.Run();
 
             Console.WriteLine("done");
         }

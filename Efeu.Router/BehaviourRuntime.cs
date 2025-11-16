@@ -19,7 +19,7 @@ namespace Efeu.Router
 
         public string Name = "";
 
-        public string InstanceId = "";
+        public string InstanceId = ""; // from wich it came
 
         public EfeuValue Data;
     }
@@ -31,9 +31,21 @@ namespace Efeu.Router
         Error
     }
 
+    public class BehaviourExpressionContext
+    {
+        private BehaviourScope scope;
+
+        public BehaviourExpressionContext(BehaviourScope scope)
+        {
+            this.scope = scope;
+        }
+
+        public EfeuValue Constant(string name) => scope.GetConstant(name);
+    }
+
     public class BehaviourTrigger
     {
-        public bool IsInitial => string.IsNullOrWhiteSpace(InstanceId);
+        public bool IsStatic => string.IsNullOrWhiteSpace(InstanceId); // a trigger is static if it is not assigned to a instance
 
         public string Id = "";
 
@@ -93,56 +105,101 @@ namespace Efeu.Router
         }
     }
 
+    public enum BehaviourRuntimeState
+    {
+        Done,
+        Skipped,
+        Suspended
+    }
+
     public class BehaviourRuntime
     {
         public readonly BehaviourDefinition Definition;
-
         public readonly string Id;
-
         public readonly List<BehaviourTrigger> Triggers = [];
-
         public readonly List<EfeuMessage> Messages = [];
 
-        // private BehaviourScope Scope = new BehaviourScope();
+        public BehaviourRuntimeState State => state;
 
-        // private string initialPosition = "";
+        public readonly bool IsImmediate;
 
-        private EfeuMessage triggerMessage = new EfeuMessage();
+        
+        private BehaviourRuntimeState state;
 
-        private BehaviourTrigger trigger = new BehaviourTrigger();
+        private readonly EfeuMessage triggerMessage = new EfeuMessage();
 
-        public readonly bool IsContinuation;
+        private readonly BehaviourTrigger trigger = new BehaviourTrigger();
 
         public BehaviourRuntime(BehaviourDefinition definition, string id)
         {
             this.Definition = definition;
             this.Id = id;
-            this.IsContinuation = false;
+            this.IsImmediate = true;
+        }
+
+        public BehaviourRuntime(BehaviourDefinition definition, BehaviourTrigger trigger, EfeuMessage message, string id)
+        {
+            this.Id = id;
+            this.Definition = definition;
+            this.triggerMessage = message;
+            this.trigger = trigger;
+            this.IsImmediate = false;
         }
 
         public BehaviourRuntime(BehaviourDefinition definition, BehaviourTrigger trigger, EfeuMessage message)
         {
             this.Id = trigger.InstanceId;
             this.Definition = definition;
-            // this.Scope.Parent = trigger.Scope;
-            // this.Scope.Constants["input"] = message.Data;
             this.triggerMessage = message;
             this.trigger = trigger;
-            this.IsContinuation = true;
-            // this.initialPosition = trigger.Position;
+            this.IsImmediate = false;
         }
 
-        public void Run()
+        public static BehaviourRuntime Run(BehaviourDefinition definition, string id)
+        {
+            BehaviourRuntime runtime = new BehaviourRuntime(definition, id);
+            runtime.state = runtime.Execute();
+            return runtime;
+        }
+
+        public static BehaviourRuntime RunStaticTrigger(BehaviourDefinition definition, BehaviourTrigger trigger, EfeuMessage message, string id)
+        {
+            if (!trigger.IsStatic)
+                throw new InvalidOperationException("Trigger must be static!");
+
+            BehaviourRuntime runtime = new BehaviourRuntime(definition, trigger, message, id);
+            runtime.state = runtime.Execute();
+            return runtime;
+        }
+
+        public static BehaviourRuntime RunTrigger(BehaviourDefinition definition, BehaviourTrigger trigger, EfeuMessage message)
+        {
+            if (trigger.IsStatic)
+                throw new InvalidOperationException("Trigger must not be static!");
+
+            BehaviourRuntime runtime = new BehaviourRuntime(definition, trigger, message);
+            runtime.state = runtime.Execute();
+            return runtime;
+        }
+
+        private BehaviourRuntimeState Execute()
         {
             Triggers.Clear();
             Messages.Clear();
 
-            if (IsContinuation)
+            if (IsImmediate)
+            {
+                BehaviourScope scope = new BehaviourScope();
+                RunSteps(Definition.Steps, "", scope);
+            }
+            else
             {
                 // trigger continuation
                 BehaviourDefinitionStep step = GetPosition(Definition, trigger.Position);
-                if (!TriggerMatchesMessage(step))
-                    return;
+                if (!TriggerMatchesMessage(trigger, triggerMessage, step))
+                {
+                    return BehaviourRuntimeState.Skipped;
+                }
 
                 BehaviourScope scope = new BehaviourScope(trigger.Scope);
                 scope.DefineConstant("input", triggerMessage.Data);
@@ -150,29 +207,26 @@ namespace Efeu.Router
                 BehaviourDefinitionStep[] steps = step.Do;
                 RunSteps(steps, $"{trigger.Position}/Do", scope); // Assumption: all trigger continuations are done in the Do route
             }
+
+            if (Triggers.Any(t => !t.IsStatic))
+            {
+                return BehaviourRuntimeState.Suspended;
+            }
             else
             {
-                BehaviourScope scope = new BehaviourScope();
-                // initial run
-                RunSteps(Definition.Steps, "", scope);
+                return BehaviourRuntimeState.Done;
             }
         }
 
-        private bool TriggerMatchesMessage(BehaviourDefinitionStep step)
+        private static bool TriggerMatchesMessage(BehaviourTrigger trigger, EfeuMessage message, BehaviourDefinitionStep step)
         {
-            // todo: validate against step data
-            return triggerMessage.InstanceId == Id &&
-                triggerMessage.Tag == trigger.MessageTag &&
-                triggerMessage.InstanceId == Id &&
-                triggerMessage.Name ==  trigger.MessageName;
+            return message.Tag == trigger.MessageTag &&
+                    message.Name == trigger.MessageName;
         }
 
         private void RunSteps(BehaviourDefinitionStep[] steps, string position, BehaviourScope scope)
         {
-            // get all lets and run them
-            // todo
-
-            // run all other rows
+            // todo run all lets first?
             int i = 0;
             foreach (BehaviourDefinitionStep step in steps)
             {
@@ -190,6 +244,10 @@ namespace Efeu.Router
             else if (step.Type == BehaviourStepType.If)
             {
                 RunIfStep(step, position, scope);
+            }
+            else if (step.Type == BehaviourStepType.Unless)
+            {
+                RunUnlessStep(step, position, scope);
             }
             else if (step.Type == BehaviourStepType.For)
             {
@@ -226,29 +284,43 @@ namespace Efeu.Router
 
         private void RunIfStep(BehaviourDefinitionStep step, string position, BehaviourScope scope)
         {
-            scope = new BehaviourScope(scope);
-            if (step.Expression(scope))
+            BehaviourExpressionContext context = new BehaviourExpressionContext(scope);
+            if (step.Input(context))
             {
-                RunSteps(step.Do, $"{position}/Do", scope);
+                RunSteps(step.Do, $"{position}/Do", new BehaviourScope(scope));
             }
             else
             {
-                RunSteps(step.Else, $"{position}/Else", scope);
+                RunSteps(step.Else, $"{position}/Else", new BehaviourScope(scope));
+            }
+        }
+
+        private void RunUnlessStep(BehaviourDefinitionStep step, string position, BehaviourScope scope)
+        {
+            BehaviourExpressionContext context = new BehaviourExpressionContext(scope);
+            if (step.Input(context))
+            {
+                RunSteps(step.Else, $"{position}/Else", new BehaviourScope(scope));
+            }
+            else
+            {
+                RunSteps(step.Do, $"{position}/Do", new BehaviourScope(scope));
             }
         }
 
         private void RunForStep(BehaviourDefinitionStep step, string position, BehaviourScope scope)
         {
-            foreach (EfeuValue item in step.Expression(scope).Each())
+            BehaviourExpressionContext context = new BehaviourExpressionContext(scope);
+            foreach (EfeuValue item in step.Input(context).Each())
             {
-                scope = new BehaviourScope(scope);
-                RunSteps(step.Do, $"{position}/Do", scope);
+                RunSteps(step.Do, $"{position}/Do", new BehaviourScope(scope));
             }
         }
 
         private void RunLetStep(BehaviourDefinitionStep step, string position, BehaviourScope scope)
         {
-            scope.DefineConstant(step.Name, step.Expression(scope));
+            BehaviourExpressionContext context = new BehaviourExpressionContext(scope);
+            scope.DefineConstant(step.Name, step.Input(context));
         }
 
         private void RunCallStep(BehaviourDefinitionStep step, string position, BehaviourScope scope)
