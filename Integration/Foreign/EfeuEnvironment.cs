@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Router
+namespace Efeu.Integration.Foreign
 {
-    internal interface IMessageBus
+    internal class EfeuEnvironment
     {
-        public Task OutboxAsync(object message);
+        
     }
 }

@@ -16,7 +16,6 @@ namespace Efeu.Router
 
             BehaviourDefinition definition = new BehaviourDefinition()
             {
-                Id = "definition1",
                 Steps = [
                     new () {
                         Type = BehaviourStepType.Let,
@@ -56,14 +55,14 @@ namespace Efeu.Router
                 ]
             };
             
-            BehaviourRuntime behaviour1 = BehaviourRuntime.Run(definition, Guid.NewGuid().ToString());
+            BehaviourRuntime behaviour1 = BehaviourRuntime.Run(definition, Guid.NewGuid());
             BehaviourTrigger trigger = behaviour1.Triggers.First();
 
             BehaviourRuntime behaviour2 = BehaviourRuntime.RunTrigger(definition, trigger, new EfeuMessage()
             {
-                 Tag = EfeuMessageTag.Data,
+                 Tag = EfeuMessageTag.Effect,
                  Name = "ConsoleInput",
-                 InstanceId = trigger.InstanceId,
+                 CorrelationId = trigger.CorrelationId,
             });
 
             Console.WriteLine("done");

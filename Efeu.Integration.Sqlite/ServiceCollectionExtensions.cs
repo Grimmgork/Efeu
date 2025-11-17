@@ -1,8 +1,6 @@
 ﻿using Efeu.Integration.Persistence;
 using Efeu.Integration.Entities;
-using Efeu.Integration.Sqlite;
 using Efeu.Runtime.Data;
-using Efeu.Runtime.Json;
 using Efeu.Runtime.Model;
 using LinqToDB;
 using LinqToDB.Data;
@@ -16,6 +14,9 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Efeu.Integration.Sqlite.Repositories;
+using Efeu.Runtime.JSON.Converters;
+using Efeu.Router;
 
 namespace Efeu.Integration.Sqlite
 {
@@ -36,49 +37,57 @@ namespace Efeu.Integration.Sqlite
         private static SqliteDataConnection ConfigureConnection(IServiceProvider services, string connectionString, string schema)
         {
             JsonSerializerOptions jsonOptions = new JsonSerializerOptions();
-            jsonOptions.Converters.Add(new SomeDataJsonConverter());
-
-            // ISomeDataSerializer someDataSerializer = services.GetRequiredService<ISomeDataSerializer>();
+            jsonOptions.Converters.Add(new EfeuValueJsonConverter());
 
             var builder = new FluentMappingBuilder();
-            builder.MappingSchema.SetConverter<SomeData, DataParameter>(c => ConvertToJson(c, jsonOptions));
-            builder.MappingSchema.SetConverter<IDictionary<int, SomeData>, DataParameter>(c => ConvertToJson(c, jsonOptions));
+            builder.MappingSchema.SetConverter<EfeuValue, DataParameter>(c => ConvertToJson(c, jsonOptions));
+            builder.MappingSchema.SetConverter<IDictionary<int, EfeuValue>, DataParameter>(c => ConvertToJson(c, jsonOptions));
             builder.MappingSchema.SetConverter<Stack<int>, DataParameter>(c => ConvertToJson(c, jsonOptions));
-            builder.MappingSchema.SetConverter<WorkflowDefinition, DataParameter>(c => ConvertToJson(c, jsonOptions));
+            builder.MappingSchema.SetConverter<BehaviourDefinitionStep[], DataParameter>(c => ConvertToJson(c, jsonOptions));
+            builder.MappingSchema.SetConverter<BehaviourScope, DataParameter>(c => ConvertToJson(c, jsonOptions));
 
-            builder.MappingSchema.SetConverter<string, EfeuValue>(i => ConvertFromJson<SomeData>(i, jsonOptions));
+            builder.MappingSchema.SetConverter<string, EfeuValue>(i => ConvertFromJson<EfeuValue>(i, jsonOptions));
             builder.MappingSchema.SetConverter<string, Stack<int>>(i => ConvertFromJson<Stack<int>>(i, jsonOptions));
-            builder.MappingSchema.SetConverter<string, IDictionary<int, SomeData>>(i => ConvertFromJson<IDictionary<int, SomeData>>(i, jsonOptions));
-            builder.MappingSchema.SetConverter<string, WorkflowDefinition>(i => ConvertFromJson<WorkflowDefinition>(i, jsonOptions));
+            builder.MappingSchema.SetConverter<string, IDictionary<int, EfeuValue>>(i => ConvertFromJson<IDictionary<int, EfeuValue>>(i, jsonOptions));
+            builder.MappingSchema.SetConverter<string, BehaviourDefinitionStep[]>(i => ConvertFromJson<BehaviourDefinitionStep[]>(i, jsonOptions));
+            builder.MappingSchema.SetConverter<string, BehaviourScope>(i => ConvertFromJson<BehaviourScope>(i, jsonOptions));
 
-            builder.Entity<WorkflowDefinitionEntity>()
-                .HasTableName("WorkflowDefinition")
+            builder.Entity<BehaviourDefinitionEntity>()
+                .HasTableName("Definition")
                 .HasSchemaName(schema)
                 .Property(p => p.Id)
                     .IsIdentity()
                     .IsPrimaryKey()
-                    .HasSkipOnInsert(true)
-                .Property(p => p.Definition);
+                    .HasSkipOnInsert(false)
+                .Property(p => p.Steps);
 
-            builder.Entity<WorkflowDefinitionVersionEntity>()
-                .HasTableName("WorkflowDefinitionVersion")
+            builder.Entity<BehaviourTriggerEntity>()
+                .HasTableName("Trigger")
                 .HasSchemaName(schema)
                 .Property(p => p.Id)
                     .IsIdentity()
                     .IsPrimaryKey()
-                    .HasSkipOnInsert(true)
-                .Property(p => p.Definition);
+                    .HasSkipOnInsert(false)
+                .Property(p => p.CorrelationId)
+                .Property(p => p.DefinitionId)
+                .Property(p => p.MessageName)
+                .Property(p => p.MessageTag)
+                .Property(p => p.Position)
+                .Property(p => p.Scope);
 
-            builder.Entity<WorkflowInstanceEntity>()
-                .HasTableName("WorkflowInstance")
+            builder.Entity<BehaviourEffectEntity>()
+                .HasTableName("Trigger")
                 .HasSchemaName(schema)
                 .Property(p => p.Id)
                     .IsIdentity()
                     .IsPrimaryKey()
-                    .HasSkipOnInsert(true)
-                .Property(p => p.ReturnStack)
-                .Property(p => p.MethodOutput)
-                .Property(p => p.MethodData);
+                .Property(p => p.CorrelationId)
+                .Property(p => p.CreationTime)
+                .Property(p => p.CompletionTime)
+                .Property(p => p.State)
+                .Property(p => p.TriggerId)
+                .Property(p => p.Name)
+                .Property(p => p.Data);
 
             builder.Build();
 
@@ -99,9 +108,9 @@ namespace Efeu.Integration.Sqlite
 
             services.AddScoped<UnitOfWork>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
-            services.AddScoped<IWorkflowDefinitionVersionRepository, WorkflowDefinitionVersionRepository>();
-            services.AddScoped<IWorkflowDefinitionRepository, WorkflowDefinitionRepository>();
-            services.AddScoped<IWorkflowInstanceRepository, WorkflowInstanceRepository>();
+            services.AddScoped<IBehaviourDefinitionRepository, BehaviourDefinitionRepository>();
+            services.AddScoped<IBehaviourTriggerRepository, BehaviourTriggerRepository>();
+            services.AddScoped<IBehaviourEffectRepository, BehaviourEffectRepository>();
             services.AddScoped<IEfeuMigrationRunner, MigrationRunner>();
         }
     }

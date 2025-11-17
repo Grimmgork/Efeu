@@ -2,12 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Efeu.Router
 {
     public class BehaviourDefinition
     {
-        public string Id = "";
+        public int Id;
 
         public string Name = "";
 
@@ -22,6 +23,7 @@ namespace Efeu.Router
 
         public string Name = "";
 
+        [JsonIgnore]
         public Func<BehaviourExpressionContext, EfeuValue> Input = (_) => default;
 
         public BehaviourMessageMatch[] Where = [];
@@ -37,6 +39,7 @@ namespace Efeu.Router
 
         public int Index = 0;
 
+        [JsonIgnore]
         public Func<BehaviourExpressionContext, EfeuValue> Value = (_) => default;
 
         public BehaviourMessageMatch[] Fields = [];

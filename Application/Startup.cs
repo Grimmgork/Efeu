@@ -3,7 +3,6 @@ using Efeu.Integration.Persistence;
 using Efeu.Integration.Model;
 using Efeu.Integration.Sqlite;
 using Efeu.Runtime.Function;
-using Efeu.Runtime.Json;
 using Efeu.Runtime.Method;
 using Efeu.Runtime.Model;
 using LinqToDB;
@@ -19,8 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Efeu.Integration.Foreign;
-using Efeu.Application.Services;
+using Efeu.Runtime.JSON.Converters;
 
 namespace Efeu.Application
 {
@@ -39,11 +37,9 @@ namespace Efeu.Application
             services.AddControllersWithViews()
                 .AddJsonOptions(options =>
                 {
-                    options.JsonSerializerOptions.Converters.Add(new SomeDataJsonConverter());
+                    options.JsonSerializerOptions.Converters.Add(new EfeuValueJsonConverter());
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });
-
-            services.AddScoped<IWorkflowRuntimeEnvironmentFactory, WorkflowRuntimeEnvironmentFactory>();
 
             services.AddEfeu();
             services.AddEfeuSqlite("Data Source=data.db");
