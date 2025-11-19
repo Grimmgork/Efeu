@@ -6,17 +6,6 @@ using System.Text.Json.Serialization;
 
 namespace Efeu.Router
 {
-    public class BehaviourDefinition
-    {
-        public int Id;
-
-        public string Name = "";
-
-        public int Version;
-
-        public BehaviourDefinitionStep[] Steps = [];
-    }
-
     public class BehaviourDefinitionStep
     {
         public BehaviourStepType Type;

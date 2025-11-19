@@ -23,9 +23,9 @@ namespace Efeu.Integration.Commands
             this.definitionRepository = repository;
         }
 
-        public Task<int> CreateAsync(BehaviourDefinitionEntity definition)
+        public Task<int> CreateVersionAsync(BehaviourDefinitionVersionEntity definition)
         {
-            return definitionRepository.CreateAsync(definition);
+            return definitionRepository.CreateVersionAsync(definition);
         }
 
         public Task Delete(int id)

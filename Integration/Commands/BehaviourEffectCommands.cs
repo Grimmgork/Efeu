@@ -1,4 +1,5 @@
-﻿using Efeu.Integration.Entities;
+﻿using Antlr4.Build.Tasks;
+using Efeu.Integration.Entities;
 using Efeu.Integration.Persistence;
 using Efeu.Router;
 using System;
@@ -14,16 +15,18 @@ namespace Efeu.Integration.Commands
         private readonly IUnitOfWork unitOfWork;
         private readonly IBehaviourEffectRepository behaviourEffectRepository;
         private readonly IBehaviourDefinitionRepository behaviourDefinitionRepository;
+        private readonly IBehaviourDefinitionCommands behaviourDefinitionCommands;
         private readonly IBehaviourTriggerCommands behaviourTriggerCommands;
         private readonly IBehaviourTriggerRepository behaviourTriggerRepository;
 
-        public BehaviourEffectCommands(IUnitOfWork unitOfWork, IBehaviourEffectRepository behaviourEffectRepository, IBehaviourDefinitionRepository behaviourDefinitionRepository, IBehaviourTriggerCommands behaviourTriggerCommands, IBehaviourTriggerRepository behaviourTriggerRepository)
+        public BehaviourEffectCommands(IUnitOfWork unitOfWork, IBehaviourEffectRepository behaviourEffectRepository, IBehaviourDefinitionRepository behaviourDefinitionRepository, IBehaviourTriggerCommands behaviourTriggerCommands, IBehaviourTriggerRepository behaviourTriggerRepository, IBehaviourDefinitionCommands behaviourDefinitionCommands)
         {
             this.unitOfWork = unitOfWork;
             this.behaviourEffectRepository = behaviourEffectRepository;
             this.behaviourTriggerCommands = behaviourTriggerCommands;
             this.behaviourTriggerRepository = behaviourTriggerRepository;
             this.behaviourDefinitionRepository = behaviourDefinitionRepository;
+            this.behaviourDefinitionCommands = behaviourDefinitionCommands;
         }
 
         public Task CreateEffect(EfeuMessage message)
@@ -63,37 +66,29 @@ namespace Efeu.Integration.Commands
 
         private async Task SendSignal(EfeuMessage message)
         {
-            // load matching triggers
             BehaviourTriggerEntity[] triggerEntities = await behaviourTriggerRepository.GetMatchingAsync(message.Name, message.Tag);
-            BehaviourDefinitionEntity[] definitionEntities = await behaviourDefinitionRepository.GetByIdsAsync(triggerEntities.Select(i => i.DefinitionId).ToArray());
+            BehaviourDefinitionVersionEntity[] definitionEntities = await behaviourDefinitionRepository.GetVersionsByIdsAsync(triggerEntities.Select(i => i.DefinitionVersionId).ToArray());
 
-            BehaviourTrigger[] triggers = triggerEntities.Select(i => new BehaviourTrigger()
+            Dictionary<int, BehaviourDefinitionVersionEntity> definitions = definitionEntities.ToDictionary(i => i.Id);
+
+            foreach (BehaviourTriggerEntity triggerEntity in triggerEntities)
             {
-                Id = i.Id,
-                CorrelationId = i.CorrelationId,
-                MessageName = i.MessageName,
-                MessageTag = i.MessageTag,
-                Scope = i.Scope,
-                DefinitionId = i.DefinitionId,
-                Position = i.Position,
-            }).ToArray();
+                BehaviourTrigger trigger = new BehaviourTrigger()
+                {
+                    Id = triggerEntity.Id,
+                    CorrelationId = triggerEntity.CorrelationId,
+                    MessageName = triggerEntity.MessageName,
+                    MessageTag = triggerEntity.MessageTag,
+                    Scope = triggerEntity.Scope,
+                    Position = triggerEntity.Position,
+                    Step = definitions[triggerEntity.DefinitionVersionId].GetPosition(triggerEntity.Position)
+                };
 
-            Dictionary<int, BehaviourDefinition> definitions = definitionEntities.ToDictionary(i => i.Id, i => new BehaviourDefinition()
-            {
-                Id = i.Id,
-                Name = i.Name,
-                Version = i.Version,
-                Steps = i.Steps,
-            });
+                List<BehaviourTrigger> triggers = new List<BehaviourTrigger>();
+                List<EfeuMessage> messages = new List<EfeuMessage>();
 
-            List<BehaviourTrigger> newTriggers = new List<BehaviourTrigger>();
-            List<EfeuMessage> newMessages = new List<EfeuMessage>();
-
-            foreach (BehaviourTrigger trigger in triggers)
-            {
                 // run behaviour
-                BehaviourDefinition definition = definitions[trigger.DefinitionId];
-                BehaviourRuntime runtime = BehaviourRuntime.RunTrigger(definition, trigger, message);
+                BehaviourRuntime runtime = BehaviourRuntime.RunTrigger(trigger, message);
 
                 if (runtime.Result == BehaviourRuntimeResult.Skipped)
                 {
@@ -101,28 +96,47 @@ namespace Efeu.Integration.Commands
                 }
                 else
                 {
-                    newTriggers.AddRange(runtime.Triggers);
-                    newMessages.AddRange(runtime.Messages);
+                    foreach (BehaviourTrigger outTrigger in runtime.Triggers)
+                    {
+                        await behaviourTriggerCommands.CreateAsync(outTrigger, triggerEntity.DefinitionVersionId);
+                    }
+
+                    foreach (EfeuMessage outMessage in runtime.Messages)
+                    {
+                        await CreateEffect(outMessage);
+                    }
                 }
-            }
-
-            foreach (BehaviourTrigger newTrigger in newTriggers)
-            {
-                await behaviourTriggerCommands.CreateAsync(newTrigger);
-            }
-
-            foreach (EfeuMessage newMessage in newMessages)
-            {
-                await CreateEffect(message);
             }
         }
 
-        public Task RunImmediate(BehaviourDefinition behaviourDefinition, int oldDefinitionId)
+        public async Task PublishAsync(int definitionId, BehaviourDefinitionStep[] steps)
         {
             // clear all static triggers for old definition
-            // run in immediate mode
-            // apply all triggers
-            // create effects
+            BehaviourDefinitionVersionEntity? definitionVersion = await behaviourDefinitionRepository.GetNewestVersionAsync(definitionId);
+            if (definitionVersion == null)
+                throw new Exception();
+
+            await behaviourTriggerCommands.DeleteStaticAsync(definitionVersion.Id);
+
+            // create new version
+            int newDefinitionVersionId = await behaviourDefinitionCommands.CreateVersionAsync(new BehaviourDefinitionVersionEntity()
+            {
+                DefinitionId = definitionVersion.DefinitionId,
+                Version = definitionVersion.Version + 1,
+                Steps = steps
+            });
+
+            BehaviourRuntime runtime = BehaviourRuntime.Run(steps, Guid.NewGuid());
+
+            foreach (BehaviourTrigger outTrigger in runtime.Triggers)
+            {
+                await behaviourTriggerCommands.CreateAsync(outTrigger, newDefinitionVersionId);
+            }
+
+            foreach (EfeuMessage outMessage in runtime.Messages)
+            {
+                await CreateEffect(outMessage);
+            }
         }
 
         public Task DeleteAsync(int id)

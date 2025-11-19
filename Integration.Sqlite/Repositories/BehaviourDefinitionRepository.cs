@@ -20,6 +20,11 @@ namespace Efeu.Integration.Sqlite.Repositories
             this.connection = connection;
         }
 
+        public Task<int> CreateVersionAsync(BehaviourDefinitionVersionEntity version)
+        {
+            return connection.InsertWithInt32IdentityAsync(version);
+        }
+
         public Task<int> CreateAsync(BehaviourDefinitionEntity definition)
         {
             return connection.InsertWithInt32IdentityAsync(definition);
@@ -36,25 +41,24 @@ namespace Efeu.Integration.Sqlite.Repositories
             return connection.GetTable<BehaviourDefinitionEntity>().ToArrayAsync();
         }
 
-        public Task<BehaviourDefinitionEntity> GetByIdAsync(int id)
+        public Task<BehaviourDefinitionVersionEntity> GetVersionByIdAsync(int id)
         {
-            return connection.GetTable<BehaviourDefinitionEntity>()
+            return connection.GetTable<BehaviourDefinitionVersionEntity>()
                 .FirstAsync(i => i.Id == id);
         }
 
-        public Task<BehaviourDefinitionEntity[]> GetByIdsAsync(int[] ids)
+        public Task<BehaviourDefinitionVersionEntity[]> GetVersionsByIdsAsync(int[] ids)
         {
-            return connection.GetTable<BehaviourDefinitionEntity>()
+            return connection.GetTable<BehaviourDefinitionVersionEntity>()
                 .Where(i => ids.Contains(i.Id))
                 .ToArrayAsync();
         }
 
-        public Task<BehaviourDefinitionEntity> GetNewestByNameAsync(string name)
+        public Task<BehaviourDefinitionVersionEntity?> GetNewestVersionAsync(int definitionId)
         {
-            return connection.GetTable<BehaviourDefinitionEntity>()
-                .Where(i => i.Name == name)
+            return connection.GetTable<BehaviourDefinitionVersionEntity>()
                 .OrderByDescending(i => i.Version)
-                .FirstAsync();
+                .FirstOrDefaultAsync(i => i.DefinitionId == definitionId);
         }
     }
 }

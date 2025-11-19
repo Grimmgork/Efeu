@@ -19,6 +19,6 @@ namespace Efeu.Integration.Persistence
 
         public Task<int> Add(BehaviourTriggerEntity trigger);
 
-        public Task Update(BehaviourTriggerEntity trigger);
+        public Task DeleteStaticAsync(int DefinitionVersionId);
     }
 }

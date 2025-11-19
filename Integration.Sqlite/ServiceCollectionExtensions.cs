@@ -53,12 +53,23 @@ namespace Efeu.Integration.Sqlite
             builder.MappingSchema.SetConverter<string, BehaviourScope>(i => ConvertFromJson<BehaviourScope>(i, jsonOptions));
 
             builder.Entity<BehaviourDefinitionEntity>()
+                .HasTableName("DefinitionVersion")
+                .HasSchemaName(schema)
+                .Property(p => p.Id)
+                    .IsIdentity()
+                    .IsPrimaryKey()
+                    .HasSkipOnInsert(false)
+                .Property(p => p.Name)
+                .Property(p => p.Version);
+
+            builder.Entity<BehaviourDefinitionVersionEntity>()
                 .HasTableName("Definition")
                 .HasSchemaName(schema)
                 .Property(p => p.Id)
                     .IsIdentity()
                     .IsPrimaryKey()
                     .HasSkipOnInsert(false)
+                .Property(p => p.Version)
                 .Property(p => p.Steps);
 
             builder.Entity<BehaviourTriggerEntity>()
@@ -69,7 +80,7 @@ namespace Efeu.Integration.Sqlite
                     .IsPrimaryKey()
                     .HasSkipOnInsert(false)
                 .Property(p => p.CorrelationId)
-                .Property(p => p.DefinitionId)
+                .Property(p => p.DefinitionVersionId)
                 .Property(p => p.MessageName)
                 .Property(p => p.MessageTag)
                 .Property(p => p.Position)

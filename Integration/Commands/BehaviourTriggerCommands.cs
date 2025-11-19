@@ -20,17 +20,22 @@ namespace Efeu.Integration.Commands
             this.behaviourTriggerRepository = behaviourTriggerRepository;
         }
 
-        public Task CreateAsync(BehaviourTrigger trigger)
+        public Task CreateAsync(BehaviourTrigger trigger, int definitionVersionId)
         {
             return behaviourTriggerRepository.Add(new BehaviourTriggerEntity()
             {
                 Id = trigger.Id,
-                DefinitionId = trigger.DefinitionId,
+                DefinitionVersionId = definitionVersionId,
                 Position = trigger.Position,
                 Scope = trigger.Scope,
                 MessageName = trigger.MessageName,
                 MessageTag = trigger.MessageTag,
             });
+        }
+
+        public Task DeleteStaticAsync(int definitionVersionId)
+        {
+            return behaviourTriggerRepository.DeleteStaticAsync(definitionVersionId);
         }
 
         public Task DeleteByCorrelation(Guid correlationId)

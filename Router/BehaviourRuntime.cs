@@ -45,17 +45,17 @@ namespace Efeu.Router
     {
         public Guid Id;
 
-        public int DefinitionId;
-
         public Guid CorrelationId;
 
-        public string Position = ""; // position of trigger row 0.Else.1
+        public string Position = ""; // position of trigger row /0/Else/1
 
         public BehaviourScope Scope = new BehaviourScope(); // Scope around trigger row
 
         public string MessageName = "";
 
         public EfeuMessageTag MessageTag;
+
+        public BehaviourDefinitionStep Step = new BehaviourDefinitionStep();
 
         public bool IsStatic => CorrelationId == Guid.Empty; // a trigger is static if it is not assigned to a instance
     }
@@ -111,71 +111,69 @@ namespace Efeu.Router
 
     public class BehaviourRuntime
     {
-        public readonly BehaviourDefinition Definition;
+        public readonly BehaviourDefinitionStep[] Steps = [];
         public readonly Guid Id;
         public readonly List<BehaviourTrigger> Triggers = [];
         public readonly List<EfeuMessage> Messages = [];
 
-        public BehaviourRuntimeResult Result => state;
+        public BehaviourRuntimeResult Result => result;
 
         public readonly bool IsImmediate;
 
         
-        private BehaviourRuntimeResult state;
+        private BehaviourRuntimeResult result;
 
         private readonly EfeuMessage triggerMessage = new EfeuMessage();
 
         private readonly BehaviourTrigger trigger = new BehaviourTrigger();
 
-        public BehaviourRuntime(BehaviourDefinition definition, Guid id)
+        public BehaviourRuntime(BehaviourDefinitionStep[] steps, Guid id)
         {
-            this.Definition = definition;
+            this.Steps = steps;
             this.Id = id;
             this.IsImmediate = true;
         }
 
-        public BehaviourRuntime(BehaviourDefinition definition, BehaviourTrigger trigger, EfeuMessage message, Guid id)
+        public BehaviourRuntime(BehaviourTrigger trigger, EfeuMessage message, Guid id)
         {
             this.Id = id;
-            this.Definition = definition;
             this.triggerMessage = message;
             this.trigger = trigger;
             this.IsImmediate = false;
         }
 
-        public BehaviourRuntime(BehaviourDefinition definition, BehaviourTrigger trigger, EfeuMessage message)
+        public BehaviourRuntime(BehaviourTrigger trigger, EfeuMessage message)
         {
             this.Id = trigger.CorrelationId;
-            this.Definition = definition;
             this.triggerMessage = message;
             this.trigger = trigger;
             this.IsImmediate = false;
         }
 
-        public static BehaviourRuntime Run(BehaviourDefinition definition, Guid id)
+        public static BehaviourRuntime Run(BehaviourDefinitionStep[] steps, Guid id)
         {
-            BehaviourRuntime runtime = new BehaviourRuntime(definition, id);
-            runtime.state = runtime.Execute();
+            BehaviourRuntime runtime = new BehaviourRuntime(steps, id);
+            runtime.result = runtime.Execute();
             return runtime;
         }
 
-        public static BehaviourRuntime RunStaticTrigger(BehaviourDefinition definition, BehaviourTrigger trigger, EfeuMessage message, Guid id)
+        public static BehaviourRuntime RunStaticTrigger(BehaviourTrigger trigger, EfeuMessage message, Guid id)
         {
             if (!trigger.IsStatic)
                 throw new InvalidOperationException("Trigger must be static!");
 
-            BehaviourRuntime runtime = new BehaviourRuntime(definition, trigger, message, id);
-            runtime.state = runtime.Execute();
+            BehaviourRuntime runtime = new BehaviourRuntime(trigger, message, id);
+            runtime.result = runtime.Execute();
             return runtime;
         }
 
-        public static BehaviourRuntime RunTrigger(BehaviourDefinition definition, BehaviourTrigger trigger, EfeuMessage message)
+        public static BehaviourRuntime RunTrigger(BehaviourTrigger trigger, EfeuMessage message)
         {
             if (trigger.IsStatic)
                 throw new InvalidOperationException("Trigger must not be static!");
 
-            BehaviourRuntime runtime = new BehaviourRuntime(definition, trigger, message);
-            runtime.state = runtime.Execute();
+            BehaviourRuntime runtime = new BehaviourRuntime(trigger, message);
+            runtime.result = runtime.Execute();
             return runtime;
         }
 
@@ -184,12 +182,12 @@ namespace Efeu.Router
             if (IsImmediate)
             {
                 BehaviourScope scope = new BehaviourScope();
-                RunSteps(Definition.Steps, "", scope);
+                RunSteps(Steps, "", scope);
             }
             else
             {
                 // trigger continuation
-                BehaviourDefinitionStep step = GetPosition(Definition, trigger.Position);
+                BehaviourDefinitionStep step = trigger.Step;
                 if (!TriggerMatchesMessage(trigger, triggerMessage, step))
                 {
                     return BehaviourRuntimeResult.Skipped;
@@ -329,7 +327,7 @@ namespace Efeu.Router
                 MessageTag = EfeuMessageTag.Effect,
                 MessageName = step.Name,
                 Position = position,
-                DefinitionId = Definition.Id,
+                Step = step,
             });
         }
 
@@ -343,7 +341,7 @@ namespace Efeu.Router
                 MessageTag = EfeuMessageTag.Effect,
                 MessageName = step.Name,
                 Position = position,
-                DefinitionId = Definition.Id
+                Step = step
             });
         }
 
@@ -358,43 +356,10 @@ namespace Efeu.Router
                 Scope = scope,
                 MessageTag = EfeuMessageTag.Effect,
                 MessageName = step.Name,
-                Position = position,
-                DefinitionId = Definition.Id
+                Position = position
             });
         }
 
-        private static BehaviourDefinitionStep GetPosition(BehaviourDefinition definition, string position)
-        {
-            // /0/Do/0/Else/2
-            position = position.TrimStart('/');
-
-            if (string.IsNullOrWhiteSpace(position))
-                throw new Exception();
-
-            string[] segments = position.Trim().Split("/");
-            if (segments.Length % 2 == 0)
-                throw new Exception();
-
-            BehaviourDefinitionStep[] steps = definition.Steps;
-            int index = int.Parse(segments[0]);
-            BehaviourDefinitionStep step = steps[index];
-            for (int i = 1; i < segments.Length; i += 2)
-            {
-                string path = segments[i];
-                if (path == "Do")
-                {
-                    steps = step.Do;
-                }
-                if (path == "Else")
-                {
-                    steps = step.Else;
-                }
-
-                index = Int32.Parse(segments[i + 1]);
-                step = steps[index];
-            }
-
-            return step;
-        }
+        
     }
 }

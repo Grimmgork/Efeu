@@ -14,9 +14,8 @@ namespace Efeu.Router
             options.Converters.Add(new EfeuValueJsonConverter());
             options.Converters.Add(new JsonStringEnumConverter());
 
-            BehaviourDefinition definition = new BehaviourDefinition()
-            {
-                Steps = [
+            BehaviourDefinitionStep[] steps =
+                [
                     new () {
                         Type = BehaviourStepType.Let,
                         Name = "Value",
@@ -52,13 +51,12 @@ namespace Efeu.Router
                         Type = BehaviourStepType.Emit,
                         Name = "HelloWorld"
                     },
-                ]
-            };
-            
-            BehaviourRuntime behaviour1 = BehaviourRuntime.Run(definition, Guid.NewGuid());
+                ];
+
+            BehaviourRuntime behaviour1 = BehaviourRuntime.Run(steps, Guid.NewGuid());
             BehaviourTrigger trigger = behaviour1.Triggers.First();
 
-            BehaviourRuntime behaviour2 = BehaviourRuntime.RunTrigger(definition, trigger, new EfeuMessage()
+            BehaviourRuntime behaviour2 = BehaviourRuntime.RunTrigger(trigger, new EfeuMessage()
             {
                  Tag = EfeuMessageTag.Effect,
                  Name = "ConsoleInput",

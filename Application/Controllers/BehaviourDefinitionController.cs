@@ -42,16 +42,16 @@ namespace Efeu.Application.Controllers
             options.Converters.Add(new EfeuValueJsonConverter());
             options.Converters.Add(new JsonStringEnumConverter());
 
-            BehaviourDefinitionEntity definition = JsonSerializer.Deserialize<BehaviourDefinitionEntity>(file.OpenReadStream(), options);
-            workflowDefinitionCommands.CreateAsync(definition);
+            BehaviourDefinitionVersionEntity definition = JsonSerializer.Deserialize<BehaviourDefinitionVersionEntity>(file.OpenReadStream(), options);
+            workflowDefinitionCommands.CreateVersionAsync(definition);
             return Ok();
         }
 
         [HttpGet]
         [Route("{name}")]
-        public Task<BehaviourDefinitionEntity> GetByName(string name)
+        public Task<BehaviourDefinitionVersionEntity> GetByName(string name)
         {
-            return workflowDefinitionRepository.GetNewestByNameAsync(name);
+            return workflowDefinitionRepository.GetNewestVersionAsync(name);
         }
     }
 }

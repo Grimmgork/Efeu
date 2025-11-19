@@ -1,16 +1,18 @@
+﻿using Efeu.Router;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
 namespace Efeu.Integration.Entities
 {
-    using Efeu.Router;
-    using Efeu.Runtime.Model;
-
     public class BehaviourDefinitionEntity
-	{
+    {
         public int Id;
 
         public string Name = "";
 
         public int Version;
-
-        public BehaviourDefinitionStep[] Steps = [];
     }
 }

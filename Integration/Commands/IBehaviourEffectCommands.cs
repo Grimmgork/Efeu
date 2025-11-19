@@ -13,6 +13,8 @@ namespace Efeu.Integration.Commands
 
         public Task CreateEffect(EfeuMessage message);
 
+        public Task PublishAsync(int definitionId, BehaviourDefinitionStep[] steps);
+
         public Task DeleteAsync(int id);
     }
 }

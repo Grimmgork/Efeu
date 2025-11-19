@@ -25,6 +25,12 @@ namespace Efeu.Integration.Sqlite.Repositories
             return connection.InsertWithInt32IdentityAsync(trigger);
         }
 
+        public Task DeleteStaticAsync(int definitionVersionId)
+        {
+            return connection.GetTable<BehaviourTriggerEntity>()
+                .DeleteAsync(i => i.DefinitionVersionId == definitionVersionId && i.CorrelationId == Guid.Empty);
+        }
+
         public async Task<IEnumerable<BehaviourTriggerEntity>> GetAllActiveAsync()
         {
              return await connection.GetTable<BehaviourTriggerEntity>()
@@ -42,11 +48,6 @@ namespace Efeu.Integration.Sqlite.Repositories
             return connection.GetTable<BehaviourTriggerEntity>()
                 .Where(i => i.MessageName == name && i.MessageTag == tag)
                 .ToArrayAsync();
-        }
-
-        public Task Update(BehaviourTriggerEntity instance)
-        {
-            return connection.UpdateAsync(instance);
         }
     }
 }

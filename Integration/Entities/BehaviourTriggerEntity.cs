@@ -14,11 +14,11 @@ namespace Efeu.Integration.Entities
     {
         public Guid Id;
 
-        public int DefinitionId;
+        public int DefinitionVersionId;
 
         public Guid CorrelationId;
 
-        public string Position = ""; // position of trigger row 0.Else.1
+        public string Position = ""; // position of trigger row 0/Else/1
 
         public BehaviourScope Scope = new BehaviourScope(); // Scope around trigger row
 
