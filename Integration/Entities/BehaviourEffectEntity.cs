@@ -19,6 +19,8 @@ namespace Efeu.Integration.Entities
 
         public DateTimeOffset CompletionTime;
 
+        public uint Times;
+
         public BehaviourEffectState State;
     }
 

@@ -25,5 +25,7 @@ namespace Efeu.Integration.Entities
         public string MessageName = "";
 
         public EfeuMessageTag MessageTag;
+
+        public int EffectId; // effect to resume
     }
 }
