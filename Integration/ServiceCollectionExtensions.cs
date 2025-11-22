@@ -1,4 +1,5 @@
 ﻿using Efeu.Integration.Commands;
+using Efeu.Integration.Foreign;
 using Efeu.Integration.Model;
 using Efeu.Runtime;
 using Efeu.Runtime.Data;
@@ -13,6 +14,19 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration
 {
+    public class DefaultEffectProvider : IEffectProvider
+    {
+        public bool IsEffect(string name)
+        {
+            return false;
+        }
+
+        public IEffect? TryGetEffect(string name)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public static class ServiceCollectionExtensions
     {
         public static void AddEfeu(this IServiceCollection services)
@@ -20,6 +34,8 @@ namespace Efeu.Integration
             services.AddScoped<IBehaviourDefinitionCommands, BehaviourDefinitionCommands>();
             services.AddScoped<IBehaviourTriggerCommands, BehaviourTriggerCommands>();
             services.AddScoped<IBehaviourEffectCommands, BehaviourEffectCommands>();
+            services.AddScoped<IEffectProvider, DefaultEffectProvider>();
+            services.AddScoped<EfeuEnvironment>();
         }
     }
 }

@@ -7,6 +7,7 @@ using Efeu.Runtime.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Data.Entity.Core.Common.CommandTrees;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -33,25 +34,28 @@ namespace Efeu.Application.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(IFormFile file)
+        [Route("")]
+        public async Task<IActionResult> Create(string name)
+        {
+            await workflowDefinitionCommands.CreateAsync(name);
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("{definitionId}/Publish")]
+        public async Task<IActionResult> PublishVersion(IFormFile file, int definitionId)
         {
             if (file == null || file.Length == 0)
                 return BadRequest();
 
             JsonSerializerOptions options = new JsonSerializerOptions();
+            options.IncludeFields = true;
             options.Converters.Add(new EfeuValueJsonConverter());
             options.Converters.Add(new JsonStringEnumConverter());
 
-            BehaviourDefinitionVersionEntity definition = JsonSerializer.Deserialize<BehaviourDefinitionVersionEntity>(file.OpenReadStream(), options);
-            workflowDefinitionCommands.CreateVersionAsync(definition);
+            BehaviourDefinitionStep[] steps = JsonSerializer.Deserialize<BehaviourDefinitionStep[]>(file.OpenReadStream(), options);
+            await workflowDefinitionCommands.PublishVersionAsync(definitionId, steps);
             return Ok();
-        }
-
-        [HttpGet]
-        [Route("{name}")]
-        public Task<BehaviourDefinitionVersionEntity> GetByName(string name)
-        {
-            return workflowDefinitionRepository.GetNewestVersionAsync(name);
         }
     }
 }

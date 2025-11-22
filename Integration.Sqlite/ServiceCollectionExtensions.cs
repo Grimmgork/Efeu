@@ -37,7 +37,9 @@ namespace Efeu.Integration.Sqlite
         private static SqliteDataConnection ConfigureConnection(IServiceProvider services, string connectionString, string schema)
         {
             JsonSerializerOptions jsonOptions = new JsonSerializerOptions();
+            jsonOptions.IncludeFields = true;
             jsonOptions.Converters.Add(new EfeuValueJsonConverter());
+            jsonOptions.Converters.Add(new JsonStringEnumConverter());
 
             var builder = new FluentMappingBuilder();
             builder.MappingSchema.SetConverter<EfeuValue, DataParameter>(c => ConvertToJson(c, jsonOptions));
@@ -53,22 +55,20 @@ namespace Efeu.Integration.Sqlite
             builder.MappingSchema.SetConverter<string, BehaviourScope>(i => ConvertFromJson<BehaviourScope>(i, jsonOptions));
 
             builder.Entity<BehaviourDefinitionEntity>()
-                .HasTableName("DefinitionVersion")
-                .HasSchemaName(schema)
-                .Property(p => p.Id)
-                    .IsIdentity()
-                    .IsPrimaryKey()
-                    .HasSkipOnInsert(false)
-                .Property(p => p.Name)
-                .Property(p => p.Version);
-
-            builder.Entity<BehaviourDefinitionVersionEntity>()
                 .HasTableName("Definition")
                 .HasSchemaName(schema)
                 .Property(p => p.Id)
                     .IsIdentity()
                     .IsPrimaryKey()
-                    .HasSkipOnInsert(false)
+                .Property(p => p.Name)
+                .Property(p => p.Version);
+
+            builder.Entity<BehaviourDefinitionVersionEntity>()
+                .HasTableName("DefinitionVersion")
+                .HasSchemaName(schema)
+                .Property(p => p.Id)
+                    .IsIdentity()
+                    .IsPrimaryKey()
                 .Property(p => p.Version)
                 .Property(p => p.Steps);
 
@@ -84,10 +84,11 @@ namespace Efeu.Integration.Sqlite
                 .Property(p => p.MessageName)
                 .Property(p => p.MessageTag)
                 .Property(p => p.Position)
-                .Property(p => p.Scope);
+                .Property(p => p.Scope)
+                .Property(p => p.EffectId);
 
             builder.Entity<BehaviourEffectEntity>()
-                .HasTableName("Trigger")
+                .HasTableName("Effect")
                 .HasSchemaName(schema)
                 .Property(p => p.Id)
                     .IsIdentity()
@@ -96,6 +97,7 @@ namespace Efeu.Integration.Sqlite
                 .Property(p => p.CreationTime)
                 .Property(p => p.CompletionTime)
                 .Property(p => p.State)
+                .Property(p => p.Times)
                 .Property(p => p.TriggerId)
                 .Property(p => p.Name)
                 .Property(p => p.Data);

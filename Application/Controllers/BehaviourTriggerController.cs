@@ -27,12 +27,5 @@ namespace Efeu.Application.Controllers
         {
             return behaviourTriggerRepository.GetAllActiveAsync();
         }
-
-        [HttpGet]
-        [Route("{id}")]
-        public Task<BehaviourTriggerEntity> GetById(Guid id)
-        {
-            return behaviourTriggerRepository.GetByIdAsync(id);
-        }
     }
 }

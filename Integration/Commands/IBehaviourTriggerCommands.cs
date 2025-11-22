@@ -9,7 +9,7 @@ namespace Efeu.Integration.Commands
 {
     internal interface IBehaviourTriggerCommands
     {
-        public Task CreateAsync(BehaviourTrigger trigger, int definitionVersionId);
+        public Task CreateAsync(BehaviourTrigger trigger);
 
         public Task DeleteStaticAsync(int definitionVersionId);
     }

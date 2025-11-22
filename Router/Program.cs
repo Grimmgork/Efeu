@@ -53,7 +53,7 @@ namespace Efeu.Router
                     },
                 ];
 
-            BehaviourRuntime behaviour1 = BehaviourRuntime.Run(steps, Guid.NewGuid());
+            BehaviourRuntime behaviour1 = BehaviourRuntime.Run(steps, Guid.NewGuid(), 10);
             BehaviourTrigger trigger = behaviour1.Triggers.First();
 
             BehaviourRuntime behaviour2 = BehaviourRuntime.RunTrigger(trigger, new EfeuMessage()

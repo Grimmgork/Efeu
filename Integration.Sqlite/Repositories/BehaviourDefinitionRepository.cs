@@ -41,10 +41,10 @@ namespace Efeu.Integration.Sqlite.Repositories
             return connection.GetTable<BehaviourDefinitionEntity>().ToArrayAsync();
         }
 
-        public Task<BehaviourDefinitionVersionEntity> GetVersionByIdAsync(int id)
+        public Task<BehaviourDefinitionVersionEntity?> GetVersionByIdAsync(int id)
         {
             return connection.GetTable<BehaviourDefinitionVersionEntity>()
-                .FirstAsync(i => i.Id == id);
+                .FirstOrDefaultAsync(i => i.Id == id);
         }
 
         public Task<BehaviourDefinitionVersionEntity[]> GetVersionsByIdsAsync(int[] ids)
@@ -54,11 +54,22 @@ namespace Efeu.Integration.Sqlite.Repositories
                 .ToArrayAsync();
         }
 
-        public Task<BehaviourDefinitionVersionEntity?> GetNewestVersionAsync(int definitionId)
+        public Task<BehaviourDefinitionVersionEntity?> GetLatestVersionAsync(int definitionId)
         {
             return connection.GetTable<BehaviourDefinitionVersionEntity>()
                 .OrderByDescending(i => i.Version)
                 .FirstOrDefaultAsync(i => i.DefinitionId == definitionId);
+        }
+
+        public Task<BehaviourDefinitionEntity?> GetByIdAsync(int id)
+        {
+            return connection.GetTable<BehaviourDefinitionEntity>()
+                .FirstOrDefaultAsync(i => i.Id == id);
+        }
+
+        public Task UpdateAsync(BehaviourDefinitionEntity entity)
+        {
+            return connection.UpdateAsync(entity);
         }
     }
 }

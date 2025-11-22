@@ -57,6 +57,8 @@ namespace Efeu.Router
 
         public BehaviourDefinitionStep Step = new BehaviourDefinitionStep();
 
+        public int DefinitionId;
+
         public bool IsStatic => CorrelationId == Guid.Empty; // a trigger is static if it is not assigned to a instance
     }
 
@@ -127,11 +129,12 @@ namespace Efeu.Router
 
         private readonly BehaviourTrigger trigger = new BehaviourTrigger();
 
-        public BehaviourRuntime(BehaviourDefinitionStep[] steps, Guid id)
+        public BehaviourRuntime(BehaviourDefinitionStep[] steps, Guid id, int definitionId)
         {
             this.Steps = steps;
             this.Id = id;
             this.IsImmediate = true;
+            this.trigger.DefinitionId = definitionId;
         }
 
         public BehaviourRuntime(BehaviourTrigger trigger, EfeuMessage message, Guid id)
@@ -150,9 +153,9 @@ namespace Efeu.Router
             this.IsImmediate = false;
         }
 
-        public static BehaviourRuntime Run(BehaviourDefinitionStep[] steps, Guid id)
+        public static BehaviourRuntime Run(BehaviourDefinitionStep[] steps, Guid id, int definitionId = 0)
         {
-            BehaviourRuntime runtime = new BehaviourRuntime(steps, id);
+            BehaviourRuntime runtime = new BehaviourRuntime(steps, id, definitionId);
             runtime.result = runtime.Execute();
             return runtime;
         }
@@ -327,6 +330,7 @@ namespace Efeu.Router
                 MessageTag = EfeuMessageTag.Effect,
                 MessageName = step.Name,
                 Position = position,
+                DefinitionId = trigger.DefinitionId,
                 Step = step,
             });
         }
@@ -341,6 +345,7 @@ namespace Efeu.Router
                 MessageTag = EfeuMessageTag.Effect,
                 MessageName = step.Name,
                 Position = position,
+                DefinitionId = trigger.DefinitionId,
                 Step = step
             });
         }
@@ -356,6 +361,7 @@ namespace Efeu.Router
                 Scope = scope,
                 MessageTag = EfeuMessageTag.Effect,
                 MessageName = step.Name,
+                DefinitionId = trigger.DefinitionId,
                 Position = position
             });
         }

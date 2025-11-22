@@ -15,22 +15,74 @@ namespace Efeu.Integration.Commands
     internal class BehaviourDefinitionCommands : IBehaviourDefinitionCommands
     {
         private readonly IUnitOfWork unitOfWork;
-        private readonly IBehaviourDefinitionRepository definitionRepository;
+        private readonly IBehaviourDefinitionRepository behaviourDefinitionRepository;
+        private readonly IBehaviourEffectCommands behaviourEffectCommands;
+        private readonly IBehaviourTriggerCommands behaviourTriggerCommands;
 
-        public BehaviourDefinitionCommands(IUnitOfWork unitOfWork, IBehaviourDefinitionRepository repository)
+        public BehaviourDefinitionCommands(IUnitOfWork unitOfWork, IBehaviourDefinitionRepository repository, IBehaviourEffectCommands behaviourEffectCommands, IBehaviourTriggerCommands behaviourTriggerCommands)
         {
             this.unitOfWork = unitOfWork;
-            this.definitionRepository = repository;
+            this.behaviourDefinitionRepository = repository;
+            this.behaviourEffectCommands = behaviourEffectCommands;
+            this.behaviourTriggerCommands = behaviourTriggerCommands;
         }
 
-        public Task<int> CreateVersionAsync(BehaviourDefinitionVersionEntity definition)
+        public Task<int> CreateAsync(string name)
         {
-            return definitionRepository.CreateVersionAsync(definition);
+            BehaviourDefinitionEntity definition = new BehaviourDefinitionEntity()
+            {
+                Name = name,
+                Version = 0
+            };
+
+            return behaviourDefinitionRepository.CreateAsync(definition);
         }
 
         public Task Delete(int id)
         {
-            return definitionRepository.DeleteAsync(id);
+            return behaviourDefinitionRepository.DeleteAsync(id);
+        }
+
+        public async Task<int> PublishVersionAsync(int definitionId, BehaviourDefinitionStep[] steps)
+        {
+            // clear all static triggers for old definition
+            await behaviourTriggerCommands.DeleteStaticAsync(definitionId);
+
+            // create new version
+            int newDefinitionVersionId = await CreateVersionAsync(definitionId, steps);
+
+            BehaviourRuntime runtime = BehaviourRuntime.Run(steps, Guid.NewGuid(), newDefinitionVersionId);
+
+            foreach (BehaviourTrigger outTrigger in runtime.Triggers)
+            {
+                await behaviourTriggerCommands.CreateAsync(outTrigger);
+            }
+
+            foreach (EfeuMessage outMessage in runtime.Messages)
+            {
+                await behaviourEffectCommands.CreateEffect(outMessage);
+            }
+
+            return newDefinitionVersionId;
+        }
+
+        private async Task<int> CreateVersionAsync(int definitionId, BehaviourDefinitionStep[] steps)
+        {
+            BehaviourDefinitionEntity? definition = await behaviourDefinitionRepository.GetByIdAsync(definitionId);
+            if (definition == null)
+                throw new Exception();
+
+            definition.Version++;
+            await behaviourDefinitionRepository.UpdateAsync(definition);
+
+            BehaviourDefinitionVersionEntity definitionVersion = new BehaviourDefinitionVersionEntity()
+            {
+                DefinitionId = definitionId,
+                Steps = steps,
+                Version = definition.Version,
+            };
+
+            return await behaviourDefinitionRepository.CreateVersionAsync(definitionVersion);
         }
     }
 }

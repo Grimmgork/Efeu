@@ -20,12 +20,12 @@ namespace Efeu.Integration.Commands
             this.behaviourTriggerRepository = behaviourTriggerRepository;
         }
 
-        public Task CreateAsync(BehaviourTrigger trigger, int definitionVersionId)
+        public Task CreateAsync(BehaviourTrigger trigger)
         {
             return behaviourTriggerRepository.Add(new BehaviourTriggerEntity()
             {
                 Id = trigger.Id,
-                DefinitionVersionId = definitionVersionId,
+                DefinitionVersionId = trigger.DefinitionId,
                 Position = trigger.Position,
                 Scope = trigger.Scope,
                 MessageName = trigger.MessageName,

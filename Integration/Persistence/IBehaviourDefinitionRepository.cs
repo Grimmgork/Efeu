@@ -10,7 +10,11 @@ namespace Efeu.Integration.Persistence
 {
     public interface IBehaviourDefinitionRepository
     {
+        public Task<BehaviourDefinitionEntity?> GetByIdAsync(int id);
+
         public Task<BehaviourDefinitionVersionEntity[]> GetVersionsByIdsAsync(int[] ids);
+
+        public Task<BehaviourDefinitionVersionEntity?> GetVersionByIdAsync(int id);
 
         public Task<BehaviourDefinitionEntity[]> GetAllAsync();
 
@@ -18,9 +22,9 @@ namespace Efeu.Integration.Persistence
 
         public Task<int> CreateVersionAsync(BehaviourDefinitionVersionEntity definition);
 
-        public Task<BehaviourDefinitionVersionEntity?> GetNewestVersionAsync(int definitionId);
+        public Task UpdateAsync(BehaviourDefinitionEntity entity);
 
-        public Task<BehaviourDefinitionVersionEntity> GetVersionByIdAsync(int id);
+        public Task<BehaviourDefinitionVersionEntity?> GetLatestVersionAsync(int definitionId);
 
         public Task DeleteAsync(int id);
     }
