@@ -96,8 +96,9 @@ namespace Efeu.Integration.Commands
 
                     await behaviourEffectRepository.DeleteAsync(id);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Console.WriteLine("Error");
                     effect.State = BehaviourEffectState.Error;
                     effect.Times++;
                     await behaviourEffectRepository.UpdateAsync(effect);
@@ -131,6 +132,12 @@ namespace Efeu.Integration.Commands
         {
             SignalProcessContext context = new SignalProcessContext(behaviourTriggerRepository, behaviourDefinitionRepository, DateTime.Now);
             await ProcessSignal(context, message);
+
+            while (context.Signals.Any())
+            {
+                EfeuMessage signal = context.Signals.Pop();
+                await ProcessSignal(context, signal);
+            }
 
             await behaviourTriggerCommands.CreateBulkAsync(context.Triggers.ToArray());
             await behaviourTriggerCommands.DeleteBulkAsync(context.DeletedTriggers.ToArray());
@@ -166,7 +173,6 @@ namespace Efeu.Integration.Commands
                     context.Triggers.Add(trigger1);
                 }
 
-                List<EfeuMessage> signals = new();
                 foreach (EfeuMessage outMessage in runtime.Messages)
                 {
                     if (environment.EffectProvider.IsEffect(outMessage.Name))
@@ -175,13 +181,8 @@ namespace Efeu.Integration.Commands
                     }
                     else
                     {
-                        signals.Add(outMessage);
+                        context.Signals.Push(outMessage);
                     }
-                }
-
-                foreach (EfeuMessage signal in signals)
-                {
-                    await ProcessSignal(context, signal);
                 }
             }
         }
@@ -196,6 +197,7 @@ namespace Efeu.Integration.Commands
             public readonly DateTimeOffset Timestamp;
             public readonly List<BehaviourTrigger> Triggers = new List<BehaviourTrigger>();
             public readonly List<EfeuMessage> Effects = new List<EfeuMessage>();
+            public readonly Stack<EfeuMessage> Signals = new Stack<EfeuMessage>();
 
             private readonly IBehaviourTriggerRepository behaviourTriggerRepository;
             private readonly IBehaviourDefinitionRepository behaviourDefinitionRepository;
@@ -262,7 +264,7 @@ namespace Efeu.Integration.Commands
             public void BumpRecursion()
             {
                 recursionCount++;
-                if (recursionCount > 100)
+                if (recursionCount > 50)
                     throw new Exception("Infinite loop detected!");
             }
         }
