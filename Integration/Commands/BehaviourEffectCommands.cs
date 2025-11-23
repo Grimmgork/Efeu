@@ -98,7 +98,7 @@ namespace Efeu.Integration.Commands
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Error");
+                    Console.WriteLine($"Error: {ex}");
                     effect.State = BehaviourEffectState.Error;
                     effect.Times++;
                     await behaviourEffectRepository.UpdateAsync(effect);
