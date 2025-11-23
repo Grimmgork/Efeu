@@ -45,8 +45,12 @@ namespace Efeu.Integration.Commands
 
         public async Task<int> PublishVersionAsync(int definitionId, BehaviourDefinitionStep[] steps)
         {
-            // clear all static triggers for old definition
-            await behaviourTriggerCommands.DeleteStaticAsync(definitionId);
+            BehaviourDefinitionVersionEntity? definitionVersionEntity = await behaviourDefinitionRepository.GetLatestVersionAsync(definitionId);
+            if (definitionVersionEntity != null)
+            {
+                // clear all static triggers for old definition
+                await behaviourTriggerCommands.DeleteStaticAsync(definitionVersionEntity.Id);
+            }
 
             // create new version
             int newDefinitionVersionId = await CreateVersionAsync(definitionId, steps);
@@ -60,7 +64,7 @@ namespace Efeu.Integration.Commands
 
             foreach (EfeuMessage outMessage in runtime.Messages)
             {
-                await behaviourEffectCommands.CreateEffect(outMessage);
+                await behaviourEffectCommands.CreateEffect(outMessage, DateTime.Now);
             }
 
             return newDefinitionVersionId;

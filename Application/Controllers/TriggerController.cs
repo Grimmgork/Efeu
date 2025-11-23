@@ -12,11 +12,11 @@ using System;
 namespace Efeu.Application.Controllers
 {
     [Route("Trigger")]
-    public class BehaviourTriggerController : Controller
+    public class TriggerController : Controller
     {
         private readonly IBehaviourTriggerRepository behaviourTriggerRepository;
 
-        public BehaviourTriggerController(IBehaviourTriggerRepository workflowInstanceRepository)
+        public TriggerController(IBehaviourTriggerRepository workflowInstanceRepository)
         {
             this.behaviourTriggerRepository = workflowInstanceRepository;
         }

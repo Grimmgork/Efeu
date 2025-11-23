@@ -1,0 +1,36 @@
+﻿@using Efeu.Integration.Entities
+@model BehaviourEffectEntity[]
+
+<div>
+    <form hx-post="/Effect">
+        <input type="text" name="name"/>
+        <select type="text" name="tag" >
+            <option value="Effect">Effect</option>
+            <option value="Response">Response</option>
+            <option value="Error">Error</option>
+        </select>
+        <button type="submit">emit</button>
+    </form>
+</div>
+
+
+<table>
+    <tr>
+        <th>Timestamp</th>
+        <th>Name</th>
+        <th>State</th>
+        <th>Actions</th>
+    </tr>
+    @foreach (BehaviourEffectEntity effect in Model)
+    {
+        <tr>
+            <td>@effect.CreationTime</td>
+            <td>@effect.Name</td>
+            <td>@effect.State</td>
+            <td><button disabled="@(effect.State == BehaviourEffectState.Running)" hx-post="/Effect/@effect.Id/Run">run</button><button hx-delete="/Effect/@effect.Id">delete</button></td>
+        </tr>
+    }
+</table>
+
+@{
+}

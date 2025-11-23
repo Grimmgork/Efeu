@@ -22,17 +22,20 @@
                             <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link text-dark" asp-controller="Definition" asp-action="Index">Definitions</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Editor" asp-action="Index">Editor</a>
+                            <a class="nav-link text-dark" asp-controller="Trigger" asp-action="Index">Triggers</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Effect" asp-action="Index">Effects</a>
                         </li>
                     </ul>
                 </div>
             </div>
         </nav>
     </header>
-    <main style="height: 100%; overflow: hidden;">
+    <main>
         @RenderBody()
     </main>
     <script src="~/lib/bootstrap/js/bootstrap.js"></script>

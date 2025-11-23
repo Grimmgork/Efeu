@@ -37,6 +37,7 @@ namespace Efeu.Application
             services.AddControllersWithViews()
                 .AddJsonOptions(options =>
                 {
+                    options.JsonSerializerOptions.IncludeFields = true;
                     options.JsonSerializerOptions.Converters.Add(new EfeuValueJsonConverter());
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });

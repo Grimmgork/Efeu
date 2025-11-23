@@ -1,0 +1,13 @@
+﻿@using Efeu.Integration.Entities
+@model BehaviourDefinitionEntity[];
+
+@foreach (BehaviourDefinitionEntity entity in Model)
+{
+    <div>
+        <a href="/Definition/@entity.Id")">@($"{entity.Name} - v{entity.Version}")</a>
+    </div>
+}
+
+@{
+
+}

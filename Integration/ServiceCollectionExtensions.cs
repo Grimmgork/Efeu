@@ -1,6 +1,7 @@
 ﻿using Efeu.Integration.Commands;
 using Efeu.Integration.Foreign;
 using Efeu.Integration.Model;
+using Efeu.Integration.Services;
 using Efeu.Runtime;
 using Efeu.Runtime.Data;
 using Efeu.Runtime.Function;
@@ -18,7 +19,7 @@ namespace Efeu.Integration
     {
         public bool IsEffect(string name)
         {
-            return false;
+            return name.StartsWith("_");
         }
 
         public IEffect? TryGetEffect(string name)
@@ -35,6 +36,7 @@ namespace Efeu.Integration
             services.AddScoped<IBehaviourTriggerCommands, BehaviourTriggerCommands>();
             services.AddScoped<IBehaviourEffectCommands, BehaviourEffectCommands>();
             services.AddScoped<IEffectProvider, DefaultEffectProvider>();
+            services.AddHostedService<EffectExecutionService>();
             services.AddScoped<EfeuEnvironment>();
         }
     }

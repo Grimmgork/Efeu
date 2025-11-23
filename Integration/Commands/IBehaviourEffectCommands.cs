@@ -11,7 +11,7 @@ namespace Efeu.Integration.Commands
     {
         public Task RunEffect(int id);
 
-        public Task CreateEffect(EfeuMessage message);
+        public Task CreateEffect(EfeuMessage message, DateTimeOffset timestamp);
 
         public Task DeleteAsync(int id);
     }

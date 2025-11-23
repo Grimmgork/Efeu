@@ -26,6 +26,7 @@ namespace Efeu.Integration.Commands
             {
                 Id = trigger.Id,
                 DefinitionVersionId = trigger.DefinitionId,
+                CorrelationId = trigger.CorrelationId,
                 Position = trigger.Position,
                 Scope = trigger.Scope,
                 MessageName = trigger.MessageName,
@@ -36,6 +37,11 @@ namespace Efeu.Integration.Commands
         public Task DeleteStaticAsync(int definitionVersionId)
         {
             return behaviourTriggerRepository.DeleteStaticAsync(definitionVersionId);
+        }
+
+        public Task DeleteAsync(Guid id)
+        {
+            return behaviourTriggerRepository.DeleteAsync(id);
         }
 
         public Task DeleteByCorrelation(Guid correlationId)

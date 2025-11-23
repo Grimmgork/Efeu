@@ -19,7 +19,7 @@ namespace Efeu.Integration.Sqlite
         }
 
         public Task ExecuteAsync(Func<Task> action) => 
-            ExecuteAsync(IsolationLevel.Unspecified, action);
+            ExecuteAsync(IsolationLevel.Serializable, action);
 
         public async Task ExecuteAsync(IsolationLevel isolationLevel, Func<Task> action)
         {

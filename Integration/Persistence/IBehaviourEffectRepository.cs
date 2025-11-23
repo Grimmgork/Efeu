@@ -20,5 +20,9 @@ namespace Efeu.Integration.Persistence
         public Task<BehaviourEffectEntity[]> GetByCorellationAsync(Guid correlationId);
 
         public Task<BehaviourEffectEntity[]> GetAll();
+
+        public Task UpdateAsync(BehaviourEffectEntity effect);
+
+        public Task<BehaviourEffectEntity[]> GetRunningAsync(int limit);
     }
 }

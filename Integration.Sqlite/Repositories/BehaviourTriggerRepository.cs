@@ -25,6 +25,12 @@ namespace Efeu.Integration.Sqlite.Repositories
             return connection.InsertWithInt32IdentityAsync(trigger);
         }
 
+        public Task DeleteAsync(Guid id)
+        {
+            return connection.GetTable<BehaviourTriggerEntity>()
+                .DeleteAsync(i => i.Id == id);
+        }
+
         public Task DeleteStaticAsync(int definitionVersionId)
         {
             return connection.GetTable<BehaviourTriggerEntity>()
@@ -43,10 +49,11 @@ namespace Efeu.Integration.Sqlite.Repositories
                 .FirstAsync(i => i.Id == id);
         }
 
-        public Task<BehaviourTriggerEntity[]> GetMatchingAsync(string name, EfeuMessageTag tag)
+        public Task<BehaviourTriggerEntity[]> GetMatchingAsync(string name, EfeuMessageTag tag, Guid triggerId)
         {
+            Console.WriteLine("query");
             return connection.GetTable<BehaviourTriggerEntity>()
-                .Where(i => i.MessageName == name && i.MessageTag == tag)
+                .Where(i => i.MessageName == name && i.MessageTag == tag && ( triggerId == Guid.Empty ? true : i.Id == triggerId) )
                 .ToArrayAsync();
         }
     }

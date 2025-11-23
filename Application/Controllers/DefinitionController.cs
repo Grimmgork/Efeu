@@ -15,26 +15,36 @@ using System.Threading.Tasks;
 namespace Efeu.Application.Controllers
 {
     [Route("Definition")]
-    public class BehaviourDefinitionController : Controller
+    public class DefinitionController : Controller
     {
         private readonly IBehaviourDefinitionCommands workflowDefinitionCommands;
         private readonly IBehaviourDefinitionRepository workflowDefinitionRepository;
 
-        public BehaviourDefinitionController(IBehaviourDefinitionCommands workflowDefinitionCommands, IBehaviourDefinitionRepository workflowDefinitionRepository)
+        public DefinitionController(IBehaviourDefinitionCommands workflowDefinitionCommands, IBehaviourDefinitionRepository workflowDefinitionRepository)
         {
             this.workflowDefinitionCommands = workflowDefinitionCommands;
             this.workflowDefinitionRepository = workflowDefinitionRepository;
         }
 
         [HttpGet]
-        [Route("")]
-        public Task<BehaviourDefinitionEntity[]> GetAll()
+        public async Task<ActionResult> Index()
         {
-            return workflowDefinitionRepository.GetAllAsync();
+            BehaviourDefinitionEntity[] definitions = await workflowDefinitionRepository.GetAllAsync();
+            return View(definitions);
+        }
+
+        [HttpGet]
+        [Route("{id}")]
+        public async Task<ActionResult> Detail(int id)
+        {
+            BehaviourDefinitionEntity? definition = await workflowDefinitionRepository.GetByIdAsync(id);
+            if (definition == null)
+                return NotFound();
+
+            return View(definition);
         }
 
         [HttpPost]
-        [Route("")]
         public async Task<IActionResult> Create(string name)
         {
             await workflowDefinitionCommands.CreateAsync(name);
@@ -42,8 +52,8 @@ namespace Efeu.Application.Controllers
         }
 
         [HttpPost]
-        [Route("{definitionId}/Publish")]
-        public async Task<IActionResult> PublishVersion(IFormFile file, int definitionId)
+        [Route("{id}/Publish")]
+        public async Task<IActionResult> PublishVersion(IFormFile file, int id)
         {
             if (file == null || file.Length == 0)
                 return BadRequest();
@@ -54,7 +64,9 @@ namespace Efeu.Application.Controllers
             options.Converters.Add(new JsonStringEnumConverter());
 
             BehaviourDefinitionStep[] steps = JsonSerializer.Deserialize<BehaviourDefinitionStep[]>(file.OpenReadStream(), options);
-            await workflowDefinitionCommands.PublishVersionAsync(definitionId, steps);
+            await workflowDefinitionCommands.PublishVersionAsync(id, steps);
+
+            Response.Headers["HX-Redirect"] = Url.Action($"{id}");
             return Ok();
         }
     }

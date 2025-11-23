@@ -1,4 +1,5 @@
 ﻿using Antlr4.Build.Tasks;
+using Azure;
 using Efeu.Integration.Entities;
 using Efeu.Integration.Foreign;
 using Efeu.Integration.Persistence;
@@ -30,11 +31,14 @@ namespace Efeu.Integration.Commands
             this.environment = environment;
         }
 
-        public Task CreateEffect(EfeuMessage message)
+        public Task CreateEffect(EfeuMessage message, DateTimeOffset timestamp)
         {
+            if (string.IsNullOrWhiteSpace(message.Name))
+                throw new Exception("Message name must not be empty.");
+
             return behaviourEffectRepository.CreateAsync(new BehaviourEffectEntity()
             {
-                 CreationTime = DateTime.Now,
+                 CreationTime = timestamp,
                  Name = message.Name,
                  TriggerId = message.TriggerId,
                  Data = message.Data,
@@ -43,29 +47,56 @@ namespace Efeu.Integration.Commands
             });
         }
 
-        public async Task RunEffect(int id)
+        public Task RunEffect(int id)
         {
-            BehaviourEffectEntity effect = await behaviourEffectRepository.GetByIdAsync(id);
-            if (environment.EffectProvider.IsEffect(effect.Name))
+            return unitOfWork.ExecuteAsync(async () =>
             {
-                Console.WriteLine($"Efect: '{effect.Name}'");
-            }
-            else
-            {
-                await ProcessSignal(new EfeuMessage()
+                BehaviourEffectEntity effect = await behaviourEffectRepository.GetByIdAsync(id);
+                try
                 {
-                    Name = effect.Name,
-                    CorrelationId = effect.CorrelationId,
-                    Data = effect.Data,
-                    Tag = EfeuMessageTag.Effect,
-                    TriggerId = effect.TriggerId,
-                });
-            }
+                    if (environment.EffectProvider.IsEffect(effect.Name))
+                    {
+                        Console.WriteLine($"Efect: '{effect.Name}'");
+                        if (effect.TriggerId != Guid.Empty)
+                        {
+                            // send response message
+                            await ProcessSignal(new EfeuMessage()
+                            {
+                                Name = effect.Name,
+                                CorrelationId = effect.CorrelationId,
+                                TriggerId = effect.TriggerId,
+                                Tag = EfeuMessageTag.Response
+                            });
+                        }
+                    }
+                    else
+                    {
+                        await ProcessSignal(new EfeuMessage()
+                        {
+                            Name = effect.Name,
+                            CorrelationId = effect.CorrelationId,
+                            Data = effect.Data,
+                            Tag = EfeuMessageTag.Effect,
+                            TriggerId = effect.TriggerId,
+                        });
+                    }
+
+                    await behaviourEffectRepository.DeleteAsync(id);
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Error");
+                    effect.State = BehaviourEffectState.Error;
+                    effect.Times++;
+                    await behaviourEffectRepository.UpdateAsync(effect);
+                }
+            });
         }
 
         private async Task ProcessSignal(EfeuMessage message)
         {
-            SignalProcessContext context = new SignalProcessContext(behaviourTriggerRepository, behaviourDefinitionRepository);
+            SignalProcessContext context = new SignalProcessContext(behaviourTriggerRepository, behaviourDefinitionRepository, DateTime.Now);
+            Console.WriteLine("Start ...");
             await ProcessSignal(context, message);
 
             foreach (BehaviourTrigger trigger in context.Triggers)
@@ -75,18 +106,38 @@ namespace Efeu.Integration.Commands
 
             foreach (EfeuMessage effect in context.Effects)
             {
-                await CreateEffect(effect);
+                await CreateEffect(effect, context.Timestamp);
+            }
+
+            foreach (Guid triggerId in context.DeletedTriggers)
+            {
+                await behaviourTriggerCommands.DeleteAsync(triggerId);
             }
         }
 
         private async Task ProcessSignal(SignalProcessContext context, EfeuMessage message)
         {
-            BehaviourTrigger[] matchingTriggers = await context.GetMatchingTriggersAsync(message.Name, message.Tag);
+            context.BumpRecursion();
+            BehaviourTrigger[] matchingTriggers = await context.GetMatchingTriggersAsync(message.Name, message.Tag, message.TriggerId);
             foreach (BehaviourTrigger trigger in matchingTriggers)
             {
-                BehaviourRuntime runtime = BehaviourRuntime.RunTrigger(trigger, message);
+                BehaviourRuntime runtime;
+                if (trigger.IsStatic)
+                {
+                    runtime = BehaviourRuntime.RunStaticTrigger(trigger, message, Guid.NewGuid());
+                }
+                else
+                {
+                    runtime = BehaviourRuntime.RunTrigger(trigger, message);
+                }
+
                 if (runtime.Result == BehaviourRuntimeResult.Skipped) // test if signal matched the trigger
                     continue;
+
+                if (!trigger.IsStatic)
+                {
+                    context.DeleteTrigger(trigger);
+                }
 
                 foreach (BehaviourTrigger trigger1 in runtime.Triggers)
                 {
@@ -120,23 +171,29 @@ namespace Efeu.Integration.Commands
 
         private class SignalProcessContext
         {
+            public readonly DateTimeOffset Timestamp;
             public readonly List<BehaviourTrigger> Triggers = new List<BehaviourTrigger>();
             public readonly List<EfeuMessage> Effects = new List<EfeuMessage>();
 
             private readonly IBehaviourTriggerRepository behaviourTriggerRepository;
             private readonly IBehaviourDefinitionRepository behaviourDefinitionRepository;
 
-            public SignalProcessContext(IBehaviourTriggerRepository behaviourTriggerRepository, IBehaviourDefinitionRepository behaviourDefinitionRepository)
+            public readonly HashSet<Guid> DeletedTriggers = new();
+
+            private int recursionCount = 0;
+
+            public SignalProcessContext(IBehaviourTriggerRepository behaviourTriggerRepository, IBehaviourDefinitionRepository behaviourDefinitionRepository, DateTimeOffset timestamp)
             {
                 this.behaviourDefinitionRepository = behaviourDefinitionRepository;
                 this.behaviourTriggerRepository = behaviourTriggerRepository;
+                Timestamp = timestamp;
             }
 
             private readonly Dictionary<int, BehaviourDefinitionVersionEntity> definitionEntityCache = new();
 
-            public async Task<BehaviourTrigger[]> GetMatchingTriggersAsync(string messageName, EfeuMessageTag messageTag)
+            public async Task<BehaviourTrigger[]> GetMatchingTriggersAsync(string messageName, EfeuMessageTag messageTag, Guid triggerId)
             {
-                BehaviourTriggerEntity[] triggerEntities = await behaviourTriggerRepository.GetMatchingAsync(messageName, messageTag);
+                BehaviourTriggerEntity[] triggerEntities = await behaviourTriggerRepository.GetMatchingAsync(messageName, messageTag, triggerId);
 
                 BehaviourDefinitionVersionEntity[] definitionEntities = await behaviourDefinitionRepository.GetVersionsByIdsAsync(
                     triggerEntities.Select(i => i.DefinitionVersionId)
@@ -148,6 +205,9 @@ namespace Efeu.Integration.Commands
                 List<BehaviourTrigger> result = new();
                 foreach (BehaviourTriggerEntity triggerEntity in triggerEntities)
                 {
+                    if (DeletedTriggers.Contains(triggerEntity.Id))
+                        continue;
+
                     BehaviourTrigger trigger = new BehaviourTrigger()
                     {
                         Id = triggerEntity.Id,
@@ -163,11 +223,26 @@ namespace Efeu.Integration.Commands
                 }
 
                 result.AddRange(
-                    Triggers.Where(i => i.MessageName == messageName && i.MessageTag == messageTag));
+                    Triggers.Where(i => 
+                        i.MessageName == messageName && 
+                        i.MessageTag == messageTag && 
+                        (triggerId == Guid.Empty ? true : i.Id == triggerId)));
 
                 return result.ToArray();
             }
-        }
 
+            public void DeleteTrigger(BehaviourTrigger trigger)
+            {
+                Triggers.RemoveAll(item => item.Id == trigger.Id);
+                DeletedTriggers.Add(trigger.Id);
+            }
+
+            public void BumpRecursion()
+            {
+                recursionCount++;
+                if (recursionCount > 100)
+                    throw new Exception("Infinite loop detected!");
+            }
+        }
     }
 }

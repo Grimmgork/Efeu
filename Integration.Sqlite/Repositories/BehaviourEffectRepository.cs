@@ -49,10 +49,24 @@ namespace Efeu.Integration.Sqlite.Repositories
                  .ToArrayAsync();
         }
 
+        public Task<BehaviourEffectEntity[]> GetRunningAsync(int limit)
+        {
+            return connection.GetTable<BehaviourEffectEntity>()
+                    .Take(limit)
+                    .Where(i => i.State == BehaviourEffectState.Running)
+                    .OrderBy(i => i.CreationTime)
+                    .ToArrayAsync();
+        }
+
         public Task<BehaviourEffectEntity> GetByIdAsync(int id)
         {
             return connection.GetTable<BehaviourEffectEntity>()
                  .FirstAsync(i => i.Id == id);
+        }
+
+        public Task UpdateAsync(BehaviourEffectEntity effect)
+        {
+            return connection.UpdateAsync(effect);
         }
     }
 }

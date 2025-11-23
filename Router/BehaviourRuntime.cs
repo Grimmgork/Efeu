@@ -327,7 +327,7 @@ namespace Efeu.Router
                 Id = triggerId,
                 CorrelationId = Id,
                 Scope = scope,
-                MessageTag = EfeuMessageTag.Effect,
+                MessageTag = EfeuMessageTag.Response,
                 MessageName = step.Name,
                 Position = position,
                 DefinitionId = trigger.DefinitionId,
