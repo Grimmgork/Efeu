@@ -1,6 +1,7 @@
 ﻿using Efeu.Integration.Entities;
 using Efeu.Integration.Persistence;
 using LinqToDB;
+using LinqToDB.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -67,6 +68,14 @@ namespace Efeu.Integration.Sqlite.Repositories
         public Task UpdateAsync(BehaviourEffectEntity effect)
         {
             return connection.UpdateAsync(effect);
+        }
+
+        public Task CreateBulkAsync(BehaviourEffectEntity[] entities)
+        {
+            return connection.BulkCopyAsync(new BulkCopyOptions()
+            {
+                BulkCopyType = BulkCopyType.MultipleRows
+            }, entities);
         }
     }
 }

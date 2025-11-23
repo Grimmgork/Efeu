@@ -44,6 +44,17 @@ namespace Efeu.Application.Controllers
             return View(definition);
         }
 
+        [HttpGet]
+        [Route("{id}/Latest")]
+        public async Task<ActionResult> Latest(int id)
+        {
+            BehaviourDefinitionVersionEntity? definition = await workflowDefinitionRepository.GetLatestVersionAsync(id);
+            if (definition == null)
+                return NotFound();
+
+            return View(definition);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create(string name)
         {

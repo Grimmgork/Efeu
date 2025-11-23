@@ -1,0 +1,26 @@
+﻿@using Efeu.Router
+@model BehaviourDefinitionStep;
+
+<div>
+    <span>@Model.Type</span> <span>@Model.Name</span>
+    @if (Model.Do.Length > 0)
+    {
+        <span>do</span>
+        <div style="margin-left: 1rem">
+            @foreach (BehaviourDefinitionStep step in Model.Do)
+            {
+                <partial name="BehaviourDefinitionStep" model="@step" />
+            }
+        </div>
+    }
+    @if (Model.Else.Length > 0)
+    {
+        <span>else</span>
+        <div style="margin-left: 1rem">
+            @foreach (BehaviourDefinitionStep step in Model.Do)
+            {
+                <partial name="BehaviourDefinitionStep" model="@step" />
+            }
+        </div>
+    }
+</div>

@@ -13,24 +13,30 @@
     </form>
 </div>
 
-
-<table>
-    <tr>
-        <th>Timestamp</th>
-        <th>Name</th>
-        <th>State</th>
-        <th>Actions</th>
-    </tr>
-    @foreach (BehaviourEffectEntity effect in Model)
-    {
+@if (Model.Length == 0)
+{
+    <span>none</span>
+}
+else
+{
+    <table>
         <tr>
-            <td>@effect.CreationTime</td>
-            <td>@effect.Name</td>
-            <td>@effect.State</td>
-            <td><button disabled="@(effect.State == BehaviourEffectState.Running)" hx-post="/Effect/@effect.Id/Run">run</button><button hx-delete="/Effect/@effect.Id">delete</button></td>
+            <th>Timestamp</th>
+            <th>Name</th>
+            <th>State</th>
+            <th>Actions</th>
         </tr>
-    }
-</table>
+        @foreach (BehaviourEffectEntity effect in Model)
+        {
+            <tr>
+                <td>@effect.CreationTime</td>
+                <td>@effect.Name</td>
+                <td>@effect.State</td>
+                <td><button disabled="@(effect.State == BehaviourEffectState.Running)" hx-post="/Effect/@effect.Id/Run">run</button><button hx-delete="/Effect/@effect.Id">delete</button></td>
+            </tr>
+        }
+    </table>
+}
 
 @{
 }

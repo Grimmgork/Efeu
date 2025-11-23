@@ -29,9 +29,29 @@ namespace Efeu.Router
         public int Index = 0;
 
         [JsonIgnore]
-        public Func<BehaviourExpressionContext, EfeuValue> Value = (_) => default;
+        public EfeuExpression Expression = new EfeuExpression();
 
         public BehaviourMessageMatch[] Fields = [];
+    }
+
+    public class EfeuExpression
+    {
+        private readonly Func<BehaviourExpressionContext, EfeuValue> func;
+
+        public EfeuExpression(Func<BehaviourExpressionContext, EfeuValue> func)
+        {
+            this.func = func;
+        }
+
+        public EfeuExpression()
+        {
+            this.func = (_) => default;
+        }
+
+        public EfeuValue Run(BehaviourExpressionContext context)
+        {
+            return func(context);
+        }
     }
 
     public enum BehaviourStepType

@@ -1,4 +1,5 @@
 ﻿using Efeu.Router;
+using Efeu.Runtime.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,8 @@ namespace Efeu.Integration.Commands
     public interface IBehaviourEffectCommands
     {
         public Task RunEffect(int id);
+
+        public Task SkipEffect(int id, EfeuValue output = default);
 
         public Task CreateEffect(EfeuMessage message, DateTimeOffset timestamp);
 

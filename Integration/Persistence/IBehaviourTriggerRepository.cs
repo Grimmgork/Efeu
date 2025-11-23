@@ -17,10 +17,14 @@ namespace Efeu.Integration.Persistence
 
         public Task<BehaviourTriggerEntity[]> GetMatchingAsync(string name, EfeuMessageTag tag, Guid triggerId);
 
-        public Task<int> Add(BehaviourTriggerEntity trigger);
+        public Task<int> CreateAsync(BehaviourTriggerEntity trigger);
+
+        public Task CreateBulkAsync(BehaviourTriggerEntity[] triggers);
 
         public Task DeleteStaticAsync(int DefinitionVersionId);
 
         public Task DeleteAsync(Guid id);
+
+        public Task DeleteBulkAsync(Guid[] ids);
     }
 }

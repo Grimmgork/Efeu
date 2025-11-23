@@ -4,6 +4,7 @@ using Efeu.Integration.Entities;
 using Efeu.Integration.Foreign;
 using Efeu.Integration.Persistence;
 using Efeu.Router;
+using Efeu.Runtime.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,18 +34,29 @@ namespace Efeu.Integration.Commands
 
         public Task CreateEffect(EfeuMessage message, DateTimeOffset timestamp)
         {
-            if (string.IsNullOrWhiteSpace(message.Name))
-                throw new Exception("Message name must not be empty.");
+            return CreateEffectsBulk([message], timestamp);
+        }
 
-            return behaviourEffectRepository.CreateAsync(new BehaviourEffectEntity()
+        private Task CreateEffectsBulk(EfeuMessage[] messages, DateTimeOffset timestamp)
+        {
+            List<BehaviourEffectEntity> entities = new List<BehaviourEffectEntity>();
+            foreach (EfeuMessage message in messages)
             {
-                 CreationTime = timestamp,
-                 Name = message.Name,
-                 TriggerId = message.TriggerId,
-                 Data = message.Data,
-                 CorrelationId = message.CorrelationId,
-                 State = BehaviourEffectState.Running
-            });
+                if (string.IsNullOrWhiteSpace(message.Name))
+                    throw new Exception("Message name must not be empty.");
+
+                entities.Add(new BehaviourEffectEntity()
+                {
+                    CreationTime = timestamp,
+                    Name = message.Name,
+                    TriggerId = message.TriggerId,
+                    Data = message.Data,
+                    CorrelationId = message.CorrelationId,
+                    State = BehaviourEffectState.Running
+                });
+            }
+
+            return behaviourEffectRepository.CreateBulkAsync(entities.ToArray());
         }
 
         public Task RunEffect(int id)
@@ -65,7 +77,8 @@ namespace Efeu.Integration.Commands
                                 Name = effect.Name,
                                 CorrelationId = effect.CorrelationId,
                                 TriggerId = effect.TriggerId,
-                                Tag = EfeuMessageTag.Response
+                                Tag = EfeuMessageTag.Response,
+                                Data = default
                             });
                         }
                     }
@@ -85,7 +98,6 @@ namespace Efeu.Integration.Commands
                 }
                 catch (Exception)
                 {
-                    Console.WriteLine("Error");
                     effect.State = BehaviourEffectState.Error;
                     effect.Times++;
                     await behaviourEffectRepository.UpdateAsync(effect);
@@ -93,26 +105,36 @@ namespace Efeu.Integration.Commands
             });
         }
 
+        public Task SkipEffect(int id, EfeuValue output = default)
+        {
+            return unitOfWork.ExecuteAsync(async () =>
+            {
+                BehaviourEffectEntity effect = await behaviourEffectRepository.GetByIdAsync(id);
+                if (effect.TriggerId != Guid.Empty)
+                {
+                    // send response message
+                    await ProcessSignal(new EfeuMessage()
+                    {
+                        Name = effect.Name,
+                        CorrelationId = effect.CorrelationId,
+                        TriggerId = effect.TriggerId,
+                        Tag = EfeuMessageTag.Response,
+                        Data = output
+                    });
+                }
+
+                await behaviourEffectRepository.DeleteAsync(id);
+            });
+        }
+
         private async Task ProcessSignal(EfeuMessage message)
         {
             SignalProcessContext context = new SignalProcessContext(behaviourTriggerRepository, behaviourDefinitionRepository, DateTime.Now);
-            Console.WriteLine("Start ...");
             await ProcessSignal(context, message);
 
-            foreach (BehaviourTrigger trigger in context.Triggers)
-            {
-                await behaviourTriggerCommands.CreateAsync(trigger);
-            }
-
-            foreach (EfeuMessage effect in context.Effects)
-            {
-                await CreateEffect(effect, context.Timestamp);
-            }
-
-            foreach (Guid triggerId in context.DeletedTriggers)
-            {
-                await behaviourTriggerCommands.DeleteAsync(triggerId);
-            }
+            await behaviourTriggerCommands.CreateBulkAsync(context.Triggers.ToArray());
+            await behaviourTriggerCommands.DeleteBulkAsync(context.DeletedTriggers.ToArray());
+            await CreateEffectsBulk(context.Effects.ToArray(), context.Timestamp);
         }
 
         private async Task ProcessSignal(SignalProcessContext context, EfeuMessage message)

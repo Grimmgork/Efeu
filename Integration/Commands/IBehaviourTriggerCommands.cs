@@ -11,8 +11,10 @@ namespace Efeu.Integration.Commands
     {
         public Task CreateAsync(BehaviourTrigger trigger);
 
+        public Task CreateBulkAsync(BehaviourTrigger[] triggers);
+
         public Task DeleteStaticAsync(int definitionVersionId);
 
-        public Task DeleteAsync(Guid id);
+        public Task DeleteBulkAsync(Guid[] ids);
     }
 }

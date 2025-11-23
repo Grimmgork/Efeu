@@ -20,15 +20,29 @@ namespace Efeu.Integration.Sqlite.Repositories
             this.connection = connection;
         }
 
-        public Task<int> Add(BehaviourTriggerEntity trigger)
+        public Task<int> CreateAsync(BehaviourTriggerEntity trigger)
         {
             return connection.InsertWithInt32IdentityAsync(trigger);
+        }
+
+        public Task CreateBulkAsync(BehaviourTriggerEntity[] triggers)
+        {
+            return connection.BulkCopyAsync(new BulkCopyOptions()
+            {
+                BulkCopyType = BulkCopyType.MultipleRows
+            }, triggers);
         }
 
         public Task DeleteAsync(Guid id)
         {
             return connection.GetTable<BehaviourTriggerEntity>()
                 .DeleteAsync(i => i.Id == id);
+        }
+
+        public Task DeleteBulkAsync(Guid[] ids)
+        {
+            return connection.GetTable<BehaviourTriggerEntity>()
+                .DeleteAsync(i => ids.Contains(i.Id));
         }
 
         public Task DeleteStaticAsync(int definitionVersionId)
@@ -51,7 +65,6 @@ namespace Efeu.Integration.Sqlite.Repositories
 
         public Task<BehaviourTriggerEntity[]> GetMatchingAsync(string name, EfeuMessageTag tag, Guid triggerId)
         {
-            Console.WriteLine("query");
             return connection.GetTable<BehaviourTriggerEntity>()
                 .Where(i => i.MessageName == name && i.MessageTag == tag && ( triggerId == Guid.Empty ? true : i.Id == triggerId) )
                 .ToArrayAsync();

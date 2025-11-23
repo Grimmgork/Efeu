@@ -22,16 +22,27 @@ namespace Efeu.Integration.Commands
 
         public Task CreateAsync(BehaviourTrigger trigger)
         {
-            return behaviourTriggerRepository.Add(new BehaviourTriggerEntity()
+            return CreateBulkAsync([trigger]);
+        }
+
+        public Task CreateBulkAsync(BehaviourTrigger[] triggers)
+        {
+            List<BehaviourTriggerEntity> entites = new List<BehaviourTriggerEntity>();
+            foreach (BehaviourTrigger trigger in triggers)
             {
-                Id = trigger.Id,
-                DefinitionVersionId = trigger.DefinitionId,
-                CorrelationId = trigger.CorrelationId,
-                Position = trigger.Position,
-                Scope = trigger.Scope,
-                MessageName = trigger.MessageName,
-                MessageTag = trigger.MessageTag,
-            });
+                entites.Add(new BehaviourTriggerEntity()
+                {
+                    Id = trigger.Id,
+                    DefinitionVersionId = trigger.DefinitionId,
+                    CorrelationId = trigger.CorrelationId,
+                    Position = trigger.Position,
+                    Scope = trigger.Scope,
+                    MessageName = trigger.MessageName,
+                    MessageTag = trigger.MessageTag,
+                });
+            }
+
+            return behaviourTriggerRepository.CreateBulkAsync(entites.ToArray());
         }
 
         public Task DeleteStaticAsync(int definitionVersionId)
@@ -39,14 +50,9 @@ namespace Efeu.Integration.Commands
             return behaviourTriggerRepository.DeleteStaticAsync(definitionVersionId);
         }
 
-        public Task DeleteAsync(Guid id)
+        public Task DeleteBulkAsync(Guid[] ids)
         {
-            return behaviourTriggerRepository.DeleteAsync(id);
-        }
-
-        public Task DeleteByCorrelation(Guid correlationId)
-        {
-            throw new NotImplementedException();
+            return behaviourTriggerRepository.DeleteBulkAsync(ids);
         }
     }
 }
