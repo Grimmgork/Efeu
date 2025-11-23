@@ -15,8 +15,21 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration
 {
+
+    public interface IDefaultEffectProvider : IEffectProvider
+    {
+        public void Register(string name, Func<IServiceProvider, IEffect> factory);
+    }
+
     public class DefaultEffectProvider : IEffectProvider
     {
+        private readonly IServiceProvider serviceProvider;
+
+        public DefaultEffectProvider(IServiceProvider services)
+        {
+            this.serviceProvider = services;
+        }
+
         public bool IsEffect(string name)
         {
             return name.StartsWith("_");
@@ -24,7 +37,11 @@ namespace Efeu.Integration
 
         public IEffect? TryGetEffect(string name)
         {
-            throw new NotImplementedException();
+            Func<IServiceProvider, IEffect>? factory = serviceProvider.GetKeyedService<Func<IServiceProvider, IEffect>>(name);
+            if (factory == null)
+                return null;
+
+            return factory(serviceProvider);
         }
     }
 

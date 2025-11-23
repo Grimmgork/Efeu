@@ -19,8 +19,5 @@
 	  <ProjectReference Include="..\Router\Efeu.Router.csproj" />
 	  <ProjectReference Include="..\Runtime\Efeu.Runtime.csproj" />
 	</ItemGroup>
-	<ItemGroup>
-	  <Folder Include="Queries\" />
-	</ItemGroup>
 
 </Project>

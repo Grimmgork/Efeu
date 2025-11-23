@@ -18,10 +18,6 @@ namespace Efeu.Integration.Foreign
 
         public readonly EfeuValue Input;
 
-        public BehaviourTrigger Trigger = new BehaviourTrigger();
-
-        public EfeuValue Data;
-
         public EfeuValue Output;
     }
 }

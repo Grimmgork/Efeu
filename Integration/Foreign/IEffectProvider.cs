@@ -6,12 +6,6 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Foreign
 {
-    public enum EfeuMessageType
-    {
-        Effect,
-        Signal
-    }
-
     public interface IEffectProvider
     {
         public IEffect? TryGetEffect(string name);
