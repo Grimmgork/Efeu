@@ -36,9 +36,9 @@ namespace Efeu.Router
 
     public enum BehaviourStepType
     {
+        Emit,
         On,
         Let,
-        Emit,
         Call,
         Await,
         If,
