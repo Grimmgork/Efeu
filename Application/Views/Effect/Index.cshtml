@@ -32,7 +32,7 @@ else
                 <td>@effect.CreationTime</td>
                 <td>@effect.Name</td>
                 <td>@effect.State</td>
-                <td><button disabled="@(effect.State == BehaviourEffectState.Running)" hx-post="/Effect/@effect.Id/Run">run</button><button hx-delete="/Effect/@effect.Id">delete</button></td>
+                <td><button disabled="@(effect.State == BehaviourEffectState.Running)" hx-post="/Effect/@effect.Id/Nudge">nudge</button><button hx-delete="/Effect/@effect.Id">delete</button></td>
             </tr>
         }
     </table>

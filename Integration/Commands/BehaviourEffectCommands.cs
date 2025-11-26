@@ -37,7 +37,7 @@ namespace Efeu.Integration.Commands
             return CreateEffectsBulk([message], timestamp);
         }
 
-        public Task NudgeEffect(int id, DateTimeOffset timestamp)
+        public Task NudgeEffect(int id)
         {
             return unitOfWork.ExecuteAsync(async () =>
             {

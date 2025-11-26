@@ -55,10 +55,10 @@ namespace Efeu.Application.Controllers
         }
 
         [HttpPost]
-        [Route("{id}/Run")]
-        public async Task<IActionResult> Run(int id)
+        [Route("{id}/Nudge")]
+        public async Task<IActionResult> Nudge(int id)
         {
-            await behaviourEffectCommands.RunEffect(id);
+            await behaviourEffectCommands.NudgeEffect(id);
             Response.Headers["HX-Refresh"] = "true";
             return Ok();
         }
