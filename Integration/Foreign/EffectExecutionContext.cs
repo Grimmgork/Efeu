@@ -19,5 +19,13 @@ namespace Efeu.Integration.Foreign
         public readonly EfeuValue Input;
 
         public EfeuValue Output;
+
+        public EffectExecutionContext(int id, Guid corellationId, uint times, EfeuValue input)
+        {
+            Id = id;
+            CorellationId = corellationId;
+            Times = times;
+            Input = input;
+        }
     }
 }

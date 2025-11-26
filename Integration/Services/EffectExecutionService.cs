@@ -13,11 +13,6 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Services
 {
-    public interface IEffectExecutionService : IHostedService
-    {
-        public void Nudge(int id);
-    }
-
     internal class EffectExecutionService : IEffectExecutionService
     {
         private readonly IServiceScopeFactory scopeFactory;
@@ -60,11 +55,6 @@ namespace Efeu.Integration.Services
         {
             cancellationTokenSource.Cancel();
             return work;
-        }
-
-        public void Nudge(int id)
-        {
-            throw new NotImplementedException();
         }
 
         private async Task Execute(IServiceProvider services, CancellationToken token)

@@ -17,7 +17,7 @@ namespace Efeu.Integration.Persistence
 
         public Task DeleteAsync(int id);
 
-        public Task<BehaviourEffectEntity> GetByIdAsync(int id);
+        public Task<BehaviourEffectEntity?> GetByIdAsync(int id);
 
         public Task<BehaviourEffectEntity[]> GetByCorellationAsync(Guid correlationId);
 

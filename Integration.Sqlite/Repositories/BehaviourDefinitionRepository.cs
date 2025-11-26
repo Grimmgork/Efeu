@@ -49,6 +49,9 @@ namespace Efeu.Integration.Sqlite.Repositories
 
         public Task<BehaviourDefinitionVersionEntity[]> GetVersionsByIdsAsync(int[] ids)
         {
+            if (ids.Length == 0)
+                return Task.FromResult<BehaviourDefinitionVersionEntity[]>([]);
+
             return connection.GetTable<BehaviourDefinitionVersionEntity>()
                 .Where(i => ids.Contains(i.Id))
                 .ToArrayAsync();

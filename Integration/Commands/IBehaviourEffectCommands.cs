@@ -16,6 +16,8 @@ namespace Efeu.Integration.Commands
 
         public Task CreateEffect(EfeuMessage message, DateTimeOffset timestamp);
 
+        public Task NudgeEffect(int id, DateTimeOffset timestamp);
+
         public Task DeleteAsync(int id);
     }
 }

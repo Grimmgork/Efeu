@@ -31,7 +31,6 @@ namespace Efeu.Application.Controllers
             return View(effects);
         }
 
-
         [HttpPost]
         [Route("")]
         public async Task<IActionResult> Create(string name, EfeuMessageTag tag)

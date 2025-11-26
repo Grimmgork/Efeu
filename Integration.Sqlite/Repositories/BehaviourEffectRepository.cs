@@ -59,10 +59,10 @@ namespace Efeu.Integration.Sqlite.Repositories
                     .ToArrayAsync();
         }
 
-        public Task<BehaviourEffectEntity> GetByIdAsync(int id)
+        public Task<BehaviourEffectEntity?> GetByIdAsync(int id)
         {
             return connection.GetTable<BehaviourEffectEntity>()
-                 .FirstAsync(i => i.Id == id);
+                 .FirstOrDefaultAsync(i => i.Id == id);
         }
 
         public Task UpdateAsync(BehaviourEffectEntity effect)
