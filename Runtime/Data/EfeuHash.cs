@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Efeu.Runtime.Data
 {
-    public class EfeuHash : EfeuObject, IEnumerable<KeyValuePair<string, EfeuValue>>, IEnumerable<EfeuValue>
+    public class EfeuHash : EfeuObject, IEnumerable<KeyValuePair<string, EfeuValue>>
     {
         public readonly IDictionary<string, EfeuValue> Hash = new Dictionary<string, EfeuValue>();
 
@@ -63,11 +63,6 @@ namespace Efeu.Runtime.Data
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
-        }
-
-        IEnumerator<EfeuValue> IEnumerable<EfeuValue>.GetEnumerator()
-        {
-            return Each().GetEnumerator();
         }
     }
 }

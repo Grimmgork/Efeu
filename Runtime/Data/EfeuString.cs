@@ -24,5 +24,10 @@ namespace Efeu.Runtime.Data
         {
             return Text.GetHashCode();
         }
+
+        public override IEnumerable<EfeuValue> Each()
+        {
+            return Text.Select(i => (EfeuValue)i);
+        }
     }
 }

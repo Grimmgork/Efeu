@@ -1,6 +1,4 @@
-﻿using Antlr4.Build.Tasks;
-using Azure;
-using Efeu.Integration.Entities;
+﻿using Efeu.Integration.Entities;
 using Efeu.Integration.Foreign;
 using Efeu.Integration.Persistence;
 using Efeu.Router;
@@ -37,20 +35,21 @@ namespace Efeu.Integration.Commands
             return CreateEffectsBulk([message], timestamp);
         }
 
-        public Task NudgeEffect(int id)
+        public async Task NudgeEffect(int id)
         {
-            return unitOfWork.ExecuteAsync(async () =>
-            {
-                BehaviourEffectEntity? effect = await behaviourEffectRepository.GetByIdAsync(id);
-                if (effect == null)
-                    throw new Exception($"effect with id {id} not found.");
+            await unitOfWork.BeginAsync();
 
-                if (effect.State == BehaviourEffectState.Error)
-                {
-                    effect.State = BehaviourEffectState.Running;
-                    await behaviourEffectRepository.UpdateAsync(effect);
-                }
-            });
+            BehaviourEffectEntity? effect = await behaviourEffectRepository.GetByIdAsync(id);
+            if (effect == null)
+                return;
+
+            if (effect.State == BehaviourEffectState.Error)
+            {
+                effect.State = BehaviourEffectState.Running;
+                await behaviourEffectRepository.UpdateAsync(effect);
+            }
+
+            await unitOfWork.CommitAsync();
         }
 
         private Task CreateEffectsBulk(EfeuMessage[] messages, DateTimeOffset timestamp)
@@ -66,7 +65,7 @@ namespace Efeu.Integration.Commands
                     CreationTime = timestamp,
                     Name = message.Name,
                     TriggerId = message.TriggerId,
-                    Data = message.Data,
+                    Input = message.Data,
                     CorrelationId = message.CorrelationId,
                     State = BehaviourEffectState.Running
                 });
@@ -75,82 +74,85 @@ namespace Efeu.Integration.Commands
             return behaviourEffectRepository.CreateBulkAsync(entities.ToArray());
         }
 
-        public Task RunEffect(int id)
+        public async Task RunEffect(int id)
         {
-            // TODO Database lock
-            return unitOfWork.ExecuteAsync(async () =>
+            await unitOfWork.BeginAsync();
+
+            BehaviourEffectEntity? effect = await behaviourEffectRepository.GetByIdAsync(id);
+            if (effect == null)
+                return;
+
+            try
             {
-                BehaviourEffectEntity? effect = await behaviourEffectRepository.GetByIdAsync(id);
-                if (effect == null)
-                    throw new Exception($"effect with id {id} not found.");
-
-                try
+                IEffect? effectInstance = environment.EffectProvider.TryGetEffect(effect.Name);
+                if (effectInstance is not null)
                 {
-                    IEffect? effectInstance = environment.EffectProvider.TryGetEffect(effect.Name);
-                    if (effectInstance is not null)
-                    {
-                        EffectExecutionContext context = new EffectExecutionContext(effect.Id, effect.CorrelationId, effect.Times, effect.Data);
-                        await effectInstance.RunAsync(context, default);
+                    // run effect
+                    EffectExecutionContext context = new EffectExecutionContext(effect.Id, effect.CorrelationId, effect.Times, effect.Data);
+                    await effectInstance.RunAsync(context, default);
 
-                        if (effect.TriggerId != Guid.Empty)
-                        {
-                            // send response message
-                            await ProcessSignal(new EfeuMessage()
-                            {
-                                Name = effect.Name,
-                                CorrelationId = effect.CorrelationId,
-                                TriggerId = effect.TriggerId,
-                                Tag = EfeuMessageTag.Response,
-                                Data = context.Output
-                            });
-                        }
-                    }
-                    else
+                    if (effect.TriggerId != Guid.Empty)
                     {
+                        // send response message
                         await ProcessSignal(new EfeuMessage()
                         {
                             Name = effect.Name,
                             CorrelationId = effect.CorrelationId,
-                            Data = effect.Data,
-                            Tag = EfeuMessageTag.Effect,
                             TriggerId = effect.TriggerId,
+                            Tag = EfeuMessageTag.Response,
+                            Data = context.Output
                         });
                     }
 
                     await behaviourEffectRepository.DeleteAsync(id);
                 }
-                catch (Exception ex)
+                else
                 {
-                    effect.State = BehaviourEffectState.Error;
-                    effect.Times++;
-                    await behaviourEffectRepository.UpdateAsync(effect);
-                }
-            });
-        }
-
-        public Task SkipEffect(int id, EfeuValue output = default)
-        {
-            return unitOfWork.ExecuteAsync(async () =>
-            {
-                BehaviourEffectEntity? effect = await behaviourEffectRepository.GetByIdAsync(id);
-                if (effect == null)
-                    throw new Exception($"effect with id {id} not found.");
-
-                if (effect.TriggerId != Guid.Empty)
-                {
-                    // send response message
+                    // run effect as signal
                     await ProcessSignal(new EfeuMessage()
                     {
                         Name = effect.Name,
                         CorrelationId = effect.CorrelationId,
+                        Data = effect.Data,
+                        Tag = EfeuMessageTag.Effect,
                         TriggerId = effect.TriggerId,
-                        Tag = EfeuMessageTag.Response,
-                        Data = output
                     });
-                }
 
-                await behaviourEffectRepository.DeleteAsync(id);
-            });
+                    await behaviourEffectRepository.DeleteAsync(id);
+                }
+            }
+            catch (Exception ex)
+            {
+                effect.State = BehaviourEffectState.Error;
+                effect.Times++;
+                await behaviourEffectRepository.UpdateAsync(effect);
+            }
+
+            await unitOfWork.CommitAsync();
+        }
+
+        public async Task SkipEffect(int id, EfeuValue output = default)
+        {
+            await unitOfWork.BeginAsync();
+            BehaviourEffectEntity? effect = await behaviourEffectRepository.GetByIdAsync(id);
+            if (effect == null)
+                throw new Exception($"effect with id {id} not found.");
+
+            if (effect.TriggerId != Guid.Empty)
+            {
+                // send response message
+                await ProcessSignal(new EfeuMessage()
+                {
+                    Name = effect.Name,
+                    CorrelationId = effect.CorrelationId,
+                    TriggerId = effect.TriggerId,
+                    Tag = EfeuMessageTag.Response,
+                    Data = output
+                });
+            }
+
+            await behaviourEffectRepository.DeleteAsync(id);
+            await unitOfWork.CommitAsync();
         }
 
         private async Task ProcessSignal(EfeuMessage message)

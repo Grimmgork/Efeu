@@ -7,10 +7,14 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Persistence
 {
-    public interface IUnitOfWork
+    public interface IUnitOfWork : IAsyncDisposable
     {
-        public Task ExecuteAsync(Func<Task> action);
+        public Task BeginAsync();
 
-        public Task ExecuteAsync(IsolationLevel isolationLevel, Func<Task> action);
+        public Task CommitAsync();
+
+        //public Task ExecuteAsync(Func<Task> action);
+
+        //public Task ExecuteAsync(IsolationLevel isolationLevel, Func<Task> action);
     }
 }

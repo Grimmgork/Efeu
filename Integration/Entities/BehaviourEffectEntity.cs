@@ -15,9 +15,9 @@ namespace Efeu.Integration.Entities
 
         public EfeuValue Data;
 
-        public DateTimeOffset CreationTime;
+        public EfeuValue Input;
 
-        public DateTimeOffset CompletionTime;
+        public DateTimeOffset CreationTime;
 
         public uint Times;
 

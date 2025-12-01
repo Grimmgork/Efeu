@@ -107,7 +107,7 @@ namespace Efeu.Router
 
     public enum BehaviourRuntimeResult
     {
-        Done,
+        Executed,
         Skipped
     }
 
@@ -203,7 +203,7 @@ namespace Efeu.Router
                 RunSteps(steps, $"{trigger.Position}/Do", scope); // Assumption: all trigger continuations are done in the Do route
             }
 
-            return BehaviourRuntimeResult.Done;
+            return BehaviourRuntimeResult.Executed;
         }
 
         private static bool TriggerMatchesMessage(BehaviourTrigger trigger, EfeuMessage message, BehaviourDefinitionStep step)

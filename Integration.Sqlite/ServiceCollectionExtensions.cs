@@ -97,11 +97,11 @@ namespace Efeu.Integration.Sqlite
                     .IsPrimaryKey()
                 .Property(p => p.CorrelationId)
                 .Property(p => p.CreationTime)
-                .Property(p => p.CompletionTime)
                 .Property(p => p.State)
                 .Property(p => p.Times)
                 .Property(p => p.TriggerId)
                 .Property(p => p.Name)
+                .Property(p => p.Input)
                 .Property(p => p.Data);
 
             builder.Build();

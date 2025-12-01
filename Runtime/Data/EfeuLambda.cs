@@ -8,6 +8,11 @@ namespace Efeu.Runtime.Data
 {
     public class EfeuLambda : EfeuObject
     {
+        public readonly Func<EfeuValue, EfeuValue[]> Lambda;
 
+        public EfeuLambda(Func<EfeuValue, EfeuValue[]> func)
+        {
+            this.Lambda = func;
+        }
     }
 }

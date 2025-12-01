@@ -23,7 +23,7 @@ namespace Efeu.Integration.Sqlite.Migrations
             await connection.ExecuteAsync("CREATE TABLE Definition (Id INTEGER PRIMARY KEY, Name TEXT, Version INTEGER, UNIQUE(Name))");
             await connection.ExecuteAsync("CREATE TABLE DefinitionVersion (Id INTEGER PRIMARY KEY, DefinitionId INTEGER, Version INTEGER, Steps TEXT, FOREIGN KEY(DefinitionId) REFERENCES Definition(Id))");
             await connection.ExecuteAsync("CREATE TABLE Trigger (Id TEXT PRIMARY KEY, DefinitionVersionId INTEGER, CorrelationId TEXT, Position TEXT, Scope TEXT, MessageName TEXT, MessageTag TEXT, EffectId INTEGER, FOREIGN KEY(DefinitionVersionId) REFERENCES DefinitionVersion(Id))");
-            await connection.ExecuteAsync("CREATE TABLE Effect (Id INTEGER PRIMARY KEY, Name TEXT, CorrelationId TEXT, TriggerId TEXT, Data TEXT, CreationTime INTEGER, CompletionTime INTEGER, State TEXT, Times INTEGER)");
+            await connection.ExecuteAsync("CREATE TABLE Effect (Id INTEGER PRIMARY KEY, Name TEXT, CorrelationId TEXT, TriggerId TEXT, Input TEXT, Data TEXT, CreationTime INTEGER, State TEXT, Times INTEGER)");
         }
 
         public async Task Down()

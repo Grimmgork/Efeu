@@ -44,6 +44,7 @@ namespace Efeu.Runtime.Data
         public static implicit operator EfeuValue(double d) => new EfeuValue(new EfeuFloat(d));
         public static implicit operator EfeuValue(decimal d) => new EfeuValue(new EfeuDecimal(d));
         public static implicit operator EfeuValue(string s) => new EfeuValue(new EfeuString(s));
+        public static implicit operator EfeuValue(char c) => new EfeuValue(new EfeuString(c.ToString()));
         public static implicit operator EfeuValue(DateTime dt) => new EfeuValue(new EfeuTime(dt));
         public static implicit operator EfeuValue(EfeuObject obj) => new EfeuValue(obj);
 
@@ -124,6 +125,10 @@ namespace Efeu.Runtime.Data
                 if (obj is IEnumerable<EfeuValue> enumerable)
                 {
                     return enumerable;
+                }
+                else
+                {
+                    return obj?.Each() ?? [];
                 }
             }
 
