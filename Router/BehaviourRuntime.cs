@@ -1,8 +1,10 @@
 ﻿using Efeu.Runtime;
 using Efeu.Runtime.Data;
 using Efeu.Runtime.Model;
+using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -64,18 +66,24 @@ namespace Efeu.Router
 
     public class BehaviourScope
     {
-        public BehaviourScope? Parent;
+        public readonly BehaviourScope? Parent;
 
-        public Dictionary<string, EfeuValue> Constants = new Dictionary<string, EfeuValue>();
+        public readonly ImmutableDictionary<string, EfeuValue> Constants;
+
+        public BehaviourScope(ImmutableDictionary<string, EfeuValue> constants)
+        {
+            this.Constants = constants;
+        }
 
         public BehaviourScope()
         {
-        
+            this.Constants = ImmutableDictionary<string, EfeuValue>.Empty;
         }
 
-        public BehaviourScope(BehaviourScope parent)
+        public BehaviourScope(BehaviourScope parent, ImmutableDictionary<string, EfeuValue> constants)
         {
             this.Parent = parent;
+            this.Constants = constants;
         }
 
         public EfeuValue GetConstant(string name)
@@ -94,14 +102,6 @@ namespace Efeu.Router
             }
 
             return default;
-        }
-
-        public void DefineConstant(string name, EfeuValue value)
-        {
-            if (Constants.ContainsKey(name))
-                throw new Exception();
-
-            Constants[name] = value;
         }
     }
 
@@ -184,7 +184,7 @@ namespace Efeu.Router
         {
             if (IsImmediate)
             {
-                BehaviourScope scope = new BehaviourScope();
+                BehaviourScope scope = new BehaviourScope(); // root scope
                 RunSteps(Steps, "", scope);
             }
             else
@@ -196,8 +196,8 @@ namespace Efeu.Router
                     return BehaviourRuntimeResult.Skipped;
                 }
 
-                BehaviourScope scope = new BehaviourScope(trigger.Scope);
-                scope.DefineConstant("input", triggerMessage.Data);
+                ImmutableDictionary<string, EfeuValue> constants = ImmutableDictionary<string, EfeuValue>.Empty.Add("input", triggerMessage.Data);
+                BehaviourScope scope = new BehaviourScope(trigger.Scope, constants);
 
                 BehaviourDefinitionStep[] steps = step.Do;
                 RunSteps(steps, $"{trigger.Position}/Do", scope); // Assumption: all trigger continuations are done in the Do route
@@ -212,13 +212,23 @@ namespace Efeu.Router
                     message.Name == trigger.MessageName;
         }
 
-        private void RunSteps(BehaviourDefinitionStep[] steps, string position, BehaviourScope scope)
+        private void RunSteps(BehaviourDefinitionStep[] steps, string position, BehaviourScope parentScope)
         {
-            // todo run all lets first?
-            int i = 0;
-            foreach (BehaviourDefinitionStep step in steps)
+            var (lets, remaining) = steps.Partition((item) => item.Type == BehaviourStepType.Let);
+
+            var constants = ImmutableDictionary<string, EfeuValue>.Empty;
+            foreach (BehaviourDefinitionStep step in lets)
             {
-                RunStep(step, $"{position}/{i}", scope);
+                BehaviourScope scope = new BehaviourScope(parentScope, constants);
+                BehaviourExpressionContext context = new BehaviourExpressionContext(scope);
+                constants = constants.Add(step.Name, step.Input(context));
+            }
+
+            BehaviourScope finalScope = new BehaviourScope(parentScope, constants);
+            int i = 0;
+            foreach (BehaviourDefinitionStep step in remaining)
+            {
+                RunStep(step, $"{position}/{i}", finalScope);
                 i++;
             }
         }
@@ -253,10 +263,6 @@ namespace Efeu.Router
             {
                 RunOnStep(step, position, scope);
             }
-            else if (step.Type == BehaviourStepType.Let)
-            {
-                RunLetStep(step, position, scope);
-            }
         }
 
         private void RunEmitStep(BehaviourDefinitionStep step, BehaviourScope scope)
@@ -274,11 +280,11 @@ namespace Efeu.Router
             BehaviourExpressionContext context = new BehaviourExpressionContext(scope);
             if (step.Input(context))
             {
-                RunSteps(step.Do, $"{position}/Do", new BehaviourScope(scope));
+                RunSteps(step.Do, $"{position}/Do", scope);
             }
             else
             {
-                RunSteps(step.Else, $"{position}/Else", new BehaviourScope(scope));
+                RunSteps(step.Else, $"{position}/Else", scope);
             }
         }
 
@@ -287,11 +293,11 @@ namespace Efeu.Router
             BehaviourExpressionContext context = new BehaviourExpressionContext(scope);
             if (step.Input(context))
             {
-                RunSteps(step.Else, $"{position}/Else", new BehaviourScope(scope));
+                RunSteps(step.Else, $"{position}/Else", scope);
             }
             else
             {
-                RunSteps(step.Do, $"{position}/Do", new BehaviourScope(scope));
+                RunSteps(step.Do, $"{position}/Do", scope);
             }
         }
 
@@ -300,14 +306,8 @@ namespace Efeu.Router
             BehaviourExpressionContext context = new BehaviourExpressionContext(scope);
             foreach (EfeuValue item in step.Input(context).Each())
             {
-                RunSteps(step.Do, $"{position}/Do", new BehaviourScope(scope));
+                RunSteps(step.Do, $"{position}/Do", scope);
             }
-        }
-
-        private void RunLetStep(BehaviourDefinitionStep step, string position, BehaviourScope scope)
-        {
-            BehaviourExpressionContext context = new BehaviourExpressionContext(scope);
-            scope.DefineConstant(step.Name, step.Input(context));
         }
 
         private void RunCallStep(BehaviourDefinitionStep step, string position, BehaviourScope scope)

@@ -37,43 +37,12 @@ namespace Efeu.Integration.Sqlite
             isTransactionRunning = false;
         }
 
-        public async Task RollbackAsync()
-        {
-            if (!isTransactionRunning)
-                throw new Exception("No transaction is running!");
-
-            await connection.RollbackTransactionAsync();
-            isTransactionRunning = false;
-        }
-
         public async ValueTask DisposeAsync()
         {
             if (isTransactionRunning)
                 await connection.RollbackTransactionAsync();
 
             connection.Dispose();
-        }
-
-        public Task ExecuteAsync(Func<Task> action) => 
-            ExecuteAsync(IsolationLevel.Serializable, action);
-
-        public async Task ExecuteAsync(IsolationLevel isolationLevel, Func<Task> action)
-        {
-            if (connection.Transaction != null)
-                throw new InvalidOperationException("Another Transaction has already started!");
-
-            await connection.BeginTransactionAsync(isolationLevel);
-            try
-            {
-                await action();
-            }
-            catch (Exception)
-            {
-                await connection.RollbackTransactionAsync();
-                throw;
-            }
-
-            await connection.CommitTransactionAsync();
         }
     }
 }

@@ -19,11 +19,13 @@ namespace Efeu.Application.Controllers
     {
         private readonly IBehaviourDefinitionCommands workflowDefinitionCommands;
         private readonly IBehaviourDefinitionRepository workflowDefinitionRepository;
+        private readonly IUnitOfWork unitOfWork;
 
-        public DefinitionController(IBehaviourDefinitionCommands workflowDefinitionCommands, IBehaviourDefinitionRepository workflowDefinitionRepository)
+        public DefinitionController(IBehaviourDefinitionCommands workflowDefinitionCommands, IBehaviourDefinitionRepository workflowDefinitionRepository, IUnitOfWork unitOfWork)
         {
             this.workflowDefinitionCommands = workflowDefinitionCommands;
             this.workflowDefinitionRepository = workflowDefinitionRepository;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -75,7 +77,10 @@ namespace Efeu.Application.Controllers
             options.Converters.Add(new JsonStringEnumConverter());
 
             BehaviourDefinitionStep[] steps = JsonSerializer.Deserialize<BehaviourDefinitionStep[]>(file.OpenReadStream(), options);
+
+            await unitOfWork.BeginAsync();
             await workflowDefinitionCommands.PublishVersionAsync(id, steps);
+            await unitOfWork.CommitAsync();
 
             Response.Headers["HX-Redirect"] = Url.Action($"{id}");
             return Ok();

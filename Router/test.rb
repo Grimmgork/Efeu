@@ -8,6 +8,9 @@ on NameOfMessage {
   await Message { 
 		id: 10 
 		name: 10 
+	} and Message {
+		id: 10
+		id: 20
 	} do
     let name be (a: b: a / b)
     let name be (if (if 10, (a: b: name), 30), (split "name", "asdf"), 

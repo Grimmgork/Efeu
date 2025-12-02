@@ -1,4 +1,5 @@
-﻿using Efeu.Router;
+﻿using Efeu.Integration.Entities;
+using Efeu.Router;
 using Efeu.Runtime.Data;
 using System;
 using System.Collections.Generic;
@@ -10,13 +11,13 @@ namespace Efeu.Integration.Commands
 {
     public interface IBehaviourEffectCommands
     {
-        public Task RunEffect(int id);
+        public Task RunEffect(BehaviourEffectEntity effect);
 
-        public Task SkipEffect(int id, EfeuValue output = default);
+        public Task SkipEffect(BehaviourEffectEntity effect, EfeuValue output = default);
 
         public Task CreateEffect(EfeuMessage message, DateTimeOffset timestamp);
 
-        public Task NudgeEffect(int id);
+        public Task NudgeEffect(BehaviourEffectEntity effect);
 
         public Task DeleteAsync(int id);
     }

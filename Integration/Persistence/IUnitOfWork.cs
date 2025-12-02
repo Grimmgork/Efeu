@@ -12,9 +12,5 @@ namespace Efeu.Integration.Persistence
         public Task BeginAsync();
 
         public Task CommitAsync();
-
-        //public Task ExecuteAsync(Func<Task> action);
-
-        //public Task ExecuteAsync(IsolationLevel isolationLevel, Func<Task> action);
     }
 }

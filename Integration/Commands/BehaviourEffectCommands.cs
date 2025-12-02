@@ -35,21 +35,13 @@ namespace Efeu.Integration.Commands
             return CreateEffectsBulk([message], timestamp);
         }
 
-        public async Task NudgeEffect(int id)
+        public async Task NudgeEffect(BehaviourEffectEntity effect)
         {
-            await unitOfWork.BeginAsync();
-
-            BehaviourEffectEntity? effect = await behaviourEffectRepository.GetByIdAsync(id);
-            if (effect == null)
-                return;
-
             if (effect.State == BehaviourEffectState.Error)
             {
                 effect.State = BehaviourEffectState.Running;
                 await behaviourEffectRepository.UpdateAsync(effect);
             }
-
-            await unitOfWork.CommitAsync();
         }
 
         private Task CreateEffectsBulk(EfeuMessage[] messages, DateTimeOffset timestamp)
@@ -62,6 +54,7 @@ namespace Efeu.Integration.Commands
 
                 entities.Add(new BehaviourEffectEntity()
                 {
+                    Id = 0,
                     CreationTime = timestamp,
                     Name = message.Name,
                     TriggerId = message.TriggerId,
@@ -74,14 +67,8 @@ namespace Efeu.Integration.Commands
             return behaviourEffectRepository.CreateBulkAsync(entities.ToArray());
         }
 
-        public async Task RunEffect(int id)
+        public async Task RunEffect(BehaviourEffectEntity effect)
         {
-            await unitOfWork.BeginAsync();
-
-            BehaviourEffectEntity? effect = await behaviourEffectRepository.GetByIdAsync(id);
-            if (effect == null)
-                return;
-
             try
             {
                 IEffect? effectInstance = environment.EffectProvider.TryGetEffect(effect.Name);
@@ -104,7 +91,7 @@ namespace Efeu.Integration.Commands
                         });
                     }
 
-                    await behaviourEffectRepository.DeleteAsync(id);
+                    await behaviourEffectRepository.DeleteAsync(effect.Id);
                 }
                 else
                 {
@@ -118,7 +105,7 @@ namespace Efeu.Integration.Commands
                         TriggerId = effect.TriggerId,
                     });
 
-                    await behaviourEffectRepository.DeleteAsync(id);
+                    await behaviourEffectRepository.DeleteAsync(effect.Id);
                 }
             }
             catch (Exception ex)
@@ -127,17 +114,10 @@ namespace Efeu.Integration.Commands
                 effect.Times++;
                 await behaviourEffectRepository.UpdateAsync(effect);
             }
-
-            await unitOfWork.CommitAsync();
         }
 
-        public async Task SkipEffect(int id, EfeuValue output = default)
+        public async Task SkipEffect(BehaviourEffectEntity effect, EfeuValue output = default)
         {
-            await unitOfWork.BeginAsync();
-            BehaviourEffectEntity? effect = await behaviourEffectRepository.GetByIdAsync(id);
-            if (effect == null)
-                throw new Exception($"effect with id {id} not found.");
-
             if (effect.TriggerId != Guid.Empty)
             {
                 // send response message
@@ -151,8 +131,7 @@ namespace Efeu.Integration.Commands
                 });
             }
 
-            await behaviourEffectRepository.DeleteAsync(id);
-            await unitOfWork.CommitAsync();
+            await behaviourEffectRepository.DeleteAsync(effect.Id);
         }
 
         private async Task ProcessSignal(EfeuMessage message)

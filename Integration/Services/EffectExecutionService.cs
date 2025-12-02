@@ -32,16 +32,13 @@ namespace Efeu.Integration.Services
             {
                 while (!token.IsCancellationRequested)
                 {
-                    using (IServiceScope scope = scopeFactory.CreateScope())
+                    try
                     {
-                        try
-                        {
-                            await Execute(scope.ServiceProvider, token);
-                        }
-                        catch (Exception ex)
-                        {
-                            
-                        }
+                        await Execute(token);
+                    }
+                    catch (Exception ex)
+                    {
+
                     }
 
                     await Task.Delay(1000);
@@ -57,15 +54,25 @@ namespace Efeu.Integration.Services
             return work;
         }
 
-        private async Task Execute(IServiceProvider services, CancellationToken token)
+        private async Task Execute(CancellationToken token)
         {
+            await using var scope = scopeFactory.CreateAsyncScope();
+
+            IServiceProvider services = scope.ServiceProvider;
+            
             IBehaviourEffectCommands behaviourEffectCommands = services.GetRequiredService<IBehaviourEffectCommands>();
             IBehaviourEffectRepository behaviourEffectRepository = services.GetRequiredService<IBehaviourEffectRepository>();
+            IUnitOfWork unitOfWork = services.GetRequiredService<IUnitOfWork>();
 
+            await unitOfWork.BeginAsync();
             BehaviourEffectEntity[] effects = await behaviourEffectRepository.GetRunningAsync(20);
             foreach (BehaviourEffectEntity effect in effects)
             {
-                await behaviourEffectCommands.RunEffect(effect.Id);
+                await behaviourEffectCommands.RunEffect(effect);
+                await unitOfWork.CommitAsync();
+
+                if (token.IsCancellationRequested)
+                    break;
             }
         }
     }
