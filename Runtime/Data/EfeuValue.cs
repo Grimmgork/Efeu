@@ -1,4 +1,6 @@
-﻿using System;
+﻿using SharpCompress.Common;
+using SharpCompress.Compressors.Xz;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -61,10 +63,7 @@ namespace Efeu.Runtime.Data
             }
             if (value is IEnumerable enumerable and not string)
             {
-                EfeuArray array = new EfeuArray();
-                foreach (object item in enumerable)
-                    array.Push(EfeuValue.Parse(item));
-
+                EfeuArray array = new EfeuArray(enumerable.Cast<object?>().Select(EfeuValue.Parse));
                 return array;
             }
             return value switch
@@ -77,7 +76,7 @@ namespace Efeu.Runtime.Data
                 String v => new EfeuString(v),
                 Boolean v => v,
                 Double v => v,
-                Decimal v => new EfeuDecimal(v),
+                Decimal v => new EfeuDecimal(v).ToValue(),
                 DateTime v => new EfeuTime(v),
                 _ => value.GetType().IsClass ? new EfeuWrapper(value) : throw new InvalidCastException($"Cant parse type {value.GetType()} as {nameof(EfeuValue)}.")
             };
@@ -429,47 +428,15 @@ namespace Efeu.Runtime.Data
             }
         }
 
-        public void Push(EfeuValue item)
+        public EfeuValue Push(params EfeuValue[] items)
         {
             if (Tag == EfeuValueTag.Object)
             {
-                obj!.Push(item);
+                return obj!.Push(items);
             }
             else
             {
-                throw new InvalidOperationException();
-            }
-        }
-
-        public EfeuValue Shift()
-        {
-            return AsObject().Shift();
-        }
-
-        public void Unshift(params EfeuValue[] items)
-        {
-            AsObject().Unshift(items);
-        }
-
-        public EfeuValue Pop()
-        {
-            if (Tag == EfeuValueTag.Object)
-            {
-                return obj!.Pop();
-            }
-
-            return EfeuValue.Nil();
-        }
-
-        public EfeuValue Clone()
-        {
-            if (Tag == EfeuValueTag.Object)
-            {
-                return obj!.Clone();
-            }
-            else
-            {
-                return this;
+                return new EfeuArray([this, ..items]);
             }
         }
 

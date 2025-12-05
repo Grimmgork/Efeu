@@ -33,7 +33,7 @@ namespace Efeu.Runtime.Method
             {
                 int index = context.Data.Call("index").ToInt();
                 EfeuValue item = context.Input.Call(index);
-                context.Data.Call("result").Push(item);
+                context.Data = context.Data.Call("result").Push(item);
             }
 
             context.Data.Call("index", (value) => value++);

@@ -61,6 +61,16 @@ namespace Efeu.Application.Controllers
         public async Task<IActionResult> Create(string name)
         {
             await workflowDefinitionCommands.CreateAsync(name);
+            Response.Headers["HX-Refresh"] = "true";
+            return Ok();
+        }
+
+        [HttpDelete]
+        [Route("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await workflowDefinitionCommands.DeleteAsync(id);
+            Response.Headers["HX-Refresh"] = "true";
             return Ok();
         }
 

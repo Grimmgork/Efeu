@@ -34,7 +34,7 @@ namespace Efeu.Application
                      });
 
             builder.Services.AddEfeu();
-            builder.Services.AddEfeuStandardEffects();
+            builder.Services.AddEfeuDefaultEffects();
             builder.Services.AddEfeuSqlite("Data Source=data.db");
 
             var app = builder.Build();

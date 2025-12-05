@@ -7,7 +7,7 @@ using System.Xml.Linq;
 
 namespace Efeu.Runtime.Data
 {
-    public abstract class EfeuObject
+    public class EfeuObject
     {
         public string TypeName => this.GetType().Name;
 
@@ -16,12 +16,12 @@ namespace Efeu.Runtime.Data
             return EfeuValue.Nil();
         }
 
-        public virtual void Call(string field, EfeuValue value)
+        public virtual EfeuValue Call(string field, EfeuValue value)
         {
             throw new NotImplementedException();
         }
 
-        public virtual void Call(int index, EfeuValue value)
+        public virtual EfeuValue Call(int index, EfeuValue value)
         {
             throw new NotImplementedException();
         }
@@ -61,22 +61,7 @@ namespace Efeu.Runtime.Data
             throw new NotImplementedException();
         }
 
-        public virtual EfeuValue Pop()
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual void Push(params EfeuValue[] values)
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual EfeuValue Shift()
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual void Unshift(params EfeuValue[] values)
+        public virtual IEnumerable<EfeuValue> Times()
         {
             throw new NotImplementedException();
         }
@@ -101,9 +86,14 @@ namespace Efeu.Runtime.Data
             return ToLong();
         }
 
-        public override string ToString()
+        public virtual string ToString()
         {
             return $"<{TypeName}>";
+        }
+
+        public virtual EfeuValue ToValue()
+        {
+            return new EfeuValue(this);
         }
 
         public virtual IEnumerable<KeyValuePair<string, EfeuValue>> Fields()
@@ -111,14 +101,9 @@ namespace Efeu.Runtime.Data
             return [];
         }
 
-        public virtual EfeuValue Clone()
+        public virtual EfeuValue Push(params EfeuValue[] items)
         {
-            throw new NotImplementedException();
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
+            return new EfeuArray([this, ..items]);
         }
 
         public virtual EfeuValue Add(EfeuValue value)
@@ -156,7 +141,7 @@ namespace Efeu.Runtime.Data
             throw new NotImplementedException();
         }
 
-        public EfeuValue Eval()
+        public virtual EfeuValue Eval()
         {
             throw new NotImplementedException();
         }

@@ -26,14 +26,16 @@ namespace Efeu.Runtime.Method
                 return WorkflowMethodState.Yield;
             }
 
-            context.Data.Call("result").Push(context.Result);
+            EfeuValue result = context.Data.Call("result");
+
+            context.Data = result.Push(context.Result);
             if (context.Times < context.Input.Length())
             {
                 context.Output = context.Input.Call(context.Times);
                 return WorkflowMethodState.Yield;
             }
 
-            context.Output = context.Data.Call("result");
+            context.Output = result;
             return WorkflowMethodState.Done;
         }
     }

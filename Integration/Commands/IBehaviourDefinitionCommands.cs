@@ -16,6 +16,6 @@ namespace Efeu.Integration.Commands
 
         public Task<int> CreateAsync(string name);
 
-        public Task Delete(int id);
+        public Task DeleteAsync(int id);
     }
 }

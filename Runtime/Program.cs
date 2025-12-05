@@ -19,6 +19,7 @@ using System;
 using System.Buffers.Text;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -31,13 +32,11 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        EfeuValue a = 10.6d;
-        EfeuValue b = new EfeuDecimal(2);
+        EfeuValue value = 42;
+        value = value.Push(1, 2, 3);
 
-        a.AsHash();
-        b.AsArray();
+        value.Each(i => Console.WriteLine(i));
 
-        Console.WriteLine(a + b);
         return;
 
 

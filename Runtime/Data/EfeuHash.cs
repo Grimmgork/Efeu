@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,16 +10,16 @@ namespace Efeu.Runtime.Data
 {
     public class EfeuHash : EfeuObject, IEnumerable<KeyValuePair<string, EfeuValue>>
     {
-        public readonly IDictionary<string, EfeuValue> Hash = new Dictionary<string, EfeuValue>();
+        public readonly IImmutableDictionary<string, EfeuValue> Hash = ImmutableDictionary<string, EfeuValue>.Empty;
 
         public EfeuHash(IEnumerable<KeyValuePair<string, EfeuValue>> fields)
         {
-            Hash = new Dictionary<string, EfeuValue>(fields);
+            Hash = Hash.AddRange(fields);
         }
 
         public EfeuHash(params KeyValuePair<string, EfeuValue>[] fields)
         {
-            Hash = new Dictionary<string, EfeuValue>(fields);
+            Hash = Hash.AddRange(fields);
         }
 
         public EfeuValue this[string field]
@@ -27,10 +28,6 @@ namespace Efeu.Runtime.Data
             {
                 return Hash.GetValueOrDefault(field, default);
             }
-            set
-            {
-                Hash[field] = value;
-            }
         }
 
         public override EfeuValue Call(string field)
@@ -38,9 +35,9 @@ namespace Efeu.Runtime.Data
             return Hash.GetValueOrDefault(field, EfeuValue.Nil());
         }
 
-        public override void Call(string field, EfeuValue value)
+        public override EfeuValue Call(string field, EfeuValue value)
         {
-            Hash[field] = value;
+            return new EfeuHash(Hash.SetItem(field, value));
         }
 
         public override IEnumerable<KeyValuePair<string, EfeuValue>> Fields()

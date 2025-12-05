@@ -38,7 +38,7 @@ namespace Efeu.Integration.Commands
             return behaviourDefinitionRepository.CreateAsync(definition);
         }
 
-        public Task Delete(int id)
+        public Task DeleteAsync(int id)
         {
             return behaviourDefinitionRepository.DeleteAsync(id);
         }

@@ -14,44 +14,43 @@ namespace Efeu.Router
             options.Converters.Add(new EfeuValueJsonConverter());
             options.Converters.Add(new JsonStringEnumConverter());
 
-            BehaviourDefinitionStep[] steps =
-                [
-                    new () {
-                        Type = BehaviourStepType.Let,
-                        Name = "Value",
-                        Input = (context) => false
-                    },
-                    new () {
-                        Type = BehaviourStepType.Emit,
-                        Name = "HelloWorld"
-                    },
-                    new () {
-                        Type = BehaviourStepType.Await,
-                        Name = "ConsoleInput",
-                        Do = [
-                            new () {
-                                Type = BehaviourStepType.If,
-                                Input = (context) => context.Constant("Value"),
-                                Do = [
-                                    new () {
-                                        Type = BehaviourStepType.Emit,
-                                        Name = "HelloWorld1"
-                                    }
-                                ],
-                                Else = [
-                                    new () {
-                                        Type = BehaviourStepType.Emit,
-                                        Name = "HelloWorld2"
-                                    }
-                                ]
-                            },
-                        ]
-                    },
-                    new () {
-                        Type = BehaviourStepType.Emit,
-                        Name = "HelloWorld"
-                    },
-                ];
+            BehaviourDefinitionStep[] steps = [
+                new () {
+                    Type = BehaviourStepType.Let,
+                    Name = "Value",
+                    Input = (context) => false
+                },
+                new () {
+                    Type = BehaviourStepType.Emit,
+                    Name = "HelloWorld"
+                },
+                new () {
+                    Type = BehaviourStepType.Await,
+                    Name = "ConsoleInput",
+                    Do = [
+                        new () {
+                            Type = BehaviourStepType.If,
+                            Input = (context) => context.Constant("Value"),
+                            Do = [
+                                new () {
+                                    Type = BehaviourStepType.Emit,
+                                    Name = "HelloWorld1"
+                                }
+                            ],
+                            Else = [
+                                new () {
+                                    Type = BehaviourStepType.Emit,
+                                    Name = "HelloWorld2"
+                                }
+                            ]
+                        },
+                    ]
+                },
+                new () {
+                    Type = BehaviourStepType.Emit,
+                    Name = "HelloWorld"
+                },
+            ];
 
             BehaviourRuntime behaviour1 = BehaviourRuntime.Run(steps, Guid.NewGuid(), 10);
             BehaviourTrigger trigger = behaviour1.Triggers.First();

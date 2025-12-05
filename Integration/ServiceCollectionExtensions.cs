@@ -27,7 +27,7 @@ namespace Efeu.Integration
             services.AddScoped<EfeuEnvironment>();
         }
 
-        public static void AddEfeuStandardEffects(this IServiceCollection services)
+        public static void AddEfeuDefaultEffects(this IServiceCollection services)
         {
             services.AddEfeuEffect<WriteConsoleEffect>("WriteConsole");
         }
