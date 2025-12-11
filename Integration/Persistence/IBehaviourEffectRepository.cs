@@ -1,8 +1,5 @@
 ﻿using Efeu.Integration.Entities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Efeu.Integration.Persistence
@@ -23,8 +20,16 @@ namespace Efeu.Integration.Persistence
 
         public Task<BehaviourEffectEntity[]> GetAll();
 
-        public Task UpdateAsync(BehaviourEffectEntity effect);
+        public Task MarkErrorAsync(int id, uint times);
 
-        public Task<BehaviourEffectEntity[]> GetRunningAsync(int limit);
+        public Task<int> NudgeAsync(int id);
+
+        public Task<bool> TryLockAsync(int id, Guid lockId, DateTimeOffset timestamp, TimeSpan lease);
+
+        public Task<BehaviourEffectEntity?> GetRunningSignalAsync();
+
+        public Task<int[]> GetRunningEffectNotLockedAsync(DateTimeOffset time);
+
+        public Task UnlockAsync(Guid lockId);
     }
 }

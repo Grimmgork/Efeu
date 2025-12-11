@@ -11,13 +11,13 @@ namespace Efeu.Integration.Commands
 {
     public interface IBehaviourEffectCommands
     {
-        public Task RunEffect(BehaviourEffectEntity effect);
-
-        public Task SkipEffect(BehaviourEffectEntity effect, EfeuValue output = default);
+        public Task SkipEffect(int id, EfeuValue output = default);
 
         public Task CreateEffect(EfeuMessage message, DateTimeOffset timestamp);
 
-        public Task NudgeEffect(BehaviourEffectEntity effect);
+        public BehaviourEffectEntity GetEffectFromMessage(EfeuMessage message, DateTimeOffset timestamp);
+
+        public Task NudgeEffect(int id);
 
         public Task DeleteAsync(int id);
     }

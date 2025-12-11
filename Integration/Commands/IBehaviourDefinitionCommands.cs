@@ -12,9 +12,9 @@ namespace Efeu.Integration.Commands
 {
     public interface IBehaviourDefinitionCommands
     {
-        public Task<int> PublishVersionAsync(int definitionId, BehaviourDefinitionStep[] steps);
-
         public Task<int> CreateAsync(string name);
+
+        public Task<int> PublishVersionAsync(int definitionId, BehaviourDefinitionStep[] steps);
 
         public Task DeleteAsync(int id);
     }

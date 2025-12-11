@@ -4,10 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Foreign
+namespace Efeu.Integration.Entities
 {
-    public interface IEffectProvider
+    public class LockEntity
     {
-        public IEffect? TryGetEffect(string name);
+        public Guid Bundle;
+
+        public string Name = "";
     }
 }

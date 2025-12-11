@@ -57,7 +57,7 @@ namespace Efeu.Router
 
             BehaviourRuntime behaviour2 = BehaviourRuntime.RunTrigger(trigger, new EfeuMessage()
             {
-                 Tag = EfeuMessageTag.Effect,
+                 Tag = EfeuMessageTag.Request,
                  Name = "ConsoleInput",
                  CorrelationId = trigger.CorrelationId,
             });

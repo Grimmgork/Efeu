@@ -1,13 +1,16 @@
 # Name of behaviour
 
-on NameOfMessage { 
-		id: 10 
+on NameOfMessage {
+		id: 10
+		name: name
 	} do
 	emit Message
-  emit Message
-  await Message { 
-		id: 10 
-		name: 10 
+	emit Message
+	await Message {
+		@expr: (a: a.name eq a.b)
+		id: 10
+		name: 10
+		name: 20
 	} and Message {
 		id: 10
 		id: 20
@@ -17,7 +20,7 @@ on NameOfMessage {
 			(/namee/, "name").("adadw").name, 30)
 		# 
 		# some commments
-    if a is 10 do
+    if (a is 10) do
       emit Message
     else
       emit Message

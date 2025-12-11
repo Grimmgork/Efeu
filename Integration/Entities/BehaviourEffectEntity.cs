@@ -21,6 +21,12 @@ namespace Efeu.Integration.Entities
 
         public uint Times;
 
+        public BehaviourEffectTag Tag;
+
+        public DateTimeOffset LockedUntil;
+
+        public Guid LockId;
+
         public BehaviourEffectState State;
     }
 
@@ -28,7 +34,12 @@ namespace Efeu.Integration.Entities
     {
         Running,
         Suspended,
-        Error,
-        Completed,
+        Error
+    }
+
+    public enum BehaviourEffectTag
+    {
+        Signal,
+        Effect
     }
 }

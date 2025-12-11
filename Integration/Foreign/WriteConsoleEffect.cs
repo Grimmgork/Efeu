@@ -11,7 +11,7 @@ namespace Efeu.Integration.Foreign
     {
         public Task RunAsync(EffectExecutionContext context, CancellationToken token)
         {
-            Console.WriteLine(context.Input);
+            Console.WriteLine("hello there!");
             return Task.CompletedTask;
         }
     }

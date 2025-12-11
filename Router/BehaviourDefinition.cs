@@ -57,12 +57,12 @@ namespace Efeu.Router
     public enum BehaviourStepType
     {
         Emit,
-        On,
         Let,
         Call,
         Await,
         If,
         Unless,
-        For
+        For,
+        On
     }
 }

@@ -26,7 +26,7 @@ namespace Efeu.Router
 
     public enum EfeuMessageTag
     {
-        Effect,
+        Request,
         Response,
         Error
     }
@@ -271,7 +271,7 @@ namespace Efeu.Router
             {
                 CorrelationId = Id,
                 Name = step.Name,
-                Tag = EfeuMessageTag.Effect
+                Tag = EfeuMessageTag.Request
             });
         }
 
@@ -318,7 +318,7 @@ namespace Efeu.Router
             {
                 CorrelationId = Id,
                 Name = step.Name,
-                Tag = EfeuMessageTag.Effect,
+                Tag = EfeuMessageTag.Request,
                 TriggerId = triggerId,
             });
 
@@ -342,7 +342,7 @@ namespace Efeu.Router
                 Id = Guid.NewGuid(),
                 CorrelationId = Id,
                 Scope = scope,
-                MessageTag = EfeuMessageTag.Effect,
+                MessageTag = EfeuMessageTag.Request,
                 MessageName = step.Name,
                 Position = position,
                 DefinitionId = trigger.DefinitionId,
@@ -359,7 +359,7 @@ namespace Efeu.Router
             {
                 Id = Guid.NewGuid(),
                 Scope = scope,
-                MessageTag = EfeuMessageTag.Effect,
+                MessageTag = EfeuMessageTag.Request,
                 MessageName = step.Name,
                 DefinitionId = trigger.DefinitionId,
                 Position = position

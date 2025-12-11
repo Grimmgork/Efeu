@@ -54,7 +54,9 @@ namespace Efeu.Integration.Sqlite
             builder.MappingSchema.SetConverter<string, IDictionary<int, EfeuValue>>(i => ConvertFromJson<IDictionary<int, EfeuValue>>(i, jsonOptions));
             builder.MappingSchema.SetConverter<string, BehaviourDefinitionStep[]>(i => ConvertFromJson<BehaviourDefinitionStep[]>(i, jsonOptions));
             builder.MappingSchema.SetConverter<string, BehaviourScope>(i => ConvertFromJson<BehaviourScope>(i, jsonOptions));
-            builder.MappingSchema.SetConverter<long, DateTimeOffset>(i => DateTimeOffset.FromUnixTimeMilliseconds(i));
+            builder.MappingSchema.SetConverter<long, DateTimeOffset>(DateTimeOffset.FromUnixTimeMilliseconds);
+
+            builder.MappingSchema.SetDataType(typeof(DateTimeOffset), DataType.Int64);
 
             builder.Entity<BehaviourDefinitionEntity>()
                 .HasTableName("Definition")
@@ -102,7 +104,17 @@ namespace Efeu.Integration.Sqlite
                 .Property(p => p.TriggerId)
                 .Property(p => p.Name)
                 .Property(p => p.Input)
-                .Property(p => p.Data);
+                .Property(p => p.Data)
+                .Property(p => p.LockId)
+                .Property(p => p.LockedUntil);
+
+            builder.Entity<LockEntity>()
+                .HasTableName("Lock")
+                .HasSchemaName(schema)
+                .Property(p => p.Name)
+                    .IsIdentity()
+                    .IsPrimaryKey()
+                .Property(p => p.Bundle);
 
             builder.Build();
 

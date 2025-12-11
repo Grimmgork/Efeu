@@ -11,6 +11,10 @@ namespace Efeu.Integration.Persistence
     {
         public Task BeginAsync();
 
+        public Task TryLockAsync(params string[] locks);
+
         public Task CommitAsync();
+
+        public Task RollbackAsync();
     }
 }
