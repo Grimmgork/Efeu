@@ -1,9 +1,8 @@
-﻿using Antlr4.Build.Tasks;
-using Efeu.Integration.Entities;
+﻿using Efeu.Integration.Entities;
 using Efeu.Integration.Foreign;
 using Efeu.Integration.Persistence;
 using Efeu.Router;
-using Efeu.Runtime.Data;
+using Efeu.Router.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -71,7 +70,7 @@ namespace Efeu.Integration.Commands
             Guid workerId = Guid.NewGuid();
             DateTimeOffset timestamp = DateTimeOffset.UtcNow;
             if (!await behaviourEffectRepository.TryLockAsync(id, workerId, timestamp, TimeSpan.FromSeconds(30)))
-                return;
+                throw new Exception("effect is locked.");
 
             BehaviourEffectEntity? effect = await behaviourEffectRepository.GetByIdAsync(id);
             if (effect == null)

@@ -2,8 +2,6 @@
 using Efeu.Integration.Persistence;
 using LinqToDB;
 using LinqToDB.Data;
-using Microsoft.Extensions.DependencyInjection;
-using Quartz;
 using System;
 using System.Collections.Generic;
 using System.Data;

@@ -8,7 +8,6 @@
     <ProjectReference Include="..\Integration.Sqlite\Efeu.Integration.Sqlite.csproj" />
     <ProjectReference Include="..\Integration\Efeu.Integration.csproj" />
     <ProjectReference Include="..\Router\Efeu.Router.csproj" />
-    <ProjectReference Include="..\Runtime\Efeu.Runtime.csproj" />
   </ItemGroup>
 
   <ItemGroup>

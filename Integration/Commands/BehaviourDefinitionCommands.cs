@@ -1,6 +1,5 @@
 ﻿using Efeu.Integration.Persistence;
 using Efeu.Integration.Entities;
-using Efeu.Runtime.Model;
 using System;
 using System.Collections.Generic;
 using System.Data;
