@@ -39,7 +39,6 @@ namespace Efeu.Integration.Services
                     Guid workerId = Guid.NewGuid();
                     while (!token.IsCancellationRequested)
                     {
-                        Console.WriteLine($"loop {workerId}");
                         try
                         {
                             int execution = await ExecuteEffect(workerId, token);
@@ -75,7 +74,7 @@ namespace Efeu.Integration.Services
             IUnitOfWork unitOfWork = services.GetRequiredService<IUnitOfWork>();
             EfeuEnvironment environment = services.GetRequiredService<EfeuEnvironment>();
 
-            int[] candidateIds = await behaviourEffectRepository.GetRunningEffectNotLockedAsync(DateTime.Now);
+            int[] candidateIds = await behaviourEffectRepository.GetRunningEffectsNotLockedAsync(DateTime.Now);
             BehaviourEffectEntity? effect = null;
             foreach (int candidateId in candidateIds)
             {
@@ -93,6 +92,8 @@ namespace Efeu.Integration.Services
 
             try
             {
+                // TODO prevent double send by some kind of WAL log?
+
                 IEffect? effectInstance = environment.EffectProvider.TryGetEffect(effect.Name);
                 if (effectInstance is null)
                     throw new Exception($"Unknown effect '{effect.Name}'.");
@@ -101,30 +102,12 @@ namespace Efeu.Integration.Services
                 EffectExecutionContext context = new EffectExecutionContext(effect.Id, effect.CorrelationId, effect.Times, effect.Data);
                 await effectInstance.RunAsync(context, default);
 
-                await unitOfWork.BeginAsync();
-                if (effect.TriggerId != Guid.Empty)
-                {
-                    // send response message
-                    await behaviourEffectRepository.CreateAsync(new BehaviourEffectEntity()
-                    {
-                        CreationTime = DateTime.Now,
-                        Name = effect.Name,
-                        TriggerId = effect.TriggerId,
-                        Input = context.Output,
-                        CorrelationId = effect.CorrelationId,
-                        State = BehaviourEffectState.Running
-                    });
-                }
-                await behaviourEffectRepository.DeleteAsync(effect.Id);
-                await unitOfWork.CommitAsync();
+                await behaviourEffectRepository.CompleteAsync(workerId, effect.Id, DateTime.Now, context.Output, effect.Times + 1);
             }
             catch (Exception)
             {
                 await unitOfWork.RollbackAsync();
-                await unitOfWork.BeginAsync();
-                await behaviourEffectRepository.MarkErrorAsync(effect.Id, effect.Times + 1);
-                await behaviourEffectRepository.UnlockAsync(workerId);
-                await unitOfWork.CommitAsync();
+                await behaviourEffectRepository.MarkErrorAndUnlockAsync(workerId, effect.Id, effect.Times + 1);
             }
 
             return 1;

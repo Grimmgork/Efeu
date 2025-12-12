@@ -1,6 +1,7 @@
 ﻿using Antlr4.Build.Tasks.Util;
 using Efeu.Integration.Entities;
 using Efeu.Integration.Persistence;
+using Efeu.Runtime.Data;
 using LinqToDB;
 using LinqToDB.Data;
 using System;
@@ -39,7 +40,7 @@ namespace Efeu.Integration.Sqlite.Repositories
                 .DeleteAsync(i => i.CorrelationId == correlationId);
         }
 
-        public Task<BehaviourEffectEntity[]> GetAll()
+        public Task<BehaviourEffectEntity[]> GetAllAsync()
         {
             return connection.GetTable<BehaviourEffectEntity>()
                 .ToArrayAsync();
@@ -70,19 +71,13 @@ namespace Efeu.Integration.Sqlite.Repositories
         public async Task<bool> TryLockAsync(int id, Guid lockId, DateTimeOffset timestamp, TimeSpan lease)
         {
             int result = await connection.GetTable<BehaviourEffectEntity>()
-                .Where(u => u.Id == id 
+                .Where(u => u.Id == id
+                    && u.Tag == BehaviourEffectTag.Effect
                     && (u.LockedUntil < timestamp || u.LockId == lockId))
                 .Set(u => u.LockId, lockId)
                 .Set(u => u.LockedUntil, timestamp + lease)
                 .UpdateAsync();
             return result > 0;
-        }
-
-        public Task<BehaviourEffectEntity?> GetLockedAsync(Guid lockId)
-        {
-            return connection.GetTable<BehaviourEffectEntity>()
-                .Where(u => u.LockId == lockId)
-                .FirstOrDefaultAsync();
         }
 
         public Task UnlockAsync(Guid lockId)
@@ -94,7 +89,7 @@ namespace Efeu.Integration.Sqlite.Repositories
                 .UpdateAsync();
         }
 
-        public Task<int[]> GetRunningEffectNotLockedAsync(DateTimeOffset time)
+        public Task<int[]> GetRunningEffectsNotLockedAsync(DateTimeOffset time)
         {
             return connection.GetTable<BehaviourEffectEntity>()
                 .Where(u => u.State == BehaviourEffectState.Running
@@ -119,10 +114,40 @@ namespace Efeu.Integration.Sqlite.Repositories
             }, entities);
         }
 
+        public Task MarkErrorAndUnlockAsync(Guid lockId, int id, uint times)
+        {
+            return connection.GetTable<BehaviourEffectEntity>()
+                .Where(u => u.Id == id 
+                    && u.LockId == lockId
+                    && u.Tag == BehaviourEffectTag.Effect)
+                .Set(u => u.Times, times)
+                .Set(u => u.State, BehaviourEffectState.Error)
+                .Set(u => u.LockId, Guid.Empty)
+                .Set(u => u.LockedUntil, DateTimeOffset.MinValue)
+                .UpdateAsync();
+        }
+
+        public Task CompleteAsync(Guid lockId, int id, DateTimeOffset timestamp, EfeuValue output, uint times)
+        {
+            return connection.GetTable<BehaviourEffectEntity>()
+                .Where(u => u.Id == id
+                    && u.LockId == lockId
+                    && u.Tag == BehaviourEffectTag.Effect)
+                .Set(u => u.State, BehaviourEffectState.Running)
+                .Set(u => u.Tag, BehaviourEffectTag.Signal)
+                .Set(u => u.Input, output)
+                .Set(u => u.CreationTime, timestamp)
+                .Set(u => u.Times, times)
+                .Set(u => u.LockId, Guid.Empty)
+                .Set(u => u.LockedUntil, DateTimeOffset.MinValue)
+                .UpdateAsync();
+        }
+
         public Task MarkErrorAsync(int id, uint times)
         {
             return connection.GetTable<BehaviourEffectEntity>()
-                .Where(u => u.Id == id)
+                .Where(u => u.Id == id
+                    && u.Tag == BehaviourEffectTag.Signal)
                 .Set(u => u.Times, times)
                 .Set(u => u.State, BehaviourEffectState.Error)
                 .UpdateAsync();

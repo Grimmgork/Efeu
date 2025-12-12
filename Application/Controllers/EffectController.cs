@@ -27,7 +27,7 @@ namespace Efeu.Application.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            BehaviourEffectEntity[] effects = await behaviourEffectRepository.GetAll();
+            BehaviourEffectEntity[] effects = await behaviourEffectRepository.GetAllAsync();
             return View(effects);
         }
 

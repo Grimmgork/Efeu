@@ -82,7 +82,8 @@ namespace Efeu.Integration.Services
                 EfeuMessage initialMessage = new EfeuMessage()
                 {
                     CorrelationId = initialEffect.CorrelationId,
-                    Tag = EfeuMessageTag.Request,
+                    Tag = initialEffect.TriggerId == Guid.Empty ? 
+                        EfeuMessageTag.Request : EfeuMessageTag.Response,
                     Data = initialEffect.Data,
                     Name = initialEffect.Name,
                     TriggerId = initialEffect.TriggerId
