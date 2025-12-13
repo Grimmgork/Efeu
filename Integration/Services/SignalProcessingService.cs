@@ -35,7 +35,7 @@ namespace Efeu.Integration.Services
                 {
                     try
                     {
-                        int execution = await ProcessSignal(token);
+                        int execution = await ProcessSignalAsync(token);
                         if (execution == 0)
                         {
                             await Task.Delay(1000, cancellationToken);
@@ -57,7 +57,7 @@ namespace Efeu.Integration.Services
             return work;
         }
 
-        private async Task<int> ProcessSignal(CancellationToken token)
+        private async Task<int> ProcessSignalAsync(CancellationToken token)
         {
             await using var scope = scopeFactory.CreateAsyncScope();
 
@@ -89,9 +89,9 @@ namespace Efeu.Integration.Services
                 };
 
                 SignalProcessor context = new SignalProcessor(behaviourTriggerRepository, behaviourDefinitionRepository, DateTime.Now);
-                await context.ProcessSignal(initialMessage);
+                await context.ProcessSignalAsync(initialMessage);
 
-                int iterations = 1;
+                int iterations = 0;
                 List<BehaviourEffectEntity> effects = [];
                 while (context.Messages.TryPop(out EfeuMessage? message)) // handle produced messages
                 {
@@ -106,14 +106,14 @@ namespace Efeu.Integration.Services
                         if (iterations > 50)
                             throw new Exception($"infinite loop detected! ({iterations} iterations)");
 
-                        await context.ProcessSignal(message);
+                        await context.ProcessSignalAsync(message);
                     }
                 }
 
                 await behaviourTriggerCommands.CreateBulkAsync(context.Triggers.ToArray());
                 await behaviourTriggerCommands.DeleteBulkAsync(context.DeletedTriggers.ToArray());
                 await behaviourEffectRepository.CreateBulkAsync(effects.ToArray());
-                await behaviourEffectCommands.DeleteAsync(initialEffect.Id);
+                await behaviourEffectRepository.DeleteAsync(initialEffect.Id);
             }
             catch (Exception)
             {
@@ -144,7 +144,7 @@ namespace Efeu.Integration.Services
 
             private readonly Dictionary<int, BehaviourDefinitionVersionEntity> definitionEntityCache = new();
 
-            public async Task ProcessSignal(EfeuMessage message)
+            public async Task ProcessSignalAsync(EfeuMessage message)
             {
                 BehaviourTrigger[] matchingTriggers = await GetMatchingTriggersAsync(message.Name, message.Tag, message.TriggerId);
                 foreach (BehaviourTrigger trigger in matchingTriggers)

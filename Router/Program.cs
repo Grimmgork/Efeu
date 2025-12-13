@@ -1,4 +1,4 @@
-﻿using Efeu.Router.JSON.Converters;
+﻿using Efeu.Router.Json.Converters;
 using System;
 using System.Linq;
 using System.Text.Json;
@@ -18,7 +18,7 @@ namespace Efeu.Router
                 new () {
                     Type = BehaviourStepType.Let,
                     Name = "Value",
-                    Input = (context) => false
+                    Expression = (context) => false
                 },
                 new () {
                     Type = BehaviourStepType.Emit,
@@ -27,10 +27,20 @@ namespace Efeu.Router
                 new () {
                     Type = BehaviourStepType.Await,
                     Name = "ConsoleInput",
+                    Where = [
+                        new () {
+                            Field = "Name",
+                            Expression = (context) => context.Constant("Name")
+                        },
+                        new () {
+                            Field = "Name",
+                            Literal = 2
+                        }
+                    ],
                     Do = [
                         new () {
                             Type = BehaviourStepType.If,
-                            Input = (context) => context.Constant("Value"),
+                            Expression = (context) => context.Constant("Value"),
                             Do = [
                                 new () {
                                     Type = BehaviourStepType.Emit,

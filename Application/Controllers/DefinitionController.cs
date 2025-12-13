@@ -2,7 +2,7 @@
 using Efeu.Integration.Entities;
 using Efeu.Integration.Persistence;
 using Efeu.Router;
-using Efeu.Router.JSON.Converters;
+using Efeu.Router.Json.Converters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;

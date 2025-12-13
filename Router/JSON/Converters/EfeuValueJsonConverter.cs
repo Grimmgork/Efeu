@@ -8,7 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace Efeu.Router.JSON.Converters
+namespace Efeu.Router.Json.Converters
 {
     public class EfeuValueJsonConverter : JsonConverter<EfeuValue>
     {
@@ -18,7 +18,7 @@ namespace Efeu.Router.JSON.Converters
             {
                 reader.Read();
 
-                EfeuHash hash = new EfeuHash(); 
+                EfeuHash hash = new EfeuHash();
                 while (reader.TokenType != JsonTokenType.EndObject)
                 {
                     string? prop = reader.GetString();

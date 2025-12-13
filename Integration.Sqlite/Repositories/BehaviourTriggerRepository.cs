@@ -47,7 +47,8 @@ namespace Efeu.Integration.Sqlite.Repositories
         public Task DeleteStaticAsync(int definitionVersionId)
         {
             return connection.GetTable<BehaviourTriggerEntity>()
-                .DeleteAsync(i => i.DefinitionVersionId == definitionVersionId && i.CorrelationId == Guid.Empty);
+                .DeleteAsync(i => i.DefinitionVersionId == definitionVersionId 
+                               && i.CorrelationId == Guid.Empty);
         }
 
         public async Task<IEnumerable<BehaviourTriggerEntity>> GetAllActiveAsync()
@@ -65,7 +66,9 @@ namespace Efeu.Integration.Sqlite.Repositories
         public Task<BehaviourTriggerEntity[]> GetMatchingAsync(string name, EfeuMessageTag tag, Guid triggerId)
         {
             return connection.GetTable<BehaviourTriggerEntity>()
-                .Where(i => i.MessageName == name && i.MessageTag == tag && ( triggerId == Guid.Empty ? true : i.Id == triggerId) )
+                .Where(i => i.MessageName == name 
+                         && i.MessageTag == tag 
+                         && (triggerId == Guid.Empty ? true : i.Id == triggerId))
                 .ToArrayAsync();
         }
     }

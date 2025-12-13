@@ -14,7 +14,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Efeu.Integration.Sqlite.Repositories;
 using Efeu.Router;
-using Efeu.Router.JSON.Converters;
+using Efeu.Router.Json.Converters;
 
 namespace Efeu.Integration.Sqlite
 {

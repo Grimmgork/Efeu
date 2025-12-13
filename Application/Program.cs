@@ -1,6 +1,6 @@
 using Efeu.Integration;
 using Efeu.Integration.Sqlite;
-using Efeu.Router.JSON.Converters;
+using Efeu.Router.Json.Converters;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;

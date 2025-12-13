@@ -12,8 +12,10 @@ namespace Efeu.Router
 
         public string Name = "";
 
+        public EfeuValue Literal;
+
         [JsonIgnore]
-        public Func<BehaviourExpressionContext, EfeuValue> Input = (_) => default;
+        public Func<BehaviourExpressionContext, EfeuValue> Expression = (_) => default;
 
         public BehaviourMessageMatch[] Where = [];
 
@@ -28,10 +30,14 @@ namespace Efeu.Router
 
         public int Index = 0;
 
-        [JsonIgnore]
-        public EfeuExpression Expression = new EfeuExpression();
+        public EfeuValue Literal;
 
-        public BehaviourMessageMatch[] Fields = [];
+        [JsonIgnore]
+        public Func<BehaviourExpressionContext, EfeuValue> Expression = (_) => default;
+
+        public string Script = "";
+
+        public BehaviourMessageMatch[] Where = [];
     }
 
     public class EfeuExpression

@@ -182,7 +182,7 @@ namespace Efeu.Router
         {
             if (IsImmediate)
             {
-                BehaviourScope scope = new BehaviourScope(); // root scope
+                BehaviourScope scope = new BehaviourScope();
                 RunSteps(Steps, "", scope);
             }
             else
@@ -207,7 +207,7 @@ namespace Efeu.Router
         private static bool TriggerMatchesMessage(BehaviourTrigger trigger, EfeuMessage message, BehaviourDefinitionStep step)
         {
             return message.Tag == trigger.MessageTag &&
-                    message.Name == trigger.MessageName;
+                   message.Name == trigger.MessageName;
         }
 
         private void RunSteps(BehaviourDefinitionStep[] steps, string position, BehaviourScope parentScope)
@@ -219,7 +219,7 @@ namespace Efeu.Router
             {
                 BehaviourScope scope = new BehaviourScope(parentScope, constants);
                 BehaviourExpressionContext context = new BehaviourExpressionContext(scope);
-                constants = constants.Add(step.Name, step.Input(context));
+                constants = constants.Add(step.Name, step.Expression(context));
             }
 
             BehaviourScope finalScope = new BehaviourScope(parentScope, constants);
@@ -276,7 +276,7 @@ namespace Efeu.Router
         private void RunIfStep(BehaviourDefinitionStep step, string position, BehaviourScope scope)
         {
             BehaviourExpressionContext context = new BehaviourExpressionContext(scope);
-            if (step.Input(context))
+            if (step.Expression(context))
             {
                 RunSteps(step.Do, $"{position}/Do", scope);
             }
@@ -289,7 +289,7 @@ namespace Efeu.Router
         private void RunUnlessStep(BehaviourDefinitionStep step, string position, BehaviourScope scope)
         {
             BehaviourExpressionContext context = new BehaviourExpressionContext(scope);
-            if (step.Input(context))
+            if (step.Expression(context))
             {
                 RunSteps(step.Else, $"{position}/Else", scope);
             }
@@ -302,7 +302,7 @@ namespace Efeu.Router
         private void RunForStep(BehaviourDefinitionStep step, string position, BehaviourScope scope)
         {
             BehaviourExpressionContext context = new BehaviourExpressionContext(scope);
-            foreach (EfeuValue item in step.Input(context).Each())
+            foreach (EfeuValue item in step.Expression(context).Each())
             {
                 RunSteps(step.Do, $"{position}/Do", scope);
             }
