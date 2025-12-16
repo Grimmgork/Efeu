@@ -14,20 +14,20 @@ on NameOfMessage {
 		id: 10
 		id: 20
 	} do
-    let name be 1 + 2
-	let name be "name"
+    let name: 1 + 2
+	let name: "name"
 	  $ split("asdf")
 	  $ where do name:
 	    name = 10 end
 	  $ map do item:
 		name = 10 end
 
-	let time be now 
+	let time: now 
 		$ add_minutes(2)
 		$ add_seconds(3)
 		$ add_days(4)
 
-	let time_asd be time $ {
+	let time_asd: time $ {
 		name: 10
 		name: 20
 		name: $ {
@@ -37,18 +37,19 @@ on NameOfMessage {
 		}
 	}
 
-	let name be time $ {
+	let name: name $ {
 		0: 10
-		0: $ {
+		1: $ [
 			1: 20
 			3: 30
-		}
+			3: [1, 3, 4]
+		]
 	}
 
-	let name be {
-		name: 10
-		name: 20
-		name: 30
+	let name: {
+		Name: 10
+		NameAasdf: 20
+		NameA: [20, 20, 10]
 	}
 
 	let name be [
@@ -61,7 +62,8 @@ on NameOfMessage {
 	"asdf" case
 	  "ada" => 10
 	  "adawd" => 10
-	  _ => nil
+	  _ => nil 
+	end
 
 	var then
 		10 else 20

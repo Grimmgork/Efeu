@@ -253,7 +253,7 @@ namespace Efeu.Router.Data
             }
             else if (Tag == EfeuValueTag.Integer)
             {
-                return integer == 0;
+                return integer > 0;
             }
             else if (Tag == EfeuValueTag.Object)
             {

@@ -1,8 +1,13 @@
-﻿using Efeu.Router.Json.Converters;
+﻿using Antlr4.Runtime;
+using Antlr4.Runtime.Tree;
+using Efeu.Router.Data;
+using Efeu.Router.Json.Converters;
+using Efeu.Router.Script;
 using System;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Xml.Linq;
 
 namespace Efeu.Router
 {
@@ -10,6 +15,13 @@ namespace Efeu.Router
     {
         static void Main(string[] args)
         {
+            string script =
+                "let name: 0 \n name then (12 + 4) else 13";
+
+            Console.WriteLine(EfeuScript.Run(script));
+            return;
+
+
             JsonSerializerOptions options = new JsonSerializerOptions();
             options.Converters.Add(new EfeuValueJsonConverter());
             options.Converters.Add(new JsonStringEnumConverter());
@@ -30,11 +42,11 @@ namespace Efeu.Router
                     Where = [
                         new () {
                             Field = "Name",
-                            Expression = (context) => context.Constant("Name")
+                            Script = "1 + 2"
                         },
                         new () {
                             Field = "Name",
-                            Literal = 2
+                            Literal = 1
                         }
                     ],
                     Do = [

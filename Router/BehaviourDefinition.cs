@@ -30,33 +30,51 @@ namespace Efeu.Router
 
         public int Index = 0;
 
-        public EfeuValue Literal;
+        public string Script = "";
 
         [JsonIgnore]
-        public Func<BehaviourExpressionContext, EfeuValue> Expression = (_) => default;
+        public Func<BehaviourExpressionContext, EfeuValue> Func = (_) => default;
 
-        public string Script = "";
+        public EfeuValue Literal;
 
         public BehaviourMessageMatch[] Where = [];
     }
 
     public class EfeuExpression
     {
-        private readonly Func<BehaviourExpressionContext, EfeuValue> func;
+        private readonly Func<BehaviourExpressionContext, EfeuValue> func = (_) => default;
+
+        private readonly string script = "";
+
+        public bool IsEmpty => string.IsNullOrEmpty(script);
+
+        public EfeuExpression()
+        {
+            
+        }
 
         public EfeuExpression(Func<BehaviourExpressionContext, EfeuValue> func)
         {
             this.func = func;
         }
 
-        public EfeuExpression()
+        public EfeuExpression(string script)
         {
-            this.func = (_) => default;
+            this.script = script;
         }
 
-        public EfeuValue Run(BehaviourExpressionContext context)
+        public static implicit operator EfeuExpression(string script) => new EfeuExpression(script);
+
+        public static implicit operator EfeuExpression(Func<BehaviourExpressionContext, EfeuValue> func) => new EfeuExpression(func);
+
+        public static implicit operator EfeuExpression(Func<EfeuValue> func) => new EfeuExpression((_) => func());
+
+        public EfeuValue Evaluate(BehaviourExpressionContext context)
         {
-            return func(context);
+            if (string.IsNullOrEmpty(script))
+                return func(context);
+            else
+                return script;
         }
     }
 

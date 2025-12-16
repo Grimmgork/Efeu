@@ -89,6 +89,10 @@ block
     : DO expr END
     ;
 
+const
+    : ID ':'
+    ;
+
 // Lexer rules (keywords first!)
 END     : 'end';
 LET     : 'let';
@@ -106,7 +110,6 @@ FIELD   : ID ':' ;
 OP      : [+*/-mod~] ;
 INT     : [0-9]+ ;
 ID      : [a-zA-Z_][a-zA-Z0-9_]* ;
-NAME    : ':' ID ;
 DOT     : '.';
 STRING  : '"' (~["\r\n])* '"' ;
 LPAREN  : '(' ;
