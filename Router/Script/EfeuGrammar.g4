@@ -12,8 +12,8 @@ expression
     : expression operator expression # BinaryExpr
     | LPAREN expression RPAREN # GroupExpr
     | expression with_method_call # MethodExpr
-    | expression with_struct_modification # StructModExpr
-    | expression with_array_modification # ArrayModExpr
+    | expression with_struct_mod # StructModExpr
+    | expression with_array_mod # ArrayModExpr
     | expression then # ThenExpr
     | expression unless # UnlessExpr
     | array_constructor # ArrayExpr
@@ -57,12 +57,20 @@ with_method_call
     : WITH ID (LPAREN expression RPAREN)? (DO CONST* scope END)?
     ;
 
-with_struct_modification
-    : WITH CLPAREN (CONST (with_struct_modification|with_array_modification|expression))+ CRPAREN
+with_struct_mod
+    : WITH CLPAREN with_struct_mod_field+ CRPAREN
     ;
 
-with_array_modification
-    : WITH SLPAREN (LPAREN expression RPAREN ':' (with_struct_modification|with_array_modification|expression))+ SRPAREN
+with_struct_mod_field
+    : CONST (with_struct_mod|with_array_mod|expression)
+    ;
+
+with_array_mod
+    : WITH SLPAREN with_array_mod_item+ SRPAREN
+    ;
+
+with_array_mod_item
+    : LPAREN expression RPAREN ':' (with_struct_mod|with_array_mod|expression)
     ;
 
 assignment

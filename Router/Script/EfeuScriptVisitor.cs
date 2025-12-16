@@ -1,13 +1,10 @@
 ﻿using Antlr4.Runtime.Misc;
-using Antlr4.Runtime.Tree;
 using Efeu.Router.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace Efeu.Router.Script
 {
@@ -87,7 +84,7 @@ namespace Efeu.Router.Script
         public override Func<EfeuScriptScope, EfeuValue> VisitTraversal([NotNull] EfeuGrammarParser.TraversalContext context)
         {
             string name = context.GetText();
-            return (scope) => scope.Get(name)();
+            return scope => scope.Get(name)();
         }
 
         public override Func<EfeuScriptScope, EfeuValue> VisitBinaryExpr([NotNull] EfeuGrammarParser.BinaryExprContext context)
@@ -96,11 +93,11 @@ namespace Efeu.Router.Script
             var b = Visit(context.expression()[1]);
             return context.@operator().GetText() switch
             {
-                "+" => (context) => a(context) + b(context),
-                "-" => (context) => a(context) - b(context),
-                "=" => (context) => a(context) == b(context),
-                "*" => (context) => a(context) * b(context),
-                "/" => (context) => a(context) / b(context),
+                "+" => (scope) => a(scope) + b(scope),
+                "-" => (scope) => a(scope) - b(scope),
+                "=" => (scope) => a(scope) == b(scope),
+                "*" => (scope) => a(scope) * b(scope),
+                "/" => (scope) => a(scope) / b(scope),
                 "%" => (context) => a(context) % b(context)
             };
         }
@@ -118,22 +115,82 @@ namespace Efeu.Router.Script
         public override Func<EfeuScriptScope, EfeuValue> VisitArrayExpr([NotNull] EfeuGrammarParser.ArrayExprContext context)
         {
             var items = context.array_constructor().expression();
-            return (context) => new EfeuArray(items.Select(i => Visit(i)(context)));
+            return (scope) => new EfeuArray(items.Select(i => Visit(i)(scope)));
         }
 
         public override Func<EfeuScriptScope, EfeuValue> VisitStructExpr([NotNull] EfeuGrammarParser.StructExprContext context)
         {
-            var keys = context.struct_constructor().CONST().Select(i => i.GetText()).ToArray();
+            var keys = context.struct_constructor().CONST().Select(i => i.GetText()[..^1]).ToArray();
             var values = context.struct_constructor().expression().ToArray();
-            return (context) =>
+            return (scope) =>
             {
                 List<KeyValuePair<string, EfeuValue>> fields = new List<KeyValuePair<string, EfeuValue>>();
                 for (int i = 0; i < keys.Length; i++)
                 {
-                    fields.Add(new KeyValuePair<string, EfeuValue>(keys[i], Visit(values[i])(context)));
+                    fields.Add(new KeyValuePair<string, EfeuValue>(keys[i], Visit(values[i])(scope)));
                 }
                 return new EfeuHash(fields);
             };
+        }
+
+        public override Func<EfeuScriptScope, EfeuValue> VisitArrayModExpr([NotNull] EfeuGrammarParser.ArrayModExprContext context)
+        {
+            var data = Visit(context.expression());
+            var items = context.with_array_mod().with_array_mod_item();
+
+            return scope => VisitArrayModExprRec(scope, data(scope), items);
+        }
+
+        private EfeuValue VisitArrayModExprRec(EfeuScriptScope scope, EfeuValue value, EfeuGrammarParser.With_array_mod_itemContext[] items)
+        {
+            foreach (var item in items)
+            {
+                if (item.with_array_mod() != null)
+                {
+                    value = VisitArrayModExprRec(scope, value, item.with_array_mod().with_array_mod_item());
+                }
+                else if (item.with_struct_mod() != null)
+                {
+                    value = VisitStructModExprRec(scope, value, item.with_struct_mod().with_struct_mod_field());
+                }
+                else
+                {
+                    value = value.Call(
+                        Visit(item.expression()[0])(scope).ToInt(),
+                        Visit(item.expression()[1])(scope));
+                }
+            }
+            return value;
+        }
+
+        public override Func<EfeuScriptScope, EfeuValue> VisitStructModExpr([NotNull] EfeuGrammarParser.StructModExprContext context)
+        {
+            var data = Visit(context.expression());
+            var field = context.with_struct_mod().with_struct_mod_field();
+
+            return scope => VisitStructModExprRec(scope, data(scope), field);
+        }
+
+        private EfeuValue VisitStructModExprRec(EfeuScriptScope scope, EfeuValue value, EfeuGrammarParser.With_struct_mod_fieldContext[] fields)
+        {
+            foreach (var field in fields)
+            {
+                if (field.with_array_mod() != null)
+                {
+                    value = VisitArrayModExprRec(scope, value, field.with_array_mod().with_array_mod_item());
+                }
+                else if (field.with_struct_mod() != null)
+                {
+                    value = VisitStructModExprRec(scope, value, field.with_struct_mod().with_struct_mod_field());
+                }
+                else
+                {
+                    value = value.Call(
+                        field.CONST().GetText()[..^1],
+                        Visit(field.expression())(scope));
+                }
+            }
+            return value;
         }
     }
 }

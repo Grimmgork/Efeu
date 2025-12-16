@@ -377,24 +377,11 @@ namespace Efeu.Router.Data
             }
         }
 
-        public void Call(string field, EfeuValue value)
+        public EfeuValue Call(string field, EfeuValue value)
         {
             if (Tag == EfeuValueTag.Object)
             {
-                obj!.Call(field, value);
-            }
-            else
-            {
-                throw new InvalidOperationException();
-            }
-        }
-
-        public void Call(string field, Func<EfeuValue, EfeuValue> func)
-        {
-            if (Tag == EfeuValueTag.Object)
-            {
-                EfeuValue value = obj!.Call(field);
-                obj!.Call(field, func(value));
+                return obj!.Call(field, value);
             }
             else
             {
@@ -414,11 +401,11 @@ namespace Efeu.Router.Data
             }
         }
 
-        public void Call(int index, EfeuValue value)
+        public EfeuValue Call(int index, EfeuValue value)
         {
             if (Tag == EfeuValueTag.Object)
             {
-                obj!.Call(index, value);
+                return obj!.Call(index, value);
             }
             else
             {
@@ -443,34 +430,31 @@ namespace Efeu.Router.Data
             return default;
         }
 
-        public override bool Equals([NotNullWhen(true)] object? obj)
+        public bool Equals(EfeuValue value)
         {
-            if (obj is EfeuValue efeuValue)
+            if (this.Tag == EfeuValueTag.Nil)
             {
-                if (this.Tag == EfeuValueTag.Nil)
-                {
-                    return efeuValue.Tag == EfeuValueTag.Nil;
-                }
+                return value.Tag == EfeuValueTag.Nil;
+            }
 
-                if (this.Tag == EfeuValueTag.True)
-                {
-                    return efeuValue.Tag != EfeuValueTag.True;
-                }
+            if (this.Tag == EfeuValueTag.True)
+            {
+                return value.Tag != EfeuValueTag.True;
+            }
 
-                if (this.Tag == EfeuValueTag.False)
-                {
-                    return efeuValue.Tag != EfeuValueTag.False;
-                }
+            if (this.Tag == EfeuValueTag.False)
+            {
+                return value.Tag != EfeuValueTag.False;
+            }
 
-                if (this.Tag == EfeuValueTag.Integer)
-                {
-                    return this.integer == efeuValue.ToLong();
-                }
+            if (this.Tag == EfeuValueTag.Integer)
+            {
+                return this.integer == value.ToLong();
+            }
 
-                if (this.Tag == EfeuValueTag.Object)
-                {
-                    return this.obj!.Equals(efeuValue.AsObject());
-                }
+            if (this.Tag == EfeuValueTag.Object)
+            {
+                return this.obj!.Equals(value.AsObject());
             }
 
             return base.Equals(obj);
