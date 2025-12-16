@@ -16,6 +16,8 @@ expression
     | expression with_array_modification # ArrayModExpr
     | expression then # ThenExpr
     | expression unless # UnlessExpr
+    | array_constructor # ArrayExpr
+    | struct_constructor # StructExpr
     | NIL # NilExpr
     | DECIMAL # DecimalEpr
     | FLOAT # FloatExpr
@@ -41,6 +43,14 @@ then
 
 unless
     : UNLESS expression ELSE expression
+    ;
+
+array_constructor
+    : SLPAREN (expression (COMMA expression)*)? SRPAREN
+    ;
+
+struct_constructor
+    : CLPAREN (CONST expression (COMMA CONST expression))? CRPAREN
     ;
 
 with_method_call

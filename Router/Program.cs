@@ -16,9 +16,12 @@ namespace Efeu.Router
         static void Main(string[] args)
         {
             string script =
-                "let name: 0 \n name then (12 + 4) else 13";
+                "[1,2 ,3 ]";
 
-            Console.WriteLine(EfeuScript.Run(script));
+            EfeuScriptScope scope = new EfeuScriptScope();
+            scope.Assign("A", 10);
+
+            Console.WriteLine(EfeuScript.Run(script, scope));
             return;
 
 

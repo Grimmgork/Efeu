@@ -28,6 +28,11 @@ namespace Efeu.Router.Script
             Constants.Add(name, value);
         }
 
+        public void Assign(string name, EfeuValue value)
+        {
+            Constants.Add(name, () => value);
+        }
+
         public Func<EfeuValue> Get(string name)
         {
             EfeuScriptScope? scope = this;

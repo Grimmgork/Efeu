@@ -4,6 +4,7 @@ using Efeu.Router.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -114,5 +115,25 @@ namespace Efeu.Router.Script
             return Visit(context.expression());
         }
 
+        public override Func<EfeuScriptScope, EfeuValue> VisitArrayExpr([NotNull] EfeuGrammarParser.ArrayExprContext context)
+        {
+            var items = context.array_constructor().expression();
+            return (context) => new EfeuArray(items.Select(i => Visit(i)(context)));
+        }
+
+        public override Func<EfeuScriptScope, EfeuValue> VisitStructExpr([NotNull] EfeuGrammarParser.StructExprContext context)
+        {
+            var keys = context.struct_constructor().CONST().Select(i => i.GetText()).ToArray();
+            var values = context.struct_constructor().expression().ToArray();
+            return (context) =>
+            {
+                List<KeyValuePair<string, EfeuValue>> fields = new List<KeyValuePair<string, EfeuValue>>();
+                for (int i = 0; i < keys.Length; i++)
+                {
+                    fields.Add(new KeyValuePair<string, EfeuValue>(keys[i], Visit(values[i])(context)));
+                }
+                return new EfeuHash(fields);
+            };
+        }
     }
 }

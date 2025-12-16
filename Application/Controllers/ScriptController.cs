@@ -17,7 +17,7 @@ namespace Efeu.Application.Controllers
         [Route("Run")]
         public EfeuValue Run(string script)
         {
-            return EfeuScript.Run(script);
+            return EfeuScript.Run(script, new EfeuScriptScope());
         }
     }
 }

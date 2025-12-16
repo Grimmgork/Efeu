@@ -40,6 +40,11 @@ namespace Efeu.Router.Data
             return new EfeuArray(Items.SetItem(index, value));
         }
 
+        public override IEnumerable<EfeuValue> Each()
+        {
+            return Items;
+        }
+
         public override int Length()
         {
             return Items.Count;

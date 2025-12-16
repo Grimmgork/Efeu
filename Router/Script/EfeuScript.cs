@@ -10,7 +10,7 @@ namespace Efeu.Router.Script
 {
     public class EfeuScript
     {
-        public static EfeuValue Run(string script)
+        public static EfeuValue Run(string script, EfeuScriptScope scope)
         {
             var inputStream = new AntlrInputStream(script);
             var lexer = new EfeuGrammarLexer(inputStream);
@@ -19,10 +19,13 @@ namespace Efeu.Router.Script
 
             EfeuGrammarParser.ScriptContext tree = parser.script();
 
+            Console.WriteLine(tree.ToStringTree(parser));
+
             EfeuScriptVisitor efeuScriptVisitor = new EfeuScriptVisitor();
             Func<EfeuScriptScope, EfeuValue> run = efeuScriptVisitor.Visit(tree);
 
-            EfeuValue result = run(new EfeuScriptScope());
+            EfeuValue result = run(scope);
+            Console.WriteLine(result);
             return result;
         }
     }
