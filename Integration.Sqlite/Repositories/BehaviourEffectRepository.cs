@@ -1,4 +1,5 @@
-﻿using Efeu.Integration.Entities;
+﻿using Antlr4.Build.Tasks.Util;
+using Efeu.Integration.Entities;
 using Efeu.Integration.Persistence;
 using Efeu.Router.Data;
 using LinqToDB;
@@ -27,16 +28,26 @@ namespace Efeu.Integration.Sqlite.Repositories
             return connection.InsertWithInt32IdentityAsync(entity);
         }
 
-        public Task DeleteAsync(int id)
+        public Task CreateBulkAsync(BehaviourEffectEntity[] entities)
         {
-            return connection.GetTable<BehaviourEffectEntity>()
-                .DeleteAsync(i => i.Id == id);
+            return connection.BulkCopyAsync(new BulkCopyOptions()
+            {
+                BulkCopyType = BulkCopyType.MultipleRows
+            }, entities);
         }
 
-        public Task DeleteByCorellationAsync(Guid correlationId)
+        public Task DeleteSuspendedEffectAsync(int id)
         {
             return connection.GetTable<BehaviourEffectEntity>()
-                .DeleteAsync(i => i.CorrelationId == correlationId);
+                .DeleteAsync(i => i.Id == id 
+                            && i.State == BehaviourEffectState.Suspended);
+        }
+
+        public Task DeleteSuspendedEffectByCorellationAsync(Guid correlationId)
+        {
+            return connection.GetTable<BehaviourEffectEntity>()
+                .DeleteAsync(i => i.CorrelationId == correlationId 
+                        && i.State == BehaviourEffectState.Suspended);
         }
 
         public Task<BehaviourEffectEntity[]> GetAllAsync()
@@ -58,20 +69,32 @@ namespace Efeu.Integration.Sqlite.Repositories
                  .FirstOrDefaultAsync(i => i.Id == id);
         }
 
-        public Task<int> NudgeAsync(int id)
+        public Task<int> NudgeEffectAsync(int id)
         {
             return connection.GetTable<BehaviourEffectEntity>()
                 .Where(u => u.Id == id
-                    && u.State == BehaviourEffectState.Error)
+                    && (u.State == BehaviourEffectState.Suspended || u.State == BehaviourEffectState.Error))
                 .Set(u => u.State, BehaviourEffectState.Running)
                 .UpdateAsync();
         }
 
-        public async Task<bool> TryLockAsync(int id, Guid lockId, DateTimeOffset timestamp, TimeSpan lease)
+        public Task<int> SuspendEffectAsync(int id, DateTimeOffset timestamp)
+        {
+            return connection.GetTable<BehaviourEffectEntity>()
+                .Where(u => u.Id == id
+                    && u.State == BehaviourEffectState.Running
+                    && (u.LockedUntil < timestamp))
+                .Set(u => u.LockId, Guid.Empty)
+                .Set(u => u.LockedUntil, DateTimeOffset.MinValue)
+                .Set(u => u.State, BehaviourEffectState.Suspended)
+                .UpdateAsync();
+        }
+
+        public async Task<bool> TryLockEffectAsync(int id, Guid lockId, DateTimeOffset timestamp, TimeSpan lease)
         {
             int result = await connection.GetTable<BehaviourEffectEntity>()
                 .Where(u => u.Id == id
-                    && u.Tag == BehaviourEffectTag.Effect
+                    && u.State == BehaviourEffectState.Running
                     && (u.LockedUntil < timestamp || u.LockId == lockId))
                 .Set(u => u.LockId, lockId)
                 .Set(u => u.LockedUntil, timestamp + lease)
@@ -79,7 +102,7 @@ namespace Efeu.Integration.Sqlite.Repositories
             return result > 0;
         }
 
-        public Task UnlockAsync(Guid lockId)
+        public Task UnlockEffectAsync(Guid lockId)
         {
             return connection.GetTable<BehaviourEffectEntity>()
                 .Where(u => u.LockId == lockId)
@@ -92,33 +115,19 @@ namespace Efeu.Integration.Sqlite.Repositories
         {
             return connection.GetTable<BehaviourEffectEntity>()
                 .Where(u => u.State == BehaviourEffectState.Running
-                    && u.LockedUntil < time
-                    && u.Tag == BehaviourEffectTag.Effect)
-                .Select(p => p.Id).ToArrayAsync();
+                    && u.State == BehaviourEffectState.Running
+                    && u.LockedUntil < time)
+                .OrderBy(u => u.CreationTime)
+                .Select(p => p.Id)
+                .ToArrayAsync();
         }
 
-        public Task<BehaviourEffectEntity?> GetRunningSignalAsync()
-        {
-            return connection.GetTable<BehaviourEffectEntity>()
-                .Where(u => u.State == BehaviourEffectState.Running 
-                    && u.Tag == BehaviourEffectTag.Signal)
-                .FirstOrDefaultAsync();
-        }
-
-        public Task CreateBulkAsync(BehaviourEffectEntity[] entities)
-        {
-            return connection.BulkCopyAsync(new BulkCopyOptions()
-            {
-                BulkCopyType = BulkCopyType.MultipleRows
-            }, entities);
-        }
-
-        public Task MarkErrorAndUnlockAsync(Guid lockId, int id, uint times)
+        public Task MarkEffectErrorAndUnlockAsync(Guid lockId, int id, uint times)
         {
             return connection.GetTable<BehaviourEffectEntity>()
                 .Where(u => u.Id == id 
                     && u.LockId == lockId
-                    && u.Tag == BehaviourEffectTag.Effect)
+                    && u.State == BehaviourEffectState.Running)
                 .Set(u => u.Times, times)
                 .Set(u => u.State, BehaviourEffectState.Error)
                 .Set(u => u.LockId, Guid.Empty)
@@ -126,14 +135,13 @@ namespace Efeu.Integration.Sqlite.Repositories
                 .UpdateAsync();
         }
 
-        public Task CompleteAsync(Guid lockId, int id, DateTimeOffset timestamp, EfeuValue output, uint times)
+        public Task CompleteEffectAndUnlockAsync(Guid lockId, int id, DateTimeOffset timestamp, EfeuValue output, uint times)
         {
             return connection.GetTable<BehaviourEffectEntity>()
                 .Where(u => u.Id == id
                     && u.LockId == lockId
-                    && u.Tag == BehaviourEffectTag.Effect)
-                .Set(u => u.State, BehaviourEffectState.Running)
-                .Set(u => u.Tag, BehaviourEffectTag.Signal)
+                    && u.State == BehaviourEffectState.Running)
+                .Set(u => u.Tag, BehaviourEffectTag.Incoming)
                 .Set(u => u.Input, output)
                 .Set(u => u.CreationTime, timestamp)
                 .Set(u => u.Times, times)
@@ -142,13 +150,16 @@ namespace Efeu.Integration.Sqlite.Repositories
                 .UpdateAsync();
         }
 
-        public Task MarkErrorAsync(int id, uint times)
+        public Task CompleteSuspendedEffectAsync(int id, DateTimeOffset timestamp, EfeuValue output)
         {
             return connection.GetTable<BehaviourEffectEntity>()
                 .Where(u => u.Id == id
-                    && u.Tag == BehaviourEffectTag.Signal)
-                .Set(u => u.Times, times)
-                .Set(u => u.State, BehaviourEffectState.Error)
+                    && u.State == BehaviourEffectState.Suspended)
+                .Set(u => u.State, BehaviourEffectState.Running)
+                .Set(u => u.Input, output)
+                .Set(u => u.CreationTime, timestamp)
+                .Set(u => u.LockId, Guid.Empty)
+                .Set(u => u.LockedUntil, DateTimeOffset.MinValue)
                 .UpdateAsync();
         }
     }

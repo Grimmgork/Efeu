@@ -1,7 +1,9 @@
-﻿using Efeu.Integration.Entities;
+﻿using Efeu.Integration.Commands;
+using Efeu.Integration.Entities;
 using Efeu.Integration.Foreign;
 using Efeu.Integration.Persistence;
 using Efeu.Router;
+using Efeu.Router.Data;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -44,8 +46,9 @@ namespace Efeu.Integration.Services
                                 await Task.Delay(1000, cancellationToken);
                             }
                         }
-                        catch (Exception)
+                        catch (Exception ex)
                         {
+                            Console.WriteLine(ex);
                             await Task.Delay(1000, cancellationToken);
                         }
                     }
@@ -68,7 +71,7 @@ namespace Efeu.Integration.Services
 
             IServiceProvider services = scope.ServiceProvider;
             IBehaviourEffectRepository behaviourEffectRepository = services.GetRequiredService<IBehaviourEffectRepository>();
-            IUnitOfWork unitOfWork = services.GetRequiredService<IUnitOfWork>();
+            IBehaviourEffectCommands behaviourEffectCommands = services.GetRequiredService<IBehaviourEffectCommands>();
             EfeuEnvironment environment = services.GetRequiredService<EfeuEnvironment>();
 
             int[] candidateIds = await behaviourEffectRepository.GetRunningEffectsNotLockedAsync(DateTime.Now);
@@ -76,35 +79,41 @@ namespace Efeu.Integration.Services
             foreach (int candidateId in candidateIds)
             {
                 DateTime timestamp = DateTime.Now;
-                if (await behaviourEffectRepository.TryLockAsync(candidateId, workerId, timestamp, TimeSpan.FromSeconds(30)))
+                if (await behaviourEffectRepository.TryLockEffectAsync(candidateId, workerId, timestamp, TimeSpan.FromSeconds(30)))
                 {
                     effect = await behaviourEffectRepository.GetByIdAsync(candidateId);
-                    if (effect != null)
-                        continue;
+                    if (effect is not null)
+                        break;
                 }
             }
 
-            if (effect == null)
+            if (effect is null)
                 return 0;
 
-            try
+            if (effect.Tag == BehaviourEffectTag.Outgoing)
             {
-                // TODO prevent double send by some kind of WAL log?
+                try
+                {
+                    // TODO prevent double send by some kind of WAL log?
+                    IEffect? effectInstance = environment.EffectProvider.TryGetEffect(effect.Name);
+                    if (effectInstance is null)
+                        throw new Exception($"Unknown effect '{effect.Name}'.");
 
-                IEffect? effectInstance = environment.EffectProvider.TryGetEffect(effect.Name);
-                if (effectInstance is null)
-                    throw new Exception($"Unknown effect '{effect.Name}'.");
+                    // run effect
+                    EffectExecutionContext context = new EffectExecutionContext(effect.Id, effect.CorrelationId, effect.Times, effect.Data);
+                    await effectInstance.RunAsync(context, default);
 
-                // run effect
-                EffectExecutionContext context = new EffectExecutionContext(effect.Id, effect.CorrelationId, effect.Times, effect.Data);
-                await effectInstance.RunAsync(context, default);
-
-                await behaviourEffectRepository.CompleteAsync(workerId, effect.Id, DateTime.Now, context.Output, effect.Times + 1);
+                    await behaviourEffectRepository.CompleteEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, context.Output, effect.Times + 1);
+                }
+                catch (Exception ex)
+                {
+                    await behaviourEffectRepository.MarkEffectErrorAndUnlockAsync(workerId, effect.Id, effect.Times + 1);
+                }
             }
-            catch (Exception)
+            else
             {
-                await unitOfWork.RollbackAsync();
-                await behaviourEffectRepository.MarkErrorAndUnlockAsync(workerId, effect.Id, effect.Times + 1);
+                EfeuMessage message = new EfeuMessage();
+                await behaviourEffectCommands.ProcessSignal(message, effect.Id);
             }
 
             return 1;

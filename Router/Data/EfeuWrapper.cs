@@ -20,18 +20,6 @@ namespace Efeu.Router.Data
             this.Wrappee = wrappee;
         }
 
-        public override EfeuValue Call(string field)
-        {
-            Type type = Wrappee.GetType();
-            return EfeuValue.Parse(type.GetProperty(field)?.GetValue(Wrappee, null));
-        }
-
-        public override EfeuValue Call(int index)
-        {
-            dynamic obj = Wrappee;
-            return EfeuValue.Parse(obj[index]);
-        }
-
         public override bool ToBoolean()
         {
             return Convert.ToBoolean(Wrappee);

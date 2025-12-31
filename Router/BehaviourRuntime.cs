@@ -17,16 +17,16 @@ namespace Efeu.Router
 
         public Guid CorrelationId; // from wich it came
 
-        public Guid TriggerId; // for wich it is commonly used for a response
+        public Guid TriggerId; // response / fault triggers id
 
         public EfeuValue Data;
     }
 
     public enum EfeuMessageTag
     {
-        Request,
-        Response,
-        Error
+        Incoming,
+        Outgoing,
+        Fault
     }
 
     public class BehaviourExpressionContext
@@ -207,7 +207,8 @@ namespace Efeu.Router
         private static bool TriggerMatchesMessage(BehaviourTrigger trigger, EfeuMessage message, BehaviourDefinitionStep step)
         {
             return message.Tag == trigger.MessageTag &&
-                   message.Name == trigger.MessageName;
+                   message.Name == trigger.MessageName &&
+                   message.TriggerId == trigger.Id;
         }
 
         private void RunSteps(BehaviourDefinitionStep[] steps, string position, BehaviourScope parentScope)
@@ -269,7 +270,7 @@ namespace Efeu.Router
             {
                 CorrelationId = Id,
                 Name = step.Name,
-                Tag = EfeuMessageTag.Request
+                Tag = EfeuMessageTag.Outgoing
             });
         }
 
@@ -316,7 +317,7 @@ namespace Efeu.Router
             {
                 CorrelationId = Id,
                 Name = step.Name,
-                Tag = EfeuMessageTag.Request,
+                Tag = EfeuMessageTag.Outgoing,
                 TriggerId = triggerId,
             });
 
@@ -325,7 +326,7 @@ namespace Efeu.Router
                 Id = triggerId,
                 CorrelationId = Id,
                 Scope = scope,
-                MessageTag = EfeuMessageTag.Response,
+                MessageTag = EfeuMessageTag.Incoming,
                 MessageName = step.Name,
                 Position = position,
                 DefinitionId = trigger.DefinitionId,
@@ -340,7 +341,7 @@ namespace Efeu.Router
                 Id = Guid.NewGuid(),
                 CorrelationId = Id,
                 Scope = scope,
-                MessageTag = EfeuMessageTag.Request,
+                MessageTag = EfeuMessageTag.Incoming,
                 MessageName = step.Name,
                 Position = position,
                 DefinitionId = trigger.DefinitionId,
@@ -357,7 +358,7 @@ namespace Efeu.Router
             {
                 Id = Guid.NewGuid(),
                 Scope = scope,
-                MessageTag = EfeuMessageTag.Request,
+                MessageTag = EfeuMessageTag.Incoming,
                 MessageName = step.Name,
                 DefinitionId = trigger.DefinitionId,
                 Position = position

@@ -30,14 +30,14 @@ namespace Efeu.Router.Data
             }
         }
 
-        public override EfeuValue Call(string field)
+        public override EfeuValue Call(EfeuValue field)
         {
-            return Hash.GetValueOrDefault(field, EfeuValue.Nil());
+            return Hash.GetValueOrDefault(field.ToString(), EfeuValue.Nil());
         }
 
-        public override EfeuValue Call(string field, EfeuValue value)
+        public override EfeuValue Call(EfeuValue field, EfeuValue value)
         {
-            return new EfeuHash(Hash.SetItem(field, value));
+            return new EfeuHash(Hash.SetItem(field.ToString(), value));
         }
 
         public override IEnumerable<KeyValuePair<string, EfeuValue>> Fields()

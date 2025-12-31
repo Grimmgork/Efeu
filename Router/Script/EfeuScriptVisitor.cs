@@ -1,4 +1,5 @@
 ﻿using Antlr4.Runtime.Misc;
+using Antlr4.Runtime.Tree;
 using Efeu.Router.Data;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,8 @@ namespace Efeu.Router.Script
 {
     internal class EfeuScriptVisitor : EfeuGrammarBaseVisitor<Func<EfeuScriptScope, EfeuValue>>
     {
+        public readonly List<EfeuScriptExecutionException> Errors = new();
+
         public override Func<EfeuScriptScope, EfeuValue> VisitScript([NotNull] EfeuGrammarParser.ScriptContext context)
         {
             return Visit(context.scope());
@@ -98,7 +101,8 @@ namespace Efeu.Router.Script
                 "=" => (scope) => a(scope) == b(scope),
                 "*" => (scope) => a(scope) * b(scope),
                 "/" => (scope) => a(scope) / b(scope),
-                "%" => (context) => a(context) % b(context)
+                "%" => (scope) => a(scope) % b(scope),
+                _ => throw new NotImplementedException()
             };
         }
 
@@ -124,10 +128,13 @@ namespace Efeu.Router.Script
             var values = context.struct_constructor().expression().ToArray();
             return (scope) =>
             {
-                List<KeyValuePair<string, EfeuValue>> fields = new List<KeyValuePair<string, EfeuValue>>();
+                IDictionary<string, EfeuValue> fields = new Dictionary<string, EfeuValue>();
                 for (int i = 0; i < keys.Length; i++)
                 {
-                    fields.Add(new KeyValuePair<string, EfeuValue>(keys[i], Visit(values[i])(scope)));
+                    if (!fields.TryAdd(keys[i], Visit(values[i])(scope)))
+                    {
+                        throw new Exception();
+                    }
                 }
                 return new EfeuHash(fields);
             };

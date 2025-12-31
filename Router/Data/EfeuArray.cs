@@ -30,16 +30,6 @@ namespace Efeu.Router.Data
             Items = Items.AddRange(items);
         }
 
-        public override EfeuValue Call(int index)
-        {
-            return Items.ElementAtOrDefault(index);
-        }
-
-        public override EfeuValue Call(int index, EfeuValue value)
-        {
-            return new EfeuArray(Items.SetItem(index, value));
-        }
-
         public override IEnumerable<EfeuValue> Each()
         {
             return Items;

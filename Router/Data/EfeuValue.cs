@@ -365,19 +365,7 @@ namespace Efeu.Router.Data
             }
         }
 
-        public EfeuValue Call(string field)
-        {
-            if (Tag == EfeuValueTag.Object)
-            {
-                return obj!.Call(field);
-            }
-            else
-            {
-                return EfeuValue.Nil();
-            }
-        }
-
-        public EfeuValue Call(string field, EfeuValue value)
+        public EfeuValue Call(EfeuValue field, EfeuValue value)
         {
             if (Tag == EfeuValueTag.Object)
             {
@@ -389,27 +377,15 @@ namespace Efeu.Router.Data
             }
         }
 
-        public EfeuValue Call(int index)
+        public EfeuValue Call(EfeuValue field)
         {
             if (Tag == EfeuValueTag.Object)
             {
-                return obj!.Call(index);
+                return obj!.Call(field);
             }
             else
             {
                 return EfeuValue.Nil();
-            }
-        }
-
-        public EfeuValue Call(int index, EfeuValue value)
-        {
-            if (Tag == EfeuValueTag.Object)
-            {
-                return obj!.Call(index, value);
-            }
-            else
-            {
-                throw new NotImplementedException();
             }
         }
 

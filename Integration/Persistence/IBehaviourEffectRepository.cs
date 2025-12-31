@@ -11,9 +11,11 @@ namespace Efeu.Integration.Persistence
 
         public Task CreateBulkAsync(BehaviourEffectEntity[] entities);
 
-        public Task DeleteByCorellationAsync(Guid correlationId);
+        public Task DeleteSuspendedEffectByCorellationAsync(Guid correlationId);
 
-        public Task DeleteAsync(int id);
+        public Task DeleteSuspendedEffectAsync(int id);
+
+        public Task DeleteCompletedSignalAsync(int id);
 
         public Task<BehaviourEffectEntity?> GetByIdAsync(int id);
 
@@ -21,20 +23,20 @@ namespace Efeu.Integration.Persistence
 
         public Task<BehaviourEffectEntity[]> GetAllAsync();
 
-        public Task MarkErrorAndUnlockAsync(Guid lockId, int id, uint times);
+        public Task MarkEffectErrorAndUnlockAsync(Guid lockId, int id, uint times);
 
-        public Task CompleteAsync(Guid lockId, int id, DateTimeOffset timestamp, EfeuValue output, uint times);
+        public Task CompleteEffectAndUnlockAsync(Guid lockId, int id, DateTimeOffset timestamp, EfeuValue output, uint times);
 
-        public Task MarkErrorAsync(int id, uint times);
+        public Task<int> SuspendEffectAsync(int id, DateTimeOffset timestamp);
 
-        public Task<int> NudgeAsync(int id);
+        public Task CompleteSuspendedEffectAsync(int id, DateTimeOffset timestamp, EfeuValue output);
 
-        public Task<bool> TryLockAsync(int id, Guid lockId, DateTimeOffset timestamp, TimeSpan lease);
+        public Task<int> NudgeEffectAsync(int id);
 
-        public Task<BehaviourEffectEntity?> GetRunningSignalAsync();
+        public Task<bool> TryLockEffectAsync(int id, Guid lockId, DateTimeOffset timestamp, TimeSpan lease);
 
         public Task<int[]> GetRunningEffectsNotLockedAsync(DateTimeOffset time);
 
-        public Task UnlockAsync(Guid lockId);
+        public Task UnlockEffectAsync(Guid lockId);
     }
 }

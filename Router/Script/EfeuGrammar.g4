@@ -50,7 +50,7 @@ array_constructor
     ;
 
 struct_constructor
-    : CLPAREN (CONST expression (COMMA CONST expression))? CRPAREN
+    : CLPAREN NL (CONST expression ((NL|COMMA) CONST expression)*)? NL CRPAREN
     ;
 
 with_method_call

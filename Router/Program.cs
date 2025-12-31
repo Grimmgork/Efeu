@@ -41,7 +41,7 @@ namespace Efeu.Router
                 },
                 new () {
                     Type = BehaviourStepType.Await,
-                    Name = "ConsoleInput",
+                    Name = "Event",
                     Where = [
                         new () {
                             Field = "Name",
@@ -82,9 +82,8 @@ namespace Efeu.Router
 
             BehaviourRuntime behaviour2 = BehaviourRuntime.RunTrigger(trigger, new EfeuMessage()
             {
-                 Tag = EfeuMessageTag.Request,
-                 Name = "ConsoleInput",
-                 CorrelationId = trigger.CorrelationId,
+                 Tag = EfeuMessageTag.Incoming,
+                 Name = "Event"
             });
 
             Console.WriteLine("done");

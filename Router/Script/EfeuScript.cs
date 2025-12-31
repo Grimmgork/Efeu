@@ -2,6 +2,7 @@
 using Efeu.Router.Data;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,16 +18,36 @@ namespace Efeu.Router.Script
             var tokens = new CommonTokenStream(lexer);
             var parser = new EfeuGrammarParser(tokens);
 
+            parser.RemoveErrorListeners();
+            lexer.RemoveErrorListeners();
+
+            CollectingErrorListener errorListener = new CollectingErrorListener();
+            parser.AddErrorListener(errorListener);
+
             EfeuGrammarParser.ScriptContext tree = parser.script();
 
             Console.WriteLine(tree.ToStringTree(parser));
+
+            if (parser.NumberOfSyntaxErrors > 0 )
+            {
+                throw new EfeuScriptParseException(errorListener.Errors);
+            }
 
             EfeuScriptVisitor efeuScriptVisitor = new EfeuScriptVisitor();
             Func<EfeuScriptScope, EfeuValue> run = efeuScriptVisitor.Visit(tree);
 
             EfeuValue result = run(scope);
-            Console.WriteLine(result);
             return result;
+        }
+
+        private class CollectingErrorListener : BaseErrorListener
+        {
+            public readonly List<ParseError> Errors = new();
+
+            public override void SyntaxError(TextWriter output, IRecognizer recognizer, IToken offendingSymbol, int line, int charPositionInLine, string msg, RecognitionException e)
+            {
+                Errors.Add(new ParseError(line, charPositionInLine, msg));
+            }
         }
     }
 }

@@ -11,22 +11,12 @@ namespace Efeu.Router.Data
     {
         public string TypeName => this.GetType().Name;
 
-        public virtual EfeuValue Call(string field)
-        {
-            return EfeuValue.Nil();
-        }
-
-        public virtual EfeuValue Call(string field, EfeuValue value)
+        public virtual EfeuValue Call(EfeuValue field, EfeuValue value)
         {
             throw new NotImplementedException();
         }
 
-        public virtual EfeuValue Call(int index, EfeuValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual EfeuValue Call(int index)
+        public virtual EfeuValue Call(EfeuValue field)
         {
             return EfeuValue.Nil();
         }

@@ -1,6 +1,7 @@
 ﻿using Efeu.Integration.Entities;
 using Efeu.Integration.Foreign;
 using Efeu.Integration.Persistence;
+using Efeu.Integration.Services;
 using Efeu.Router;
 using Efeu.Router.Data;
 using System;
@@ -15,13 +16,20 @@ namespace Efeu.Integration.Commands
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly IBehaviourEffectRepository behaviourEffectRepository;
+
+        private readonly IBehaviourTriggerCommands behaviourTriggerCommands;
+        private readonly IBehaviourTriggerRepository behaviourTriggerRepository;
+        private readonly IBehaviourDefinitionRepository behaviourDefinitionRepository;
         private readonly EfeuEnvironment environment;
 
-        public BehaviourEffectCommands(EfeuEnvironment environment, IBehaviourEffectRepository behaviourEffectRepository, IUnitOfWork unitOfWork)
+        public BehaviourEffectCommands(EfeuEnvironment environment, IBehaviourEffectRepository behaviourEffectRepository, IUnitOfWork unitOfWork, IBehaviourTriggerCommands behaviourTriggerCommands, IBehaviourTriggerRepository behaviourTriggerRepository, IBehaviourDefinitionRepository behaviourDefinitionRepository)
         {
             this.behaviourEffectRepository = behaviourEffectRepository;
             this.environment = environment;
             this.unitOfWork = unitOfWork;
+            this.behaviourTriggerCommands = behaviourTriggerCommands;
+            this.behaviourTriggerRepository = behaviourTriggerRepository;
+            this.behaviourDefinitionRepository = behaviourDefinitionRepository;
         }
 
         public Task CreateEffect(EfeuMessage message, DateTimeOffset timestamp)
@@ -44,7 +52,7 @@ namespace Efeu.Integration.Commands
             return behaviourEffectRepository.CreateBulkAsync(entities.ToArray());
         }
 
-        public BehaviourEffectEntity GetEffectFromMessage(EfeuMessage message, DateTimeOffset timestamp)
+        private BehaviourEffectEntity GetEffectFromMessage(EfeuMessage message, DateTimeOffset timestamp)
         {
             return new BehaviourEffectEntity()
             {
@@ -53,54 +61,66 @@ namespace Efeu.Integration.Commands
                 Name = message.Name,
                 TriggerId = message.TriggerId,
                 Input = message.Data,
+                State = BehaviourEffectState.Running,
                 Tag = environment.EffectProvider.TryGetEffect(message.Name) is null ?
-                    BehaviourEffectTag.Signal : BehaviourEffectTag.Effect,
-                CorrelationId = message.CorrelationId,
-                State = BehaviourEffectState.Running
+                    BehaviourEffectTag.Incoming : BehaviourEffectTag.Outgoing,
             };
         }
 
-        public async Task NudgeEffect(int id)
+        public Task NudgeEffect(int id)
         {
-            await behaviourEffectRepository.NudgeAsync(id);
+            return behaviourEffectRepository.NudgeEffectAsync(id);
         }
 
-        public async Task SkipEffect(int id, EfeuValue output = default)
+        public Task SuspendEffect(int id, DateTimeOffset timestamp)
         {
-            Guid workerId = Guid.NewGuid();
-            DateTimeOffset timestamp = DateTimeOffset.UtcNow;
-            if (!await behaviourEffectRepository.TryLockAsync(id, workerId, timestamp, TimeSpan.FromSeconds(30)))
-                throw new Exception("effect is locked.");
+            return behaviourEffectRepository.SuspendEffectAsync(id, timestamp);
+        }
 
-            BehaviourEffectEntity? effect = await behaviourEffectRepository.GetByIdAsync(id);
-            if (effect == null)
-                return;
+        public Task SkipEffect(int id, DateTimeOffset timestamp, EfeuValue output = default)
+        {
+            return behaviourEffectRepository.CompleteSuspendedEffectAsync(id, timestamp, output);
+        }
 
-            await unitOfWork.BeginAsync();
-            if (effect.TriggerId != Guid.Empty)
+        public Task DeleteEffect(int id)
+        {
+            return behaviourEffectRepository.DeleteSuspendedEffectAsync(id);
+        }
+
+        public async Task ProcessSignal(EfeuMessage initialMessage, int effectId = 0)
+        {
+            await unitOfWork.Do(async () =>
             {
-                // send response message
-                await behaviourEffectRepository.CreateAsync(new BehaviourEffectEntity()
+                await unitOfWork.LockAsync("Signal");
+
+                SignalProcessingContext context = new SignalProcessingContext(behaviourTriggerRepository, behaviourDefinitionRepository, DateTime.Now);
+                await context.ProcessSignalAsync(initialMessage);
+
+                int iterations = 0;
+                List<BehaviourEffectEntity> effects = [];
+                while (context.Messages.TryPop(out EfeuMessage? message)) // handle produced messages
                 {
-                    CreationTime = DateTime.Now,
-                    Name = effect.Name,
-                    CorrelationId = effect.CorrelationId,
-                    TriggerId = effect.TriggerId,
-                    Input = output,
-                    Tag = BehaviourEffectTag.Signal,
-                    State = BehaviourEffectState.Running
-                });
-            }
+                    BehaviourEffectEntity effect = GetEffectFromMessage(message, context.Timestamp);
+                    if (effect.Tag == BehaviourEffectTag.Incoming)
+                    {
+                        iterations++;
+                        if (iterations > 50)
+                            throw new Exception($"infinite loop detected! ({iterations} iterations)");
 
-            await behaviourEffectRepository.DeleteAsync(effect.Id);
-            await unitOfWork.CommitAsync();
+                        await context.ProcessSignalAsync(message);
+                    }
+                    else
+                    {
+                        effects.Add(effect);
+                    }
+                }
 
-            await behaviourEffectRepository.UnlockAsync(workerId);
-        }
-
-        public Task DeleteAsync(int id)
-        {
-            return behaviourEffectRepository.DeleteAsync(id);
+                await behaviourTriggerCommands.CreateBulkAsync(context.Triggers.ToArray());
+                await behaviourTriggerCommands.DeleteBulkAsync(context.DeletedTriggers.ToArray());
+                await behaviourEffectRepository.CreateBulkAsync(effects.ToArray());
+                if (effectId != 0)
+                    await behaviourEffectRepository.DeleteCompletedSignalAsync(effectId);
+            });
         }
     }
 }

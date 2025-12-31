@@ -50,7 +50,7 @@ namespace Efeu.Integration.Sqlite
                 return Task.CompletedTask;
         }
 
-        public async Task TryLockAsync(params string[] locks)
+        public async Task LockAsync(params string[] locks)
         {
             if (!isTransactionRunning)
                 throw new Exception("No transaction is running!");
@@ -63,6 +63,21 @@ namespace Efeu.Integration.Sqlite
                 Name = i,
                 Bundle = lockBundle
             }));
+        }
+
+        public async Task Do(Func<Task> task)
+        {
+            try
+            {
+                await BeginAsync();
+                await task();
+                await CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await RollbackAsync();
+                throw;
+            }
         }
 
         public async ValueTask DisposeAsync()

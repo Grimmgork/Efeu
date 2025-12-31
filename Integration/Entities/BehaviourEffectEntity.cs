@@ -34,12 +34,12 @@ namespace Efeu.Integration.Entities
     {
         Running,
         Suspended,
-        Error
+        Error,
     }
 
     public enum BehaviourEffectTag
     {
-        Signal,
-        Effect
+         Outgoing,
+         Incoming
     }
 }
