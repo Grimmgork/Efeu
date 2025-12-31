@@ -56,15 +56,8 @@ namespace Efeu.Integration.Commands
 
             BehaviourRuntime runtime = BehaviourRuntime.Run(steps, Guid.NewGuid(), newDefinitionVersionId);
 
-            foreach (BehaviourTrigger outTrigger in runtime.Triggers)
-            {
-                await behaviourTriggerCommands.CreateAsync(outTrigger);
-            }
-
-            foreach (EfeuMessage outMessage in runtime.Messages)
-            {
-                await behaviourEffectCommands.CreateEffect(outMessage, DateTime.Now);
-            }
+            await behaviourTriggerCommands.CreateBulkAsync(runtime.Triggers.ToArray());
+            await behaviourEffectCommands.CreateEffectsBulk(runtime.Messages.ToArray(), DateTime.Now);
 
             return newDefinitionVersionId;
         }

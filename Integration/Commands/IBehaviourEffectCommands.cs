@@ -15,13 +15,13 @@ namespace Efeu.Integration.Commands
 
         public Task CreateEffect(EfeuMessage message, DateTimeOffset timestamp);
 
+        public Task CreateEffectsBulk(EfeuMessage[] messages, DateTimeOffset timestamp);
+
         public Task SuspendEffect(int id, DateTimeOffset timestamp);
 
         public Task NudgeEffect(int id);
 
         public Task DeleteEffect(int id);
-
-        public Task ProcessSignal(EfeuMessage message);
 
         public Task ProcessSignal(EfeuMessage message, int effectId);
     }

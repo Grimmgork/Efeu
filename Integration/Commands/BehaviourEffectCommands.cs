@@ -37,7 +37,7 @@ namespace Efeu.Integration.Commands
             return CreateEffectsBulk([message], timestamp);
         }
 
-        private Task CreateEffectsBulk(EfeuMessage[] messages, DateTimeOffset timestamp)
+        public Task CreateEffectsBulk(EfeuMessage[] messages, DateTimeOffset timestamp)
         {
             List<BehaviourEffectEntity> entities = new List<BehaviourEffectEntity>();
             foreach (EfeuMessage message in messages)
@@ -62,8 +62,8 @@ namespace Efeu.Integration.Commands
                 TriggerId = message.TriggerId,
                 Input = message.Data,
                 State = BehaviourEffectState.Running,
-                Tag = environment.EffectProvider.TryGetEffect(message.Name) is null ?
-                    BehaviourEffectTag.Incoming : BehaviourEffectTag.Outgoing,
+                Tag = environment.EffectProvider.TryGetEffect(message.Name) == null ?
+                     BehaviourEffectTag.Incoming : BehaviourEffectTag.Outgoing
             };
         }
 
@@ -91,7 +91,7 @@ namespace Efeu.Integration.Commands
         {
             await unitOfWork.Do(async () =>
             {
-                await unitOfWork.LockAsync("Signal");
+                await unitOfWork.LockAsync("Trigger");
 
                 SignalProcessingContext context = new SignalProcessingContext(behaviourTriggerRepository, behaviourDefinitionRepository, DateTime.Now);
                 await context.ProcessSignalAsync(initialMessage);
@@ -100,8 +100,8 @@ namespace Efeu.Integration.Commands
                 List<BehaviourEffectEntity> effects = [];
                 while (context.Messages.TryPop(out EfeuMessage? message)) // handle produced messages
                 {
-                    BehaviourEffectEntity effect = GetEffectFromMessage(message, context.Timestamp);
-                    if (effect.Tag == BehaviourEffectTag.Incoming)
+                    BehaviourEffectEntity effectEntity = GetEffectFromMessage(message, context.Timestamp);
+                    if (effectEntity.Tag == BehaviourEffectTag.Incoming)
                     {
                         iterations++;
                         if (iterations > 50)
@@ -111,7 +111,7 @@ namespace Efeu.Integration.Commands
                     }
                     else
                     {
-                        effects.Add(effect);
+                        effects.Add(effectEntity);
                     }
                 }
 

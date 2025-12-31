@@ -21,9 +21,8 @@ namespace Efeu.Integration.Services
 
         public readonly HashSet<Guid> DeletedTriggers = new();
 
-        public SignalProcessingContext(EfeuMessage signal, IBehaviourTriggerRepository behaviourTriggerRepository, IBehaviourDefinitionRepository behaviourDefinitionRepository, DateTimeOffset timestamp)
+        public SignalProcessingContext(IBehaviourTriggerRepository behaviourTriggerRepository, IBehaviourDefinitionRepository behaviourDefinitionRepository, DateTimeOffset timestamp)
         {
-            Messages.Push(signal);
             this.behaviourDefinitionRepository = behaviourDefinitionRepository;
             this.behaviourTriggerRepository = behaviourTriggerRepository;
             Timestamp = timestamp;
@@ -31,7 +30,7 @@ namespace Efeu.Integration.Services
 
         private readonly Dictionary<int, BehaviourDefinitionVersionEntity> definitionEntityCache = new();
 
-        private async Task ProcessSignalAsync(EfeuMessage message)
+        public async Task ProcessSignalAsync(EfeuMessage message)
         {
             BehaviourTrigger[] matchingTriggers = await GetMatchingTriggersAsync(message.Name, message.Tag, message.TriggerId);
             foreach (BehaviourTrigger trigger in matchingTriggers)

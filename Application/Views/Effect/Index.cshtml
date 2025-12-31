@@ -5,8 +5,8 @@
     <form hx-post="/Effect">
         <input type="text" name="name"/>
         <select type="text" name="tag" >
-            <option value="Effect">Effect</option>
-            <option value="Response">Response</option>
+            <option value="Incoming">Incoming</option>
+            <option value="Outgoing">Outgoing</option>
             <option value="Error">Error</option>
         </select>
         <button type="submit">emit</button>
@@ -23,6 +23,7 @@ else
         <tr>
             <th>Timestamp</th>
             <th>Name</th>
+            <th>Tag</th>
             <th>State</th>
             <th>Actions</th>
         </tr>
@@ -31,6 +32,7 @@ else
             <tr>
                 <td>@effect.CreationTime</td>
                 <td>@effect.Name</td>
+                <td>@effect.Tag</td>
                 <td>@effect.State</td>
                 <td><button disabled="@(effect.State == BehaviourEffectState.Running)" hx-post="/Effect/@effect.Id/Nudge">nudge</button><button hx-delete="/Effect/@effect.Id">delete</button></td>
             </tr>

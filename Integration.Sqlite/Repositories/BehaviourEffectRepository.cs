@@ -162,5 +162,11 @@ namespace Efeu.Integration.Sqlite.Repositories
                 .Set(u => u.LockedUntil, DateTimeOffset.MinValue)
                 .UpdateAsync();
         }
+
+        public Task DeleteCompletedSignalAsync(int id)
+        {
+            return connection.GetTable<BehaviourEffectEntity>()
+                .DeleteAsync(u => u.Id == id);
+        }
     }
 }

@@ -31,7 +31,7 @@ namespace Efeu.Integration.Services
             CancellationToken token = cancellationTokenSource.Token;
 
             List<Task> workers = new List<Task>();
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 1; i++)
             {
                 workers.Add(Task.Run(async () =>
                 {
@@ -90,9 +90,9 @@ namespace Efeu.Integration.Services
             if (effect is null)
                 return 0;
 
-            if (effect.Tag == BehaviourEffectTag.Outgoing)
+            try
             {
-                try
+                if (effect.Tag == BehaviourEffectTag.Outgoing)
                 {
                     // TODO prevent double send by some kind of WAL log?
                     IEffect? effectInstance = environment.EffectProvider.TryGetEffect(effect.Name);
@@ -105,15 +105,22 @@ namespace Efeu.Integration.Services
 
                     await behaviourEffectRepository.CompleteEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, context.Output, effect.Times + 1);
                 }
-                catch (Exception ex)
+                else
                 {
-                    await behaviourEffectRepository.MarkEffectErrorAndUnlockAsync(workerId, effect.Id, effect.Times + 1);
+                    EfeuMessage message = new EfeuMessage()
+                    {
+                        Tag = EfeuMessageTag.Incoming,
+                        Name = effect.Name,
+                        CorrelationId = effect.CorrelationId,
+                        Data = effect.Data,
+                        TriggerId = effect.TriggerId
+                    };
+                    await behaviourEffectCommands.ProcessSignal(message, effect.Id);
                 }
             }
-            else
+            catch (Exception ex)
             {
-                EfeuMessage message = new EfeuMessage();
-                await behaviourEffectCommands.ProcessSignal(message, effect.Id);
+                await behaviourEffectRepository.MarkEffectErrorAndUnlockAsync(workerId, effect.Id, effect.Times + 1);
             }
 
             return 1;
