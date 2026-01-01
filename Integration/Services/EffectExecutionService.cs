@@ -120,7 +120,7 @@ namespace Efeu.Integration.Services
             }
             catch (Exception ex)
             {
-                await behaviourEffectRepository.MarkEffectErrorAndUnlockAsync(workerId, effect.Id, effect.Times + 1);
+                await behaviourEffectRepository.MarkEffectErrorAndUnlockAsync(workerId, ex.ToString(), effect.Id, effect.Times + 1);
             }
 
             return 1;

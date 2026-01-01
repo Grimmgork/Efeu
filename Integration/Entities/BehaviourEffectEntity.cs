@@ -17,6 +17,8 @@ namespace Efeu.Integration.Entities
 
         public EfeuValue Input;
 
+        public string Fault = "";
+
         public DateTimeOffset CreationTime;
 
         public uint Times;
@@ -34,7 +36,7 @@ namespace Efeu.Integration.Entities
     {
         Running,
         Suspended,
-        Error,
+        Faulted,
     }
 
     public enum BehaviourEffectTag

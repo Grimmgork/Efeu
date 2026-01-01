@@ -34,14 +34,9 @@ namespace Efeu.Application.Controllers
 
         [HttpPost]
         [Route("")]
-        public async Task<IActionResult> Create(string name, EfeuMessageTag tag)
+        public async Task<IActionResult> Create(string name, BehaviourEffectTag tag)
         {
-            EfeuMessage message = new EfeuMessage()
-            {
-                Name = name,
-                Tag = tag
-            };
-            await behaviourEffectCommands.CreateEffect(message, DateTime.Now);
+            await behaviourEffectCommands.CreateEffect(DateTime.Now, name, tag, default, Guid.Empty, Guid.Empty);
             Response.Headers["HX-Refresh"] = "true";
             return Ok();
         }
@@ -60,6 +55,15 @@ namespace Efeu.Application.Controllers
         public async Task<IActionResult> Nudge(int id)
         {
             await behaviourEffectCommands.NudgeEffect(id);
+            Response.Headers["HX-Refresh"] = "true";
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("{id}/Suspend")]
+        public async Task<IActionResult> Suspend(int id)
+        {
+            await behaviourEffectCommands.SuspendEffect(id, DateTime.Now);
             Response.Headers["HX-Refresh"] = "true";
             return Ok();
         }

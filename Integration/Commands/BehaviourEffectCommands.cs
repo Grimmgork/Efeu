@@ -32,9 +32,17 @@ namespace Efeu.Integration.Commands
             this.behaviourDefinitionRepository = behaviourDefinitionRepository;
         }
 
-        public Task CreateEffect(EfeuMessage message, DateTimeOffset timestamp)
+        public Task CreateEffect(DateTimeOffset timestamp, string name, BehaviourEffectTag tag, EfeuValue input, Guid triggerId, Guid correlationId)
         {
-            return CreateEffectsBulk([message], timestamp);
+            return behaviourEffectRepository.CreateBulkAsync([new BehaviourEffectEntity() {
+                Id = 0,
+                Name = name,
+                Tag = tag,
+                Input = input,
+                CorrelationId = correlationId,
+                TriggerId = triggerId,
+                CreationTime = timestamp,
+            }]);
         }
 
         public Task CreateEffectsBulk(EfeuMessage[] messages, DateTimeOffset timestamp)
@@ -42,18 +50,17 @@ namespace Efeu.Integration.Commands
             List<BehaviourEffectEntity> entities = new List<BehaviourEffectEntity>();
             foreach (EfeuMessage message in messages)
             {
-                if (string.IsNullOrWhiteSpace(message.Name))
-                    throw new Exception("Message name must not be empty.");
-
-
-                entities.Add(GetEffectFromMessage(message, timestamp));
+                entities.Add(GetEffectFromOutgoingMessage(message, timestamp));
             }
 
             return behaviourEffectRepository.CreateBulkAsync(entities.ToArray());
         }
 
-        private BehaviourEffectEntity GetEffectFromMessage(EfeuMessage message, DateTimeOffset timestamp)
+        public BehaviourEffectEntity GetEffectFromOutgoingMessage(EfeuMessage message, DateTimeOffset timestamp)
         {
+            if (message.Tag != EfeuMessageTag.Outgoing)
+                throw new Exception("message must be outgoing.");
+
             return new BehaviourEffectEntity()
             {
                 Id = 0,
@@ -84,12 +91,12 @@ namespace Efeu.Integration.Commands
 
         public Task DeleteEffect(int id)
         {
-            return behaviourEffectRepository.DeleteSuspendedEffectAsync(id);
+            return behaviourEffectRepository.DeleteEffectAsync(id);
         }
 
-        public async Task ProcessSignal(EfeuMessage initialMessage, int effectId = 0)
+        public Task ProcessSignal(EfeuMessage initialMessage, int effectId = 0)
         {
-            await unitOfWork.Do(async () =>
+            return unitOfWork.Do(async () =>
             {
                 await unitOfWork.LockAsync("Trigger");
 
@@ -100,7 +107,7 @@ namespace Efeu.Integration.Commands
                 List<BehaviourEffectEntity> effects = [];
                 while (context.Messages.TryPop(out EfeuMessage? message)) // handle produced messages
                 {
-                    BehaviourEffectEntity effectEntity = GetEffectFromMessage(message, context.Timestamp);
+                    BehaviourEffectEntity effectEntity = GetEffectFromOutgoingMessage(message, context.Timestamp);
                     if (effectEntity.Tag == BehaviourEffectTag.Incoming)
                     {
                         iterations++;

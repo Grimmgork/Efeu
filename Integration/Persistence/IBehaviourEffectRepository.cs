@@ -11,9 +11,7 @@ namespace Efeu.Integration.Persistence
 
         public Task CreateBulkAsync(BehaviourEffectEntity[] entities);
 
-        public Task DeleteSuspendedEffectByCorellationAsync(Guid correlationId);
-
-        public Task DeleteSuspendedEffectAsync(int id);
+        public Task DeleteEffectAsync(int id);
 
         public Task DeleteCompletedSignalAsync(int id);
 
@@ -23,7 +21,7 @@ namespace Efeu.Integration.Persistence
 
         public Task<BehaviourEffectEntity[]> GetAllAsync();
 
-        public Task MarkEffectErrorAndUnlockAsync(Guid lockId, int id, uint times);
+        public Task MarkEffectErrorAndUnlockAsync(Guid lockId, string fault, int id, uint times);
 
         public Task CompleteEffectAndUnlockAsync(Guid lockId, int id, DateTimeOffset timestamp, EfeuValue output, uint times);
 

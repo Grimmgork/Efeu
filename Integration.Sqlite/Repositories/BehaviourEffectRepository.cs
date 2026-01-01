@@ -36,18 +36,11 @@ namespace Efeu.Integration.Sqlite.Repositories
             }, entities);
         }
 
-        public Task DeleteSuspendedEffectAsync(int id)
+        public Task DeleteEffectAsync(int id)
         {
             return connection.GetTable<BehaviourEffectEntity>()
-                .DeleteAsync(i => i.Id == id 
-                            && i.State == BehaviourEffectState.Suspended);
-        }
-
-        public Task DeleteSuspendedEffectByCorellationAsync(Guid correlationId)
-        {
-            return connection.GetTable<BehaviourEffectEntity>()
-                .DeleteAsync(i => i.CorrelationId == correlationId 
-                        && i.State == BehaviourEffectState.Suspended);
+                .DeleteAsync(i => i.Id == id
+                            && (i.State == BehaviourEffectState.Suspended || i.State == BehaviourEffectState.Faulted));
         }
 
         public Task<BehaviourEffectEntity[]> GetAllAsync()
@@ -73,7 +66,7 @@ namespace Efeu.Integration.Sqlite.Repositories
         {
             return connection.GetTable<BehaviourEffectEntity>()
                 .Where(u => u.Id == id
-                    && (u.State == BehaviourEffectState.Suspended || u.State == BehaviourEffectState.Error))
+                    && (u.State == BehaviourEffectState.Suspended || u.State == BehaviourEffectState.Faulted))
                 .Set(u => u.State, BehaviourEffectState.Running)
                 .UpdateAsync();
         }
@@ -122,16 +115,17 @@ namespace Efeu.Integration.Sqlite.Repositories
                 .ToArrayAsync();
         }
 
-        public Task MarkEffectErrorAndUnlockAsync(Guid lockId, int id, uint times)
+        public Task MarkEffectErrorAndUnlockAsync(Guid lockId, string fault, int id, uint times)
         {
             return connection.GetTable<BehaviourEffectEntity>()
                 .Where(u => u.Id == id 
                     && u.LockId == lockId
                     && u.State == BehaviourEffectState.Running)
                 .Set(u => u.Times, times)
-                .Set(u => u.State, BehaviourEffectState.Error)
+                .Set(u => u.State, BehaviourEffectState.Faulted)
                 .Set(u => u.LockId, Guid.Empty)
                 .Set(u => u.LockedUntil, DateTimeOffset.MinValue)
+                .Set(u => u.Fault, fault)
                 .UpdateAsync();
         }
 
