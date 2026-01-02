@@ -96,7 +96,6 @@ namespace Efeu.Integration.Services
             {
                 if (effect.Tag == BehaviourEffectTag.Outgoing)
                 {
-                    // TODO prevent double send by some kind of WAL log?
                     IEffect? effectInstance = environment.EffectProvider.TryGetEffect(effect.Name);
                     if (effectInstance is null)
                         throw new Exception($"Unknown effect '{effect.Name}'.");
