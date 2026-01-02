@@ -80,7 +80,7 @@ namespace Efeu.Integration.Services
             BehaviourEffectEntity? effect = null;
             foreach (int candidateId in candidateIds)
             {
-                DateTime timestamp = DateTime.Now;
+                DateTimeOffset timestamp = DateTime.Now;
                 if (await behaviourEffectRepository.TryLockEffectAsync(candidateId, workerId, timestamp, TimeSpan.FromSeconds(30)))
                 {
                     effect = await behaviourEffectRepository.GetByIdAsync(candidateId);
@@ -92,6 +92,7 @@ namespace Efeu.Integration.Services
             if (effect is null)
                 return 0;
 
+            DateTimeOffset executionTime = DateTime.Now;
             try
             {
                 if (effect.Tag == BehaviourEffectTag.Outgoing)
@@ -100,9 +101,9 @@ namespace Efeu.Integration.Services
                     if (effectInstance is null)
                         throw new Exception($"Unknown effect '{effect.Name}'.");
 
-                    EffectExecutionContext context = new EffectExecutionContext(effect.Id, effect.CorrelationId, effect.Times, effect.Data, 
+                    EffectExecutionContext context = new EffectExecutionContext(effect.Id, effect.CorrelationId, executionTime, effect.Times, effect.Data, 
                         (context) => behaviourEffectRepository.CompleteEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, context.Output),
-                        (context) => behaviourEffectRepository.FaultEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, context.Fault));
+                        (context) => behaviourEffectRepository.FaultEffectAndUnlockAsync(workerId, effect.Id, context.Timestamp, context.Fault));
 
                     await effectInstance.RunAsync(context, default);
                 }
@@ -122,7 +123,7 @@ namespace Efeu.Integration.Services
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-                await behaviourEffectRepository.FaultEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, ex.ToString());
+                await behaviourEffectRepository.FaultEffectAndUnlockAsync(workerId, effect.Id, executionTime, ex.ToString());
             }
 
             return 1;

@@ -17,6 +17,8 @@ namespace Efeu.Integration.Foreign
 
         public readonly uint Times;
 
+        public readonly DateTimeOffset Timestamp;
+
         public readonly EfeuValue Input;
 
         public EfeuValue Output;
@@ -27,12 +29,13 @@ namespace Efeu.Integration.Foreign
 
         private readonly Func<EffectExecutionContext, Task> faultAsync;
 
-        public EffectExecutionContext(int id, Guid corellationId, uint times, EfeuValue input, Func<EffectExecutionContext, Task> completeAsync, Func<EffectExecutionContext, Task> faultAsync)
+        public EffectExecutionContext(int id, Guid corellationId, DateTimeOffset timestamp, uint times, EfeuValue input, Func<EffectExecutionContext, Task> completeAsync, Func<EffectExecutionContext, Task> faultAsync)
         {
             Id = id;
             CorellationId = corellationId;
             Times = times;
             Input = input;
+            Timestamp = timestamp;
             this.completeAsync = completeAsync;
             this.faultAsync = faultAsync;
         }
