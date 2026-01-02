@@ -208,7 +208,7 @@ namespace Efeu.Router
         {
             return message.Tag == trigger.MessageTag &&
                    message.Name == trigger.MessageName &&
-                   message.TriggerId == trigger.Id;
+                   message.TriggerId == Guid.Empty || message.TriggerId == trigger.Id;
         }
 
         private void RunSteps(BehaviourDefinitionStep[] steps, string position, BehaviourScope parentScope)

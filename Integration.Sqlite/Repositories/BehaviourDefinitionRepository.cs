@@ -12,9 +12,9 @@ namespace Efeu.Integration.Sqlite.Repositories
 {
     internal class BehaviourDefinitionRepository : IBehaviourDefinitionRepository
     {
-        private readonly SqliteDataConnection connection;
+        private readonly DataConnection connection;
 
-        public BehaviourDefinitionRepository(UnitOfWork unitOfWork, SqliteDataConnection connection) 
+        public BehaviourDefinitionRepository(UnitOfWork unitOfWork, DataConnection connection) 
         { 
             this.connection = connection;
         }

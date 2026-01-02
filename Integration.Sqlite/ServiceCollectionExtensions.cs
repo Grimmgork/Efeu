@@ -15,6 +15,10 @@ using System.Threading.Tasks;
 using Efeu.Integration.Sqlite.Repositories;
 using Efeu.Router;
 using Efeu.Router.Json.Converters;
+using System.Data.SqlClient;
+using System.Data.Common;
+using LinqToDB.DataProvider.SQLite;
+using System.Data.SQLite;
 
 namespace Efeu.Integration.Sqlite
 {
@@ -32,7 +36,7 @@ namespace Efeu.Integration.Sqlite
             return new DataParameter(null, json, DataType.Text);
         }
 
-        private static SqliteDataConnection ConfigureConnection(IServiceProvider services, string connectionString, string schema)
+        private static MappingSchema ConfigureMapping(IServiceProvider services, string schema)
         {
             JsonSerializerOptions jsonOptions = new JsonSerializerOptions();
             jsonOptions.IncludeFields = true;
@@ -116,20 +120,35 @@ namespace Efeu.Integration.Sqlite
 
             builder.Build();
 
-            var options = new DataOptions()
-                .UseSQLite(connectionString)
-                .UseMappingSchema(builder.MappingSchema);
-
-            return new SqliteDataConnection(options);
+            return builder.MappingSchema;
         }
 
-        public static void AddEfeuSqlite(this IServiceCollection services, string connectionString, string schema = "efeu")
+        public static void AddEfeuSqlite(this IServiceCollection services, string schema, string connectionString)
         {
-            services.AddScoped((servicesProvider) => 
-                ConfigureConnection(servicesProvider, connectionString, schema));
+            services.AddScoped((serviceProvider) => {
+                var options = new DataOptions()
+                    .UseSQLite(connectionString)
+                    .UseMappingSchema(ConfigureMapping(serviceProvider, schema));
+                return new DataConnection(options);
+            });
 
-            services.AddScoped((servicesProvider) =>
-                (DataConnection)ConfigureConnection(servicesProvider, connectionString, schema));
+            services.AddScoped<UnitOfWork>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IBehaviourDefinitionRepository, BehaviourDefinitionRepository>();
+            services.AddScoped<IBehaviourTriggerRepository, BehaviourTriggerRepository>();
+            services.AddScoped<IBehaviourEffectRepository, BehaviourEffectRepository>();
+            services.AddScoped<IEfeuMigrationRunner, MigrationRunner>();
+        }
+
+        public static void AddEfeuSqlite(this IServiceCollection services, string schema)
+        {
+            services.AddScoped((serviceProvider) => {
+                var options = new DataOptions()
+                    .UseDataProvider(SQLiteTools.GetDataProvider(ProviderName.SQLite))
+                    .UseConnection(serviceProvider.GetRequiredService<SQLiteConnection>())
+                    .UseMappingSchema(ConfigureMapping(serviceProvider, schema));
+                return new DataConnection(options);
+            });
 
             services.AddScoped<UnitOfWork>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();

@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace Efeu.Integration.Services
 {
@@ -31,7 +32,7 @@ namespace Efeu.Integration.Services
             CancellationToken token = cancellationTokenSource.Token;
 
             List<Task> workers = new List<Task>();
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 5; i++)
             {
                 workers.Add(Task.Run(async () =>
                 {
@@ -72,6 +73,7 @@ namespace Efeu.Integration.Services
             IServiceProvider services = scope.ServiceProvider;
             IBehaviourEffectRepository behaviourEffectRepository = services.GetRequiredService<IBehaviourEffectRepository>();
             IBehaviourEffectCommands behaviourEffectCommands = services.GetRequiredService<IBehaviourEffectCommands>();
+            IUnitOfWork unitOfWork = services.GetRequiredService<IUnitOfWork>();
             EfeuEnvironment environment = services.GetRequiredService<EfeuEnvironment>();
 
             int[] candidateIds = await behaviourEffectRepository.GetRunningEffectsNotLockedAsync(DateTime.Now);
@@ -99,11 +101,11 @@ namespace Efeu.Integration.Services
                     if (effectInstance is null)
                         throw new Exception($"Unknown effect '{effect.Name}'.");
 
-                    // run effect
-                    EffectExecutionContext context = new EffectExecutionContext(effect.Id, effect.CorrelationId, effect.Times, effect.Data);
-                    await effectInstance.RunAsync(context, default);
+                    EffectExecutionContext context = new EffectExecutionContext(effect.Id, effect.CorrelationId, effect.Times, effect.Data, 
+                        (context) => behaviourEffectRepository.CompleteEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, context.Output),
+                        (context) => behaviourEffectRepository.FaultEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, context.Fault));
 
-                    await behaviourEffectRepository.CompleteEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, context.Output, effect.Times + 1);
+                    await effectInstance.RunAsync(context, default);
                 }
                 else
                 {
@@ -115,12 +117,13 @@ namespace Efeu.Integration.Services
                         Data = effect.Data,
                         TriggerId = effect.TriggerId
                     };
-                    await behaviourEffectCommands.ProcessSignal(message, effect.Id);
+                    await behaviourEffectCommands.ProcessSignal(message, Guid.Empty, effect.Id);
                 }
             }
             catch (Exception ex)
             {
-                await behaviourEffectRepository.MarkEffectErrorAndUnlockAsync(workerId, ex.ToString(), effect.Id, effect.Times + 1);
+                Console.WriteLine(ex.ToString());
+                await behaviourEffectRepository.FaultEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, ex.ToString());
             }
 
             return 1;

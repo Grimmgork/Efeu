@@ -16,9 +16,9 @@ namespace Efeu.Integration.Sqlite.Repositories
 {
     internal class BehaviourEffectRepository : IBehaviourEffectRepository
     {
-        private readonly SqliteDataConnection connection;
+        private readonly DataConnection connection;
 
-        public BehaviourEffectRepository(SqliteDataConnection connection)
+        public BehaviourEffectRepository(DataConnection connection)
         {
             this.connection = connection;
         }
@@ -115,21 +115,21 @@ namespace Efeu.Integration.Sqlite.Repositories
                 .ToArrayAsync();
         }
 
-        public Task MarkEffectErrorAndUnlockAsync(Guid lockId, string fault, int id, uint times)
+        public Task FaultEffectAndUnlockAsync(Guid lockId, int id, DateTimeOffset timestamp, string fault)
         {
             return connection.GetTable<BehaviourEffectEntity>()
                 .Where(u => u.Id == id 
                     && u.LockId == lockId
                     && u.State == BehaviourEffectState.Running)
-                .Set(u => u.Times, times)
                 .Set(u => u.State, BehaviourEffectState.Faulted)
+                .Set(u => u.ExecutionTime, timestamp)
                 .Set(u => u.LockId, Guid.Empty)
                 .Set(u => u.LockedUntil, DateTimeOffset.MinValue)
                 .Set(u => u.Fault, fault)
                 .UpdateAsync();
         }
 
-        public Task CompleteEffectAndUnlockAsync(Guid lockId, int id, DateTimeOffset timestamp, EfeuValue output, uint times)
+        public Task CompleteEffectAndUnlockAsync(Guid lockId, int id, DateTimeOffset timestamp, EfeuValue output)
         {
             return connection.GetTable<BehaviourEffectEntity>()
                 .Where(u => u.Id == id
@@ -138,7 +138,6 @@ namespace Efeu.Integration.Sqlite.Repositories
                 .Set(u => u.Tag, BehaviourEffectTag.Incoming)
                 .Set(u => u.Input, output)
                 .Set(u => u.CreationTime, timestamp)
-                .Set(u => u.Times, times)
                 .Set(u => u.LockId, Guid.Empty)
                 .Set(u => u.LockedUntil, DateTimeOffset.MinValue)
                 .UpdateAsync();

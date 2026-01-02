@@ -1,6 +1,8 @@
-﻿using Efeu.Router.Data;
+﻿using Efeu.Integration.Persistence;
+using Efeu.Router.Data;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,12 +21,24 @@ namespace Efeu.Integration.Foreign
 
         public EfeuValue Output;
 
-        public EffectExecutionContext(int id, Guid corellationId, uint times, EfeuValue input)
+        public string Fault = "";  
+
+        private readonly Func<EffectExecutionContext, Task> completeAsync;
+
+        private readonly Func<EffectExecutionContext, Task> faultAsync;
+
+        public EffectExecutionContext(int id, Guid corellationId, uint times, EfeuValue input, Func<EffectExecutionContext, Task> completeAsync, Func<EffectExecutionContext, Task> faultAsync)
         {
             Id = id;
             CorellationId = corellationId;
             Times = times;
             Input = input;
+            this.completeAsync = completeAsync;
+            this.faultAsync = faultAsync;
         }
+
+        public Task CompleteAsync() => completeAsync(this);
+
+        public Task FaultAsync() => faultAsync(this);
     }
 }

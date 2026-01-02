@@ -9,7 +9,7 @@ namespace Efeu.Integration.Persistence
 {
     public interface IUnitOfWork : IAsyncDisposable
     {
-        public Task Do(Func<Task> task);
+        public Task DoAsync(Func<Task> task);
 
         public Task BeginAsync();
 

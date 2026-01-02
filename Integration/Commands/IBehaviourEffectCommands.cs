@@ -23,6 +23,6 @@ namespace Efeu.Integration.Commands
 
         public Task DeleteEffect(int id);
 
-        public Task ProcessSignal(EfeuMessage message, int effectId);
+        public Task ProcessSignal(EfeuMessage message, Guid messageId, int effectId);
     }
 }

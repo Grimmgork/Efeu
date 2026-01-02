@@ -12,9 +12,9 @@ namespace Efeu.Integration.Sqlite.Repositories
 {
     internal class BehaviourTriggerRepository : IBehaviourTriggerRepository
     {
-        private readonly SqliteDataConnection connection;
+        private readonly DataConnection connection;
 
-        public BehaviourTriggerRepository(SqliteDataConnection connection)
+        public BehaviourTriggerRepository(DataConnection connection)
         {
             this.connection = connection;
         }

@@ -3,10 +3,10 @@ using Efeu.Integration.Sqlite;
 using Efeu.Router.Json.Converters;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System.Data.SQLite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,9 +31,17 @@ namespace Efeu.Application
                          options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                      });
 
+            builder.Services.AddScoped((services) =>
+            {
+                SQLiteConnection connection = new SQLiteConnection("Data Source=data.db");
+                connection.Open();
+                return connection;
+            });
+
             builder.Services.AddEfeu();
             builder.Services.AddEfeuDefaultEffects();
-            builder.Services.AddEfeuSqlite("Data Source=data.db");
+            // builder.Services.AddEfeuSqlite("efeu", "Data Source=data.db");
+            builder.Services.AddEfeuSqlite("efeu");
 
             var app = builder.Build();
 

@@ -6,7 +6,6 @@ using Efeu.Router.Json.Converters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Data.Entity.Core.Common.CommandTrees;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;

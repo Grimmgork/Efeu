@@ -21,9 +21,9 @@ namespace Efeu.Integration.Persistence
 
         public Task<BehaviourEffectEntity[]> GetAllAsync();
 
-        public Task MarkEffectErrorAndUnlockAsync(Guid lockId, string fault, int id, uint times);
+        public Task FaultEffectAndUnlockAsync(Guid lockId, int id, DateTimeOffset timestamp, string fault);
 
-        public Task CompleteEffectAndUnlockAsync(Guid lockId, int id, DateTimeOffset timestamp, EfeuValue output, uint times);
+        public Task CompleteEffectAndUnlockAsync(Guid lockId, int id, DateTimeOffset timestamp, EfeuValue output);
 
         public Task<int> SuspendEffectAsync(int id, DateTimeOffset timestamp);
 

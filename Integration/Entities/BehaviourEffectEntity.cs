@@ -21,15 +21,17 @@ namespace Efeu.Integration.Entities
 
         public DateTimeOffset CreationTime;
 
+        public DateTimeOffset ExecutionTime;
+
         public uint Times;
 
         public BehaviourEffectTag Tag;
 
+        public BehaviourEffectState State;
+
         public DateTimeOffset LockedUntil;
 
         public Guid LockId;
-
-        public BehaviourEffectState State;
     }
 
     public enum BehaviourEffectState

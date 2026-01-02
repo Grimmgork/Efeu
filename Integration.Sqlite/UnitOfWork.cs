@@ -13,14 +13,21 @@ namespace Efeu.Integration.Sqlite
 {
     internal class UnitOfWork : IUnitOfWork
     {
-        private readonly SqliteDataConnection connection;
+        private readonly DataConnection connection;
         private bool isTransactionRunning;
-        private readonly Guid lockBundle;
+        private readonly Guid id;
+        private Guid messageId;
 
-        public UnitOfWork(SqliteDataConnection connection)
+        public UnitOfWork(DataConnection connection)
         {
             this.connection = connection;
-            this.lockBundle = Guid.NewGuid();
+            this.id = Guid.NewGuid();
+        }
+
+        public Task BeginAsync(Guid messageId)
+        {
+            this.messageId = messageId;
+            return BeginAsync();
         }
 
         public async Task BeginAsync()
@@ -37,17 +44,32 @@ namespace Efeu.Integration.Sqlite
             if (!isTransactionRunning)
                 throw new Exception("No transaction is running!");
 
-            await connection.GetTable<LockEntity>().DeleteAsync(i => i.Bundle == lockBundle);
-            await connection.CommitTransactionAsync();
-            isTransactionRunning = false;
+            try
+            {
+                await connection.GetTable<LockEntity>().DeleteAsync(i => i.Bundle == id);
+                await connection.CommitTransactionAsync();
+                isTransactionRunning = false;
+            }
+            catch (Exception ex)
+            {
+                isTransactionRunning = false;
+                await connection.CloseAsync();
+                throw new AggregateException("Commit failed, connection closed.", ex);
+            }
         }
 
-        public Task RollbackAsync()
+        public async Task RollbackAsync()
         {
-            if (isTransactionRunning)
-                return connection.RollbackTransactionAsync();
-            else
-                return Task.CompletedTask;
+            try
+            {
+                if (isTransactionRunning)
+                    await connection.RollbackTransactionAsync();
+            }
+            catch (Exception ex)
+            {
+                await connection.CloseAsync();
+                throw new AggregateException("Rollback failed, connection closed.", ex);
+            }
         }
 
         public async Task LockAsync(params string[] locks)
@@ -61,11 +83,11 @@ namespace Efeu.Integration.Sqlite
             }, locks.Select(i => new LockEntity()
             {
                 Name = i,
-                Bundle = lockBundle
+                Bundle = id
             }));
         }
 
-        public async Task Do(Func<Task> task)
+        public async Task DoAsync(Func<Task> task)
         {
             try
             {

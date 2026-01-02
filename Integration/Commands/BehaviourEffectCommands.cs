@@ -4,6 +4,7 @@ using Efeu.Integration.Persistence;
 using Efeu.Integration.Services;
 using Efeu.Router;
 using Efeu.Router.Data;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -94,9 +95,9 @@ namespace Efeu.Integration.Commands
             return behaviourEffectRepository.DeleteEffectAsync(id);
         }
 
-        public Task ProcessSignal(EfeuMessage initialMessage, int effectId = 0)
+        public Task ProcessSignal(EfeuMessage initialMessage, Guid messageId, int effectId = 0)
         {
-            return unitOfWork.Do(async () =>
+            return unitOfWork.DoAsync(async () =>
             {
                 await unitOfWork.LockAsync("Trigger");
 
@@ -114,6 +115,7 @@ namespace Efeu.Integration.Commands
                         if (iterations > 50)
                             throw new Exception($"infinite loop detected! ({iterations} iterations)");
 
+                        message.Tag = EfeuMessageTag.Incoming;
                         await context.ProcessSignalAsync(message);
                     }
                     else
