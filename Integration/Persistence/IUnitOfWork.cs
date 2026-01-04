@@ -10,9 +10,12 @@ namespace Efeu.Integration.Persistence
 {
     public interface IUnitOfWork
     {
-        public Task DoAsync(Func<Task> func);
-
         public Task DoAsync(Func<DbTransaction, Task> func);
+
+        public Task DoAsync(Func<Task> func)
+        {
+            return DoAsync((transaction) => func());
+        }
 
         public Task DoAsync(DbTransaction transaction, Func<Task> func);
 

@@ -8,7 +8,7 @@ namespace Efeu.Integration.Persistence
 {
     public interface IDeduplicationStore
     {
-        public Task<int> InsertAsync(string key, DateTimeOffset timestamp);
+        public Task<int> TryInsertAsync(string key, DateTimeOffset timestamp);
 
         public Task ClearBeforeAsync(DateTimeOffset timestamp);
     }

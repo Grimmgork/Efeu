@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Foreign
 {
-    public interface IEffectProvider
+    public interface IEfeuEffectProvider
     {
         public IEffect? TryGetEffect(string name);
     }

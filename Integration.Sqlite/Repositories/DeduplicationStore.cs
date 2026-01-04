@@ -26,7 +26,7 @@ namespace Efeu.Integration.Sqlite.Repositories
                 .DeleteAsync(i => i.Timestamp < timestamp);
         }
 
-        public async Task<int> InsertAsync(string key, DateTimeOffset timestamp)
+        public async Task<int> TryInsertAsync(string key, DateTimeOffset timestamp)
         {
             if (string.IsNullOrWhiteSpace(key))
                 return 1;

@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Foreign
 {
-    public class EfeuEnvironment
+    public class EfeuEnvironmentA
     {
-        public readonly IEffectProvider EffectProvider;
+        public readonly IEfeuEffectProvider EffectProvider;
 
-        public EfeuEnvironment(IEffectProvider effectProvider)
+        public EfeuEnvironmentA(IEfeuEffectProvider effectProvider)
         {
             this.EffectProvider = effectProvider;
         }

@@ -93,7 +93,7 @@ namespace Efeu.Integration.Services
             IBehaviourEffectRepository behaviourEffectRepository = services.GetRequiredService<IBehaviourEffectRepository>();
             IBehaviourEffectCommands behaviourEffectCommands = services.GetRequiredService<IBehaviourEffectCommands>();
             IUnitOfWork unitOfWork = services.GetRequiredService<IUnitOfWork>();
-            EfeuEnvironment environment = services.GetRequiredService<EfeuEnvironment>();
+            IEfeuEffectProvider effectProvider = services.GetRequiredService<IEfeuEffectProvider>();
 
             int[] candidateIds = await behaviourEffectRepository.GetRunningEffectsNotLockedAsync(DateTime.Now);
             BehaviourEffectEntity? effect = null;
@@ -116,7 +116,7 @@ namespace Efeu.Integration.Services
             {
                 if (effect.Tag == BehaviourEffectTag.Outgoing)
                 {
-                    IEffect? effectInstance = environment.EffectProvider.TryGetEffect(effect.Name);
+                    IEffect? effectInstance = effectProvider.TryGetEffect(effect.Name);
                     if (effectInstance is null)
                         throw new Exception($"Unknown effect '{effect.Name}'.");
 

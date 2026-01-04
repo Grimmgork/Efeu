@@ -22,12 +22,12 @@ namespace Efeu.Integration.Commands
         private readonly IBehaviourTriggerRepository behaviourTriggerRepository;
         private readonly IBehaviourDefinitionRepository behaviourDefinitionRepository;
         private readonly IDeduplicationStore deduplicationStore;
-        private readonly EfeuEnvironment environment;
+        private readonly IEfeuEffectProvider effectProvider;
 
-        public BehaviourEffectCommands(EfeuEnvironment environment, IBehaviourEffectRepository behaviourEffectRepository, IUnitOfWork unitOfWork, IBehaviourTriggerCommands behaviourTriggerCommands, IBehaviourTriggerRepository behaviourTriggerRepository, IBehaviourDefinitionRepository behaviourDefinitionRepository, IDeduplicationStore deduplicationStore)
+        public BehaviourEffectCommands(IEfeuEffectProvider effectProvider, IBehaviourEffectRepository behaviourEffectRepository, IUnitOfWork unitOfWork, IBehaviourTriggerCommands behaviourTriggerCommands, IBehaviourTriggerRepository behaviourTriggerRepository, IBehaviourDefinitionRepository behaviourDefinitionRepository, IDeduplicationStore deduplicationStore)
         {
             this.behaviourEffectRepository = behaviourEffectRepository;
-            this.environment = environment;
+            this.effectProvider = effectProvider;
             this.unitOfWork = unitOfWork;
             this.behaviourTriggerCommands = behaviourTriggerCommands;
             this.behaviourTriggerRepository = behaviourTriggerRepository;
@@ -72,7 +72,7 @@ namespace Efeu.Integration.Commands
                 TriggerId = message.TriggerId,
                 Input = message.Data,
                 State = BehaviourEffectState.Running,
-                Tag = environment.EffectProvider.TryGetEffect(message.Name) == null ?
+                Tag = effectProvider.TryGetEffect(message.Name) == null ?
                      BehaviourEffectTag.Incoming : BehaviourEffectTag.Outgoing
             };
         }
@@ -101,7 +101,7 @@ namespace Efeu.Integration.Commands
         {
             unitOfWork.EnsureTransaction();
             await unitOfWork.LockAsync("Trigger");
-            if (await deduplicationStore.InsertAsync(messageId, timestamp) == 0)
+            if (await deduplicationStore.TryInsertAsync(messageId, timestamp) == 0)
             {
                 return;
             }

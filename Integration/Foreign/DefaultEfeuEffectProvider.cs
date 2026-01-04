@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Foreign
 {
-    internal class DefaultEffectProvider : IEffectProvider
+    internal class DefaultEfeuEffectProvider : IEfeuEffectProvider
     {
         private readonly IServiceProvider services;
 
-        public DefaultEffectProvider(IServiceProvider serviceProvider) {
+        public DefaultEfeuEffectProvider(IServiceProvider serviceProvider) {
             this.services = serviceProvider;
         }
 
