@@ -34,7 +34,6 @@ namespace Efeu.Application
             builder.Services.AddScoped((services) =>
             {
                 SQLiteConnection connection = new SQLiteConnection("Data Source=data.db");
-                connection.Open();
                 return connection;
             });
 

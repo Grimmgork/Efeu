@@ -9,6 +9,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace Efeu.Integration.Sqlite
 {
@@ -33,21 +34,21 @@ namespace Efeu.Integration.Sqlite
             return connection.BeginTransactionAsync();
         }
 
-        private async Task CommitAsync(DbTransaction transaction)
+        private async Task CommitAsync()
         {
             if (connection.Transaction == null)
                 throw new InvalidOperationException("No transaction is running.");
 
-            try
-            {
-                await connection.GetTable<LockEntity>().DeleteAsync(i => i.Bundle == id);
-                await transaction.CommitAsync();
-            }
-            catch (Exception ex)
-            {
-                broken = true;
-                throw new AggregateException("Commit failed.", ex);
-            }
+            await connection.GetTable<LockEntity>().DeleteAsync(i => i.Bundle == id);
+            await connection.Transaction.CommitAsync();
+        }
+
+        private async Task RollbackAsync()
+        {
+            if (connection.Transaction == null)
+                throw new InvalidOperationException("No transaction is running.");
+
+            await connection.Transaction.RollbackAsync();
         }
 
         public async Task LockAsync(params string[] locks)
@@ -62,18 +63,18 @@ namespace Efeu.Integration.Sqlite
             }));
         }
 
-        public ValueTask DisposeAsync()
-        {
-            return connection.DisposeAsync();
-        }
-
         public void EnsureTransaction()
         {
             if (connection.Transaction == null && !hasForeignTransaction)
                 throw new InvalidOperationException("Operation must be run in a transaction.");
         }
 
-        public async Task DoAsync(Func<Task> func)
+        public Task DoAsync(Func<Task> func)
+        {
+            return DoAsync((transaction) => func());
+        }
+
+        public async Task DoAsync(Func<DbTransaction, Task> func)
         {
             if (broken)
                 throw new Exception("cannot reuse a broken uow.");
@@ -81,12 +82,12 @@ namespace Efeu.Integration.Sqlite
             try
             {
                 await BeginAsync();
-                await func();
-                await CommitAsync(connection.Transaction!);
+                await func(connection.Transaction!);
+                await CommitAsync();
             }
             catch (Exception)
             {
-                await connection.RollbackTransactionAsync();
+                await RollbackAsync();
                 broken = true;
                 throw;
             }
@@ -94,20 +95,20 @@ namespace Efeu.Integration.Sqlite
 
         public async Task DoAsync(DbTransaction transaction, Func<Task> func)
         {
-            if (broken)
-                throw new Exception("cannot reuse a broken uow.");
-
             if (transaction.Connection != connection.Connection)
                 throw new Exception("transaction is from another connection.");
 
             if (connection.Transaction != null && connection.Transaction != transaction)
                 throw new Exception("another transaction is already running.");
 
+            if (broken)
+                throw new Exception("cannot reuse a broken uow.");
 
             hasForeignTransaction = true;
             try
             {
                 await func();
+                await connection.GetTable<LockEntity>().DeleteAsync(i => i.Bundle == id);
                 hasForeignTransaction = false;
             }
             catch (Exception)

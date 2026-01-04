@@ -8,9 +8,11 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Persistence
 {
-    public interface IUnitOfWork : IAsyncDisposable
+    public interface IUnitOfWork
     {
         public Task DoAsync(Func<Task> func);
+
+        public Task DoAsync(Func<DbTransaction, Task> func);
 
         public Task DoAsync(DbTransaction transaction, Func<Task> func);
 

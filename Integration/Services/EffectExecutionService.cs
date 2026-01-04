@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -25,6 +26,24 @@ namespace Efeu.Integration.Services
         public EffectExecutionService(IServiceScopeFactory scopeFactory)
         {
             this.scopeFactory = scopeFactory;
+        }
+
+        private async Task Test()
+        {
+            await using var scope = scopeFactory.CreateAsyncScope();
+
+            IServiceProvider services = scope.ServiceProvider;
+            IUnitOfWork unitOfWork = services.GetRequiredService<IUnitOfWork>();
+            IEfeuEngine efeu = services.GetRequiredService<IEfeuEngine>();
+
+            await using DbTransaction transaction = await efeu.UnitOfWork.Connection.BeginTransactionAsync();
+
+            await unitOfWork.DoAsync(async () =>
+            {
+                await unitOfWork.LockAsync("ASDF");
+            });
+
+            await transaction.CommitAsync();
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
