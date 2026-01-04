@@ -14,7 +14,7 @@ namespace Efeu.Integration.Sqlite.Repositories
     {
         private readonly DataConnection connection;
 
-        public BehaviourDefinitionRepository(UnitOfWork unitOfWork, DataConnection connection) 
+        public BehaviourDefinitionRepository(DataConnection connection) 
         { 
             this.connection = connection;
         }

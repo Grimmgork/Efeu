@@ -1,4 +1,5 @@
 ﻿using Efeu.Integration.Entities;
+using Efeu.Integration.Persistence;
 using Efeu.Router;
 using Efeu.Router.Data;
 using System;
@@ -23,6 +24,6 @@ namespace Efeu.Integration.Commands
 
         public Task DeleteEffect(int id);
 
-        public Task ProcessSignal(EfeuMessage message, Guid messageId, int effectId);
+        public Task ProcessSignal(EfeuMessage message, string messageId, DateTimeOffset timestamp, int effectId);
     }
 }

@@ -18,6 +18,7 @@ namespace Efeu.Integration
             services.AddScoped<IBehaviourTriggerCommands, BehaviourTriggerCommands>();
             services.AddScoped<IBehaviourEffectCommands, BehaviourEffectCommands>();
             services.AddScoped<IEffectProvider, DefaultEffectProvider>();
+            services.AddScoped<IEfeuEngine, EfeuEngine>();
             services.AddHostedService<EffectExecutionService>();
             services.AddScoped<EfeuEnvironment>();
         }

@@ -1,0 +1,15 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Efeu.Integration.Persistence
+{
+    public interface IDeduplicationStore
+    {
+        public Task<int> InsertAsync(string key, DateTimeOffset timestamp);
+
+        public Task ClearBeforeAsync(DateTimeOffset timestamp);
+    }
+}

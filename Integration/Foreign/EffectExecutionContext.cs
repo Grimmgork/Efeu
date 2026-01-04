@@ -1,4 +1,5 @@
 ﻿using Efeu.Integration.Persistence;
+using Efeu.Router;
 using Efeu.Router.Data;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,11 @@ namespace Efeu.Integration.Foreign
 
         public EfeuValue Output;
 
-        public string Fault = "";  
+        public string Fault = "";
+
+        public bool IsCompleted => isCompleted;
+
+        private bool isCompleted;
 
         private readonly Func<EffectExecutionContext, Task> completeAsync;
 
@@ -40,7 +45,10 @@ namespace Efeu.Integration.Foreign
             this.faultAsync = faultAsync;
         }
 
-        public Task CompleteAsync() => completeAsync(this);
+        public Task CompleteAsync() => completeAsync(this).ContinueWith((task) => { 
+            isCompleted = true;
+            return Task.CompletedTask;
+        });
 
         public Task FaultAsync() => faultAsync(this);
     }

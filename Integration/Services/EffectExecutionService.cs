@@ -106,6 +106,8 @@ namespace Efeu.Integration.Services
                         (context) => behaviourEffectRepository.FaultEffectAndUnlockAsync(workerId, effect.Id, context.Timestamp, context.Fault));
 
                     await effectInstance.RunAsync(context, default);
+                    if (!context.IsCompleted)
+                        await behaviourEffectRepository.CompleteEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, context.Output);
                 }
                 else
                 {
@@ -117,7 +119,9 @@ namespace Efeu.Integration.Services
                         Data = effect.Data,
                         TriggerId = effect.TriggerId
                     };
-                    await behaviourEffectCommands.ProcessSignal(message, Guid.Empty, effect.Id);
+
+                    await unitOfWork.DoAsync(() =>
+                        behaviourEffectCommands.ProcessSignal(message, "", DateTime.Now, effect.Id));
                 }
             }
             catch (Exception ex)

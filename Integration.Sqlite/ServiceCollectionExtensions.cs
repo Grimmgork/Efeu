@@ -116,7 +116,17 @@ namespace Efeu.Integration.Sqlite
                 .Property(p => p.Name)
                     .IsIdentity()
                     .IsPrimaryKey()
+                    .HasSkipOnInsert(false)
                 .Property(p => p.Bundle);
+
+            builder.Entity<DeduplicationKeyEntity>()
+                .HasTableName("DeduplicationKey")
+                .HasSchemaName(schema)
+                .Property(p => p.Key)
+                    .IsIdentity()
+                    .IsPrimaryKey()
+                    .HasSkipOnInsert(false)
+                .Property(p => p.Timestamp);
 
             builder.Build();
 
@@ -132,12 +142,7 @@ namespace Efeu.Integration.Sqlite
                 return new DataConnection(options);
             });
 
-            services.AddScoped<UnitOfWork>();
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
-            services.AddScoped<IBehaviourDefinitionRepository, BehaviourDefinitionRepository>();
-            services.AddScoped<IBehaviourTriggerRepository, BehaviourTriggerRepository>();
-            services.AddScoped<IBehaviourEffectRepository, BehaviourEffectRepository>();
-            services.AddScoped<IEfeuMigrationRunner, MigrationRunner>();
+            services.AddEfeuSqliteServices();
         }
 
         public static void AddEfeuSqlite(this IServiceCollection services, string schema)
@@ -150,12 +155,18 @@ namespace Efeu.Integration.Sqlite
                 return new DataConnection(options);
             });
 
+            services.AddEfeuSqliteServices();
+        }
+
+        private static void AddEfeuSqliteServices(this IServiceCollection services)
+        {
             services.AddScoped<UnitOfWork>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IBehaviourDefinitionRepository, BehaviourDefinitionRepository>();
             services.AddScoped<IBehaviourTriggerRepository, BehaviourTriggerRepository>();
             services.AddScoped<IBehaviourEffectRepository, BehaviourEffectRepository>();
             services.AddScoped<IEfeuMigrationRunner, MigrationRunner>();
+            services.AddScoped<IDeduplicationStore, DeduplicationStore>();
         }
     }
 }

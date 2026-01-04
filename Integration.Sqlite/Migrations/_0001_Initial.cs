@@ -25,6 +25,7 @@ namespace Efeu.Integration.Sqlite.Migrations
             await connection.ExecuteAsync("CREATE TABLE Trigger (Id TEXT PRIMARY KEY, DefinitionVersionId INTEGER, CorrelationId TEXT, Position TEXT, Scope TEXT, MessageName TEXT, MessageTag TEXT, EffectId INTEGER, FOREIGN KEY(DefinitionVersionId) REFERENCES DefinitionVersion(Id))");
             await connection.ExecuteAsync("CREATE TABLE Effect (Id INTEGER PRIMARY KEY, Name TEXT, CorrelationId TEXT, TriggerId TEXT, Input TEXT, Data TEXT, CreationTime INTEGER, State TEXT, Times INTEGER, ExecutionTime INTEGER, Fault TEXT, Tag INTEGER, LockId TEXT, LockedUntil INTEGER)");
             await connection.ExecuteAsync("CREATE TABLE Lock (Name TEXT PRIMARY KEY, Bundle TEXT)");
+            await connection.ExecuteAsync("CREATE TABLE DeduplicationKey (Key TEXT PRIMARY KEY, Timestamp INTEGER)");
         }
 
         public async Task Down()
@@ -33,6 +34,8 @@ namespace Efeu.Integration.Sqlite.Migrations
             await connection.ExecuteAsync("DROP TABLE Definition");
             await connection.ExecuteAsync("DROP TABLE Trigger");
             await connection.ExecuteAsync("DROP TABLE Effect");
+            await connection.ExecuteAsync("DROP TABLE Lock");
+            await connection.ExecuteAsync("DROP TABLE DeduplicationKey");
         }
     }
 }

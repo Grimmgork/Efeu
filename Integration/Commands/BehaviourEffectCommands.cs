@@ -21,9 +21,10 @@ namespace Efeu.Integration.Commands
         private readonly IBehaviourTriggerCommands behaviourTriggerCommands;
         private readonly IBehaviourTriggerRepository behaviourTriggerRepository;
         private readonly IBehaviourDefinitionRepository behaviourDefinitionRepository;
+        private readonly IDeduplicationStore deduplicationStore;
         private readonly EfeuEnvironment environment;
 
-        public BehaviourEffectCommands(EfeuEnvironment environment, IBehaviourEffectRepository behaviourEffectRepository, IUnitOfWork unitOfWork, IBehaviourTriggerCommands behaviourTriggerCommands, IBehaviourTriggerRepository behaviourTriggerRepository, IBehaviourDefinitionRepository behaviourDefinitionRepository)
+        public BehaviourEffectCommands(EfeuEnvironment environment, IBehaviourEffectRepository behaviourEffectRepository, IUnitOfWork unitOfWork, IBehaviourTriggerCommands behaviourTriggerCommands, IBehaviourTriggerRepository behaviourTriggerRepository, IBehaviourDefinitionRepository behaviourDefinitionRepository, IDeduplicationStore deduplicationStore)
         {
             this.behaviourEffectRepository = behaviourEffectRepository;
             this.environment = environment;
@@ -31,6 +32,7 @@ namespace Efeu.Integration.Commands
             this.behaviourTriggerCommands = behaviourTriggerCommands;
             this.behaviourTriggerRepository = behaviourTriggerRepository;
             this.behaviourDefinitionRepository = behaviourDefinitionRepository;
+            this.deduplicationStore = deduplicationStore;
         }
 
         public Task CreateEffect(DateTimeOffset timestamp, string name, BehaviourEffectTag tag, EfeuValue input, Guid triggerId, Guid correlationId)
@@ -95,41 +97,43 @@ namespace Efeu.Integration.Commands
             return behaviourEffectRepository.DeleteEffectAsync(id);
         }
 
-        public Task ProcessSignal(EfeuMessage initialMessage, Guid messageId, int effectId = 0)
+        public async Task ProcessSignal(EfeuMessage initialMessage, string messageId, DateTimeOffset timestamp, int effectId = 0)
         {
-            return unitOfWork.DoAsync(async () =>
+            unitOfWork.EnsureTransaction();
+            await unitOfWork.LockAsync("Trigger");
+            if (await deduplicationStore.InsertAsync(messageId, timestamp) == 0)
             {
-                await unitOfWork.LockAsync("Trigger");
+                return;
+            }
 
-                SignalProcessingContext context = new SignalProcessingContext(behaviourTriggerRepository, behaviourDefinitionRepository, DateTime.Now);
-                await context.ProcessSignalAsync(initialMessage);
+            SignalProcessingContext context = new SignalProcessingContext(behaviourTriggerRepository, behaviourDefinitionRepository, DateTime.Now);
+            await context.ProcessSignalAsync(initialMessage);
 
-                int iterations = 0;
-                List<BehaviourEffectEntity> effects = [];
-                while (context.Messages.TryPop(out EfeuMessage? message)) // handle produced messages
+            int iterations = 0;
+            List<BehaviourEffectEntity> effects = [];
+            while (context.Messages.TryPop(out EfeuMessage? message)) // handle produced messages
+            {
+                BehaviourEffectEntity effectEntity = GetEffectFromOutgoingMessage(message, context.Timestamp);
+                if (effectEntity.Tag == BehaviourEffectTag.Incoming)
                 {
-                    BehaviourEffectEntity effectEntity = GetEffectFromOutgoingMessage(message, context.Timestamp);
-                    if (effectEntity.Tag == BehaviourEffectTag.Incoming)
-                    {
-                        iterations++;
-                        if (iterations > 50)
-                            throw new Exception($"infinite loop detected! ({iterations} iterations)");
+                    iterations++;
+                    if (iterations > 50)
+                        throw new Exception($"infinite loop detected! ({iterations} iterations)");
 
-                        message.Tag = EfeuMessageTag.Incoming;
-                        await context.ProcessSignalAsync(message);
-                    }
-                    else
-                    {
-                        effects.Add(effectEntity);
-                    }
+                    message.Tag = EfeuMessageTag.Incoming;
+                    await context.ProcessSignalAsync(message);
                 }
+                else
+                {
+                    effects.Add(effectEntity);
+                }
+            }
 
-                await behaviourTriggerCommands.CreateBulkAsync(context.Triggers.ToArray());
-                await behaviourTriggerCommands.DeleteBulkAsync(context.DeletedTriggers.ToArray());
-                await behaviourEffectRepository.CreateBulkAsync(effects.ToArray());
-                if (effectId != 0)
-                    await behaviourEffectRepository.DeleteCompletedSignalAsync(effectId);
-            });
+            await behaviourTriggerCommands.CreateBulkAsync(context.Triggers.ToArray());
+            await behaviourTriggerCommands.DeleteBulkAsync(context.DeletedTriggers.ToArray());
+            await behaviourEffectRepository.CreateBulkAsync(effects.ToArray());
+            if (effectId != 0)
+                await behaviourEffectRepository.DeleteCompletedSignalAsync(effectId);
         }
     }
 }

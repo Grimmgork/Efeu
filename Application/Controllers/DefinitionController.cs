@@ -86,10 +86,10 @@ namespace Efeu.Application.Controllers
 
             BehaviourDefinitionStep[] steps = JsonSerializer.Deserialize<BehaviourDefinitionStep[]>(file.OpenReadStream(), options);
 
-            await unitOfWork.BeginAsync();
-            await workflowDefinitionCommands.PublishVersionAsync(id, steps);
-            await unitOfWork.CommitAsync();
-
+            await unitOfWork.DoAsync(async () => {
+                await workflowDefinitionCommands.PublishVersionAsync(id, steps);
+            });
+            
             Response.Headers["HX-Redirect"] = Url.Action($"{id}");
             return Ok();
         }
