@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Persistence
 {
-    public interface IUnitOfWork
+    public interface IEfeuUnitOfWork
     {
         public Task DoAsync(Func<DbTransaction, Task> func);
 
@@ -23,6 +23,6 @@ namespace Efeu.Integration.Persistence
 
         public Task LockAsync(params string[] locks);
 
-        public DbConnection Connection { get; }
+        public DbConnection GetConnection();
     }
 }

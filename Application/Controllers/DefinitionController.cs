@@ -17,9 +17,9 @@ namespace Efeu.Application.Controllers
     {
         private readonly IBehaviourDefinitionCommands workflowDefinitionCommands;
         private readonly IBehaviourDefinitionRepository workflowDefinitionRepository;
-        private readonly IUnitOfWork unitOfWork;
+        private readonly IEfeuUnitOfWork unitOfWork;
 
-        public DefinitionController(IBehaviourDefinitionCommands workflowDefinitionCommands, IBehaviourDefinitionRepository workflowDefinitionRepository, IUnitOfWork unitOfWork)
+        public DefinitionController(IBehaviourDefinitionCommands workflowDefinitionCommands, IBehaviourDefinitionRepository workflowDefinitionRepository, IEfeuUnitOfWork unitOfWork)
         {
             this.workflowDefinitionCommands = workflowDefinitionCommands;
             this.workflowDefinitionRepository = workflowDefinitionRepository;

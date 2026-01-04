@@ -13,7 +13,7 @@ using System.Transactions;
 
 namespace Efeu.Integration.Sqlite
 {
-    internal class UnitOfWork : IUnitOfWork
+    internal class EfeuUnitOfWork : IEfeuUnitOfWork
     {
         private readonly DataConnection connection;
         private readonly Guid id;
@@ -21,9 +21,7 @@ namespace Efeu.Integration.Sqlite
         private bool hasForeignTransaction;
         private bool broken;
 
-        public DbConnection Connection => connection.Connection;
-
-        public UnitOfWork(DataConnection connection)
+        public EfeuUnitOfWork(DataConnection connection)
         {
             this.connection = connection;
             this.id = Guid.NewGuid();
@@ -50,6 +48,9 @@ namespace Efeu.Integration.Sqlite
 
             await connection.Transaction.RollbackAsync();
         }
+
+        public DbConnection GetConnection() => 
+            connection.Connection;
 
         public async Task LockAsync(params string[] locks)
         {

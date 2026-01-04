@@ -15,7 +15,7 @@ namespace Efeu.Integration.Commands
 {
     internal class BehaviourEffectCommands : IBehaviourEffectCommands
     {
-        private readonly IUnitOfWork unitOfWork;
+        private readonly IEfeuUnitOfWork unitOfWork;
         private readonly IBehaviourEffectRepository behaviourEffectRepository;
 
         private readonly IBehaviourTriggerCommands behaviourTriggerCommands;
@@ -24,7 +24,7 @@ namespace Efeu.Integration.Commands
         private readonly IDeduplicationStore deduplicationStore;
         private readonly IEfeuEffectProvider effectProvider;
 
-        public BehaviourEffectCommands(IEfeuEffectProvider effectProvider, IBehaviourEffectRepository behaviourEffectRepository, IUnitOfWork unitOfWork, IBehaviourTriggerCommands behaviourTriggerCommands, IBehaviourTriggerRepository behaviourTriggerRepository, IBehaviourDefinitionRepository behaviourDefinitionRepository, IDeduplicationStore deduplicationStore)
+        public BehaviourEffectCommands(IEfeuEffectProvider effectProvider, IBehaviourEffectRepository behaviourEffectRepository, IEfeuUnitOfWork unitOfWork, IBehaviourTriggerCommands behaviourTriggerCommands, IBehaviourTriggerRepository behaviourTriggerRepository, IBehaviourDefinitionRepository behaviourDefinitionRepository, IDeduplicationStore deduplicationStore)
         {
             this.behaviourEffectRepository = behaviourEffectRepository;
             this.effectProvider = effectProvider;

@@ -160,8 +160,8 @@ namespace Efeu.Integration.Sqlite
 
         private static void AddEfeuSqliteServices(this IServiceCollection services)
         {
-            services.AddScoped<UnitOfWork>();
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<EfeuUnitOfWork>();
+            services.AddScoped<IEfeuUnitOfWork, EfeuUnitOfWork>();
             services.AddScoped<IBehaviourDefinitionRepository, BehaviourDefinitionRepository>();
             services.AddScoped<IBehaviourTriggerRepository, BehaviourTriggerRepository>();
             services.AddScoped<IBehaviourEffectRepository, BehaviourEffectRepository>();

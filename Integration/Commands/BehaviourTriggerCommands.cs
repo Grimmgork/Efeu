@@ -11,10 +11,10 @@ namespace Efeu.Integration.Commands
 {
     internal class BehaviourTriggerCommands : IBehaviourTriggerCommands
     {
-        private readonly IUnitOfWork unitOfWork;
+        private readonly IEfeuUnitOfWork unitOfWork;
         private readonly IBehaviourTriggerRepository behaviourTriggerRepository;
 
-        public BehaviourTriggerCommands(IUnitOfWork unitOfWork, IBehaviourTriggerRepository behaviourTriggerRepository)
+        public BehaviourTriggerCommands(IEfeuUnitOfWork unitOfWork, IBehaviourTriggerRepository behaviourTriggerRepository)
         {
             this.unitOfWork = unitOfWork;
             this.behaviourTriggerRepository = behaviourTriggerRepository;

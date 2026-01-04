@@ -11,8 +11,10 @@ namespace Efeu.Integration.Foreign
 {
     public interface IEfeuEngine
     {
-        public IUnitOfWork UnitOfWork { get; }
+        public IEfeuUnitOfWork UnitOfWork { get; }
 
         public Task SendSignalAsync(EfeuMessage message, DateTimeOffset timestamp, string deduplication);
+
+        public Task ClearDeduplicationKeysBeforeAsync(DateTimeOffset until);
     }
 }

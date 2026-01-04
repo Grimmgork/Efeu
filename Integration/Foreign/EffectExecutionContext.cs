@@ -22,11 +22,12 @@ namespace Efeu.Integration.Foreign
 
         public readonly EfeuValue Input;
 
+        public bool IsCompleted => isCompleted;
+
         public EfeuValue Output;
 
         public string Fault = "";
 
-        public bool IsCompleted => isCompleted;
 
         private bool isCompleted;
 

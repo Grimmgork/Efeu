@@ -33,10 +33,10 @@ namespace Efeu.Integration.Services
             await using var scope = scopeFactory.CreateAsyncScope();
 
             IServiceProvider services = scope.ServiceProvider;
-            IUnitOfWork unitOfWork = services.GetRequiredService<IUnitOfWork>();
+            IEfeuUnitOfWork unitOfWork = services.GetRequiredService<IEfeuUnitOfWork>();
             IEfeuEngine efeu = services.GetRequiredService<IEfeuEngine>();
 
-            await using DbTransaction transaction = await efeu.UnitOfWork.Connection.BeginTransactionAsync();
+            await using DbTransaction transaction = await efeu.UnitOfWork.GetConnection().BeginTransactionAsync();
 
             await unitOfWork.DoAsync(async () =>
             {
@@ -92,7 +92,7 @@ namespace Efeu.Integration.Services
             IServiceProvider services = scope.ServiceProvider;
             IBehaviourEffectRepository behaviourEffectRepository = services.GetRequiredService<IBehaviourEffectRepository>();
             IBehaviourEffectCommands behaviourEffectCommands = services.GetRequiredService<IBehaviourEffectCommands>();
-            IUnitOfWork unitOfWork = services.GetRequiredService<IUnitOfWork>();
+            IEfeuUnitOfWork unitOfWork = services.GetRequiredService<IEfeuUnitOfWork>();
             IEfeuEffectProvider effectProvider = services.GetRequiredService<IEfeuEffectProvider>();
 
             int[] candidateIds = await behaviourEffectRepository.GetRunningEffectsNotLockedAsync(DateTime.Now);

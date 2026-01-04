@@ -20,7 +20,7 @@ namespace Efeu.Integration.Foreign
 
         public async Task RunAsync(EffectExecutionContext context, CancellationToken token)
         {
-            await using DbTransaction transaction = await efeu.UnitOfWork.Connection.BeginTransactionAsync();
+            await using DbTransaction transaction = await efeu.UnitOfWork.GetConnection().BeginTransactionAsync();
             Console.WriteLine(context.Input);
 
             await efeu.UnitOfWork.DoAsync(transaction, () => 
