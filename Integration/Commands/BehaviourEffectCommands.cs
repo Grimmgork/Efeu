@@ -66,7 +66,7 @@ namespace Efeu.Integration.Commands
 
             return new BehaviourEffectEntity()
             {
-                Id = 0,
+                Id = 0, // message.Id
                 CreationTime = timestamp,
                 Name = message.Name,
                 TriggerId = message.TriggerId,
@@ -97,16 +97,16 @@ namespace Efeu.Integration.Commands
             return behaviourEffectRepository.DeleteEffectAsync(id);
         }
 
-        public async Task ProcessSignal(EfeuMessage initialMessage, string messageId, DateTimeOffset timestamp, int effectId = 0)
+        public async Task ProcessSignal(EfeuMessage initialMessage, Guid messageId, DateTimeOffset timestamp)
         {
             unitOfWork.EnsureTransaction();
             await unitOfWork.LockAsync("Trigger");
-            if (await deduplicationStore.TryInsertAsync(messageId, timestamp) == 0)
+            if (await deduplicationStore.TryInsertAsync(messageId.ToString(), timestamp) == 0)
             {
                 return;
             }
 
-            SignalProcessingContext context = new SignalProcessingContext(behaviourTriggerRepository, behaviourDefinitionRepository, DateTime.Now);
+            SignalProcessingContext context = new SignalProcessingContext(behaviourTriggerRepository, behaviourDefinitionRepository, timestamp);
             await context.ProcessSignalAsync(initialMessage);
 
             int iterations = 0;
@@ -129,11 +129,9 @@ namespace Efeu.Integration.Commands
                 }
             }
 
-            await behaviourTriggerCommands.CreateBulkAsync(context.Triggers.ToArray());
+            await behaviourTriggerCommands.CreateBulkAsync(context.Triggers.ToArray(), context.Timestamp);
             await behaviourTriggerCommands.DeleteBulkAsync(context.DeletedTriggers.ToArray());
             await behaviourEffectRepository.CreateBulkAsync(effects.ToArray());
-            if (effectId != 0)
-                await behaviourEffectRepository.DeleteCompletedSignalAsync(effectId);
         }
     }
 }

@@ -26,9 +26,9 @@ namespace Efeu.Integration.Foreign
 
         public IEfeuUnitOfWork UnitOfWork => unitOfWork;
 
-        public Task SendSignalAsync(EfeuMessage message, DateTimeOffset timestamp, string deduplicationKey)
+        public Task ProcessSignalAsync(EfeuMessage message, Guid messageId, DateTimeOffset timestamp)
         {
-            return behaviourEffectCommands.ProcessSignal(message, deduplicationKey, timestamp, 0);
+            return behaviourEffectCommands.ProcessSignal(message, messageId, timestamp);
         }
 
         public Task ClearDeduplicationKeysBeforeAsync(DateTimeOffset before)

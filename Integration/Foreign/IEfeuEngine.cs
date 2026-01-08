@@ -13,7 +13,7 @@ namespace Efeu.Integration.Foreign
     {
         public IEfeuUnitOfWork UnitOfWork { get; }
 
-        public Task SendSignalAsync(EfeuMessage message, DateTimeOffset timestamp, string deduplication);
+        public Task ProcessSignalAsync(EfeuMessage message, Guid messageId, DateTimeOffset timestamp);
 
         public Task ClearDeduplicationKeysBeforeAsync(DateTimeOffset until);
     }

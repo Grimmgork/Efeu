@@ -20,12 +20,12 @@ namespace Efeu.Integration.Commands
             this.behaviourTriggerRepository = behaviourTriggerRepository;
         }
 
-        public Task CreateAsync(BehaviourTrigger trigger)
+        public Task CreateAsync(BehaviourTrigger trigger, DateTimeOffset timestamp)
         {
-            return CreateBulkAsync([trigger]);
+            return CreateBulkAsync([trigger], timestamp);
         }
 
-        public Task CreateBulkAsync(BehaviourTrigger[] triggers)
+        public Task CreateBulkAsync(BehaviourTrigger[] triggers, DateTimeOffset timestamp)
         {
             List<BehaviourTriggerEntity> entites = new List<BehaviourTriggerEntity>();
             foreach (BehaviourTrigger trigger in triggers)
@@ -39,6 +39,7 @@ namespace Efeu.Integration.Commands
                     Scope = trigger.Scope,
                     MessageName = trigger.MessageName,
                     MessageTag = trigger.MessageTag,
+                    CreationTime = timestamp
                 });
             }
 

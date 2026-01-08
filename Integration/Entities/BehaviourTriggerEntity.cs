@@ -11,6 +11,8 @@ namespace Efeu.Integration.Entities
     {
         public Guid Id;
 
+        public DateTimeOffset CreationTime;
+
         public int DefinitionVersionId;
 
         public Guid CorrelationId;

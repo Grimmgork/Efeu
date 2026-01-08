@@ -22,35 +22,17 @@ namespace Efeu.Integration.Foreign
 
         public readonly EfeuValue Input;
 
-        public bool IsCompleted => isCompleted;
-
         public EfeuValue Output;
 
         public string Fault = "";
 
-
-        private bool isCompleted;
-
-        private readonly Func<EffectExecutionContext, Task> completeAsync;
-
-        private readonly Func<EffectExecutionContext, Task> faultAsync;
-
-        public EffectExecutionContext(int id, Guid corellationId, DateTimeOffset timestamp, uint times, EfeuValue input, Func<EffectExecutionContext, Task> completeAsync, Func<EffectExecutionContext, Task> faultAsync)
+        public EffectExecutionContext(int id, Guid corellationId, DateTimeOffset timestamp, uint times, EfeuValue input)
         {
             Id = id;
             CorellationId = corellationId;
             Times = times;
             Input = input;
             Timestamp = timestamp;
-            this.completeAsync = completeAsync;
-            this.faultAsync = faultAsync;
         }
-
-        public Task CompleteAsync() => completeAsync(this).ContinueWith((task) => { 
-            isCompleted = true;
-            return Task.CompletedTask;
-        });
-
-        public Task FaultAsync() => faultAsync(this);
     }
 }

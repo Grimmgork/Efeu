@@ -15,11 +15,10 @@ namespace Efeu.Integration.Sqlite
 {
     internal class EfeuUnitOfWork : IEfeuUnitOfWork
     {
-        private readonly DataConnection connection;
         private readonly Guid id;
 
-        private bool hasForeignTransaction;
-        private bool broken;
+        private TransactionScope? scope;
+        private DataConnection connection;
 
         public EfeuUnitOfWork(DataConnection connection)
         {
@@ -27,33 +26,30 @@ namespace Efeu.Integration.Sqlite
             this.id = Guid.NewGuid();
         }
 
-        private Task BeginAsync()
+        public Task BeginAsync()
         {
-            return connection.BeginTransactionAsync();
+            if (scope != null)
+                throw new InvalidOperationException("A transaction is already running.");
+
+            scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+            return Task.CompletedTask;
         }
 
-        private async Task CommitAsync()
+        public async Task CompleteAsync()
         {
-            if (connection.Transaction == null)
+            if (scope == null)
                 throw new InvalidOperationException("No transaction is running.");
 
             await connection.GetTable<LockEntity>().DeleteAsync(i => i.Bundle == id);
-            await connection.Transaction.CommitAsync();
+            scope?.Complete();
+            scope?.Dispose();
         }
-
-        private async Task RollbackAsync()
-        {
-            if (connection.Transaction == null)
-                throw new InvalidOperationException("No transaction is running.");
-
-            await connection.Transaction.RollbackAsync();
-        }
-
-        public DbConnection GetConnection() => 
-            connection.Connection;
 
         public async Task LockAsync(params string[] locks)
         {
+            if (scope == null)
+                throw new InvalidOperationException("No transaction is running.");
+
             await connection.BulkCopyAsync(new BulkCopyOptions()
             {
                 BulkCopyType = BulkCopyType.MultipleRows
@@ -66,58 +62,22 @@ namespace Efeu.Integration.Sqlite
 
         public void EnsureTransaction()
         {
-            if (connection.Transaction == null && !hasForeignTransaction)
-                throw new InvalidOperationException("Operation must be run in a transaction.");
+            if (scope == null)
+                throw new InvalidOperationException("No transaction is running.");
         }
 
-        public Task DoAsync(Func<Task> func)
+        public async Task DoAsync(Func<Task> func)
         {
-            return DoAsync((transaction) => func());
+            await BeginAsync();
+            await func();
+            await CompleteAsync();
         }
 
-        public async Task DoAsync(Func<DbTransaction, Task> func)
+        public ValueTask DisposeAsync()
         {
-            if (broken)
-                throw new Exception("cannot reuse a broken uow.");
-
-            try
-            {
-                await BeginAsync();
-                await func(connection.Transaction!);
-                await CommitAsync();
-            }
-            catch (Exception)
-            {
-                await RollbackAsync();
-                broken = true;
-                throw;
-            }
-        }
-
-        public async Task DoAsync(DbTransaction transaction, Func<Task> func)
-        {
-            if (transaction.Connection != connection.Connection)
-                throw new Exception("transaction is from another connection.");
-
-            if (connection.Transaction != null && connection.Transaction != transaction)
-                throw new Exception("another transaction is already running.");
-
-            if (broken)
-                throw new Exception("cannot reuse a broken uow.");
-
-            hasForeignTransaction = true;
-            try
-            {
-                await func();
-                await connection.GetTable<LockEntity>().DeleteAsync(i => i.Bundle == id);
-                hasForeignTransaction = false;
-            }
-            catch (Exception)
-            {
-                hasForeignTransaction = false;
-                broken = true;
-                throw;
-            }
+            Transaction.Current?.Rollback();
+            scope?.Dispose();
+            return ValueTask.CompletedTask;
         }
     }
 }

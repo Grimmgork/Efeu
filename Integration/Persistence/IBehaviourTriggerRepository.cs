@@ -14,7 +14,7 @@ namespace Efeu.Integration.Persistence
 
         public Task<IEnumerable<BehaviourTriggerEntity>> GetAllActiveAsync();
 
-        public Task<BehaviourTriggerEntity[]> GetMatchingAsync(string name, EfeuMessageTag tag, Guid triggerId);
+        public Task<BehaviourTriggerEntity[]> GetMatchingAsync(string name, EfeuMessageTag tag, Guid triggerId, DateTimeOffset timestamp);
 
         public Task<int> CreateAsync(BehaviourTriggerEntity trigger);
 

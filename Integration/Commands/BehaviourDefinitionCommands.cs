@@ -58,8 +58,9 @@ namespace Efeu.Integration.Commands
 
             BehaviourRuntime runtime = BehaviourRuntime.Run(steps, Guid.NewGuid(), newDefinitionVersionId);
 
-            await behaviourTriggerCommands.CreateBulkAsync(runtime.Triggers.ToArray());
-            await behaviourEffectCommands.CreateEffectsBulk(runtime.Messages.ToArray(), DateTime.Now);
+            DateTimeOffset timestamp = DateTime.Now;
+            await behaviourTriggerCommands.CreateBulkAsync(runtime.Triggers.ToArray(), timestamp);
+            await behaviourEffectCommands.CreateEffectsBulk(runtime.Messages.ToArray(), timestamp);
 
             return newDefinitionVersionId;
         }

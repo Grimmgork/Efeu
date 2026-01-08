@@ -8,21 +8,16 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Persistence
 {
-    public interface IEfeuUnitOfWork
+    public interface IEfeuUnitOfWork : IAsyncDisposable
     {
-        public Task DoAsync(Func<DbTransaction, Task> func);
+        public Task DoAsync(Func<Task> func);
 
-        public Task DoAsync(Func<Task> func)
-        {
-            return DoAsync((transaction) => func());
-        }
+        public Task BeginAsync();
 
-        public Task DoAsync(DbTransaction transaction, Func<Task> func);
+        public Task CompleteAsync();
 
         public void EnsureTransaction();
 
         public Task LockAsync(params string[] locks);
-
-        public DbConnection GetConnection();
     }
 }

@@ -36,14 +36,10 @@ namespace Efeu.Integration.Services
             IEfeuUnitOfWork unitOfWork = services.GetRequiredService<IEfeuUnitOfWork>();
             IEfeuEngine efeu = services.GetRequiredService<IEfeuEngine>();
 
-            await using DbTransaction transaction = await efeu.UnitOfWork.GetConnection().BeginTransactionAsync();
-
             await unitOfWork.DoAsync(async () =>
             {
-                await unitOfWork.LockAsync("ASDF");
+                await efeu.ProcessSignalAsync(new EfeuMessage(), Guid.NewGuid(), DateTime.Now);
             });
-
-            await transaction.CommitAsync();
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -87,6 +83,10 @@ namespace Efeu.Integration.Services
 
         private async Task<int> ExecuteEffect(Guid workerId, CancellationToken token)
         {
+            BehaviourEffectEntity? effect = await FindAndLockEffect(workerId, token);
+            if (effect is null)
+                return 0;
+
             await using var scope = scopeFactory.CreateAsyncScope();
 
             IServiceProvider services = scope.ServiceProvider;
@@ -94,6 +94,53 @@ namespace Efeu.Integration.Services
             IBehaviourEffectCommands behaviourEffectCommands = services.GetRequiredService<IBehaviourEffectCommands>();
             IEfeuUnitOfWork unitOfWork = services.GetRequiredService<IEfeuUnitOfWork>();
             IEfeuEffectProvider effectProvider = services.GetRequiredService<IEfeuEffectProvider>();
+
+            DateTimeOffset executionTime = DateTime.Now;
+            await unitOfWork.BeginAsync();
+            try
+            {
+                if (effect.Tag == BehaviourEffectTag.Outgoing)
+                {
+                    IEffect? effectInstance = effectProvider.TryGetEffect(effect.Name);
+                    if (effectInstance is null)
+                        throw new Exception($"Unknown effect '{effect.Name}'.");
+
+                    EffectExecutionContext context = new EffectExecutionContext(effect.Id, effect.CorrelationId, executionTime, effect.Times, effect.Data);
+
+                    await effectInstance.RunAsync(context, token);
+                    await behaviourEffectRepository.CompleteEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, context.Output);
+                }
+                else
+                {
+                    EfeuMessage message = new EfeuMessage()
+                    {
+                        Tag = EfeuMessageTag.Incoming,
+                        Name = effect.Name,
+                        CorrelationId = effect.CorrelationId,
+                        Data = effect.Data,
+                        TriggerId = effect.TriggerId
+                    };
+
+                    await behaviourEffectCommands.ProcessSignal(message, Guid.NewGuid(), DateTime.Now);
+                    await behaviourEffectRepository.DeleteCompletedSignalAsync(effect.Id);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                await behaviourEffectRepository.FaultEffectAndUnlockAsync(workerId, effect.Id, executionTime, ex.ToString());
+            }
+
+            await unitOfWork.CompleteAsync();
+            return 1;
+        }
+
+        private async Task<BehaviourEffectEntity?> FindAndLockEffect(Guid workerId, CancellationToken token)
+        {
+            await using var scope = scopeFactory.CreateAsyncScope();
+
+            IServiceProvider services = scope.ServiceProvider;
+            IBehaviourEffectRepository behaviourEffectRepository = services.GetRequiredService<IBehaviourEffectRepository>();
 
             int[] candidateIds = await behaviourEffectRepository.GetRunningEffectsNotLockedAsync(DateTime.Now);
             BehaviourEffectEntity? effect = null;
@@ -108,48 +155,7 @@ namespace Efeu.Integration.Services
                 }
             }
 
-            if (effect is null)
-                return 0;
-
-            DateTimeOffset executionTime = DateTime.Now;
-            try
-            {
-                if (effect.Tag == BehaviourEffectTag.Outgoing)
-                {
-                    IEffect? effectInstance = effectProvider.TryGetEffect(effect.Name);
-                    if (effectInstance is null)
-                        throw new Exception($"Unknown effect '{effect.Name}'.");
-
-                    EffectExecutionContext context = new EffectExecutionContext(effect.Id, effect.CorrelationId, executionTime, effect.Times, effect.Data, 
-                        (context) => behaviourEffectRepository.CompleteEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, context.Output),
-                        (context) => behaviourEffectRepository.FaultEffectAndUnlockAsync(workerId, effect.Id, context.Timestamp, context.Fault));
-
-                    await effectInstance.RunAsync(context, default);
-                    if (!context.IsCompleted)
-                        await behaviourEffectRepository.CompleteEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, context.Output);
-                }
-                else
-                {
-                    EfeuMessage message = new EfeuMessage()
-                    {
-                        Tag = EfeuMessageTag.Incoming,
-                        Name = effect.Name,
-                        CorrelationId = effect.CorrelationId,
-                        Data = effect.Data,
-                        TriggerId = effect.TriggerId
-                    };
-
-                    await unitOfWork.DoAsync(() =>
-                        behaviourEffectCommands.ProcessSignal(message, "", DateTime.Now, effect.Id));
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-                await behaviourEffectRepository.FaultEffectAndUnlockAsync(workerId, effect.Id, executionTime, ex.ToString());
-            }
-
-            return 1;
+            return effect;
         }
     }
 }

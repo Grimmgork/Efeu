@@ -63,11 +63,12 @@ namespace Efeu.Integration.Sqlite.Repositories
                 .FirstAsync(i => i.Id == id);
         }
 
-        public Task<BehaviourTriggerEntity[]> GetMatchingAsync(string name, EfeuMessageTag tag, Guid triggerId)
+        public Task<BehaviourTriggerEntity[]> GetMatchingAsync(string name, EfeuMessageTag tag, Guid triggerId, DateTimeOffset timestamp)
         {
             return connection.GetTable<BehaviourTriggerEntity>()
-                .Where(i => i.MessageName == name 
-                         && i.MessageTag == tag 
+                .Where(i => i.CreationTime < timestamp
+                         && i.MessageName == name
+                         && i.MessageTag == tag
                          && (triggerId == Guid.Empty ? true : i.Id == triggerId))
                 .ToArrayAsync();
         }
