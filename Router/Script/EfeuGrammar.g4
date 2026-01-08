@@ -9,8 +9,8 @@ scope
     ;
 
 expression
-    : expression operator expression # BinaryExpr
-    | LPAREN expression RPAREN # GroupExpr
+    : LPAREN expression RPAREN # GroupExpr
+    | expression operator expression # BinaryExpr
     | expression with_method_call # MethodExpr
     | expression with_struct_mod # StructModExpr
     | expression with_array_mod # ArrayModExpr
@@ -74,7 +74,7 @@ with_array_mod_item
     ;
 
 assignment
-    : LET CONST expression NL
+    : LET CONST expression END
     ;
 
 traversal

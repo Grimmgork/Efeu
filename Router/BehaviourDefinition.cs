@@ -1,83 +1,13 @@
 ﻿using Efeu.Router.Data;
+using Efeu.Router.Script;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 
 namespace Efeu.Router
 {
-    public class BehaviourDefinitionStep
-    {
-        public BehaviourStepType Type;
-
-        public string Name = "";
-
-        public EfeuValue Literal;
-
-        [JsonIgnore]
-        public Func<BehaviourExpressionContext, EfeuValue> Expression = (_) => default;
-
-        public BehaviourMessageMatch[] Where = [];
-
-        public BehaviourDefinitionStep[] Do = [];
-
-        public BehaviourDefinitionStep[] Else = [];
-    }
-
-    public class BehaviourMessageMatch
-    {
-        public string Field = "";
-
-        public int Index = 0;
-
-        public string Script = "";
-
-        [JsonIgnore]
-        public Func<BehaviourExpressionContext, EfeuValue> Func = (_) => default;
-
-        public EfeuValue Literal;
-
-        public BehaviourMessageMatch[] Where = [];
-    }
-
-    public class EfeuExpression
-    {
-        private readonly Func<BehaviourExpressionContext, EfeuValue> func = (_) => default;
-
-        private readonly string script = "";
-
-        public bool IsEmpty => string.IsNullOrEmpty(script);
-
-        public EfeuExpression()
-        {
-            
-        }
-
-        public EfeuExpression(Func<BehaviourExpressionContext, EfeuValue> func)
-        {
-            this.func = func;
-        }
-
-        public EfeuExpression(string script)
-        {
-            this.script = script;
-        }
-
-        public static implicit operator EfeuExpression(string script) => new EfeuExpression(script);
-
-        public static implicit operator EfeuExpression(Func<BehaviourExpressionContext, EfeuValue> func) => new EfeuExpression(func);
-
-        public static implicit operator EfeuExpression(Func<EfeuValue> func) => new EfeuExpression((_) => func());
-
-        public EfeuValue Evaluate(BehaviourExpressionContext context)
-        {
-            if (string.IsNullOrEmpty(script))
-                return func(context);
-            else
-                return script;
-        }
-    }
-
     public enum BehaviourStepType
     {
         Emit,
@@ -88,5 +18,96 @@ namespace Efeu.Router
         Unless,
         For,
         On
+    }
+
+    public class BehaviourDefinitionStep
+    {
+        public Guid Id;
+
+        public BehaviourStepType Type;
+
+        public string Name = "";
+
+        public EfeuExpression Input = EfeuExpression.Empty;
+
+        public BehaviourDefinitionStep[] Do = [];
+
+        public BehaviourDefinitionStep[] Else = [];
+    }
+
+    public enum EfeuExpressionType
+    {
+        Literal,
+        Struct,
+        Array,
+        Script,
+        Eval
+    }
+
+    public class EfeuExpression
+    {
+        private Func<EfeuExpressionContext, EfeuValue> func = (_) => default;
+
+        public EfeuExpressionType Type;
+
+        public EfeuValue Value;
+
+        public string Code = "";
+
+        public Dictionary<string, EfeuExpression> Fields = [];
+
+        public EfeuExpression[] Items = [];
+
+        public static EfeuExpression Empty = new EfeuExpression();
+
+        public static EfeuExpression Eval(Func<EfeuExpressionContext, EfeuValue> func)
+        {
+            return new EfeuExpression()
+            {
+                Type = EfeuExpressionType.Eval,
+                func = func
+            };
+        }
+
+        public static EfeuExpression Eval(Func<EfeuValue> func)
+        {
+            return new EfeuExpression()
+            {
+                Type = EfeuExpressionType.Eval,
+                func = (_) => func()
+            };
+        }
+
+        public static EfeuExpression Eval(EfeuValue literal)
+        {
+            return new EfeuExpression()
+            {
+                Type = EfeuExpressionType.Literal,
+                Value = literal
+            };
+        }
+
+        public static EfeuExpression Script(string script)
+        {
+            return new EfeuExpression()
+            {
+                Type = EfeuExpressionType.Script,
+                Code = script,
+            };
+        }
+
+        public EfeuValue Evaluate(EfeuExpressionContext context)
+        {
+            return Type switch
+            {
+                EfeuExpressionType.Literal => Value,
+                EfeuExpressionType.Eval => func(context),
+                EfeuExpressionType.Script => EfeuScript.Run(Code, new EfeuScriptScope(context)),
+                EfeuExpressionType.Struct => new EfeuHash(Fields.Select(i =>
+                    new KeyValuePair<string, EfeuValue>(i.Key, i.Value.Evaluate(context)))),
+                EfeuExpressionType.Array => new EfeuArray(Items.Select(i => i.Evaluate(context))),
+                _ => throw new Exception()
+            };
+        }
     }
 }

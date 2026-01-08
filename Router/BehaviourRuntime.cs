@@ -1,5 +1,6 @@
 ﻿using Efeu.Router;
 using Efeu.Router.Data;
+using Efeu.Router.Script;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -29,16 +30,21 @@ namespace Efeu.Router
         Fault
     }
 
-    public class BehaviourExpressionContext
+    public class EfeuExpressionContext : IEfeuScope
     {
-        private BehaviourScope scope;
+        private readonly IEfeuScope scope;
 
-        public BehaviourExpressionContext(BehaviourScope scope)
+        public EfeuExpressionContext(IEfeuScope scope)
         {
             this.scope = scope;
         }
 
-        public EfeuValue Constant(string name) => scope.GetConstant(name);
+        public EfeuExpressionContext()
+        {
+            this.scope = EfeuScriptScope.Empty;
+        }
+
+        public EfeuValue Get(string name) => scope.Get(name);
     }
 
     public class BehaviourTrigger
@@ -57,12 +63,23 @@ namespace Efeu.Router
 
         public BehaviourDefinitionStep Step = new BehaviourDefinitionStep();
 
+        public BehaviourTriggerField[] Fields = [];
+
         public int DefinitionId;
 
         public bool IsStatic => CorrelationId == Guid.Empty; // a trigger is static if it is not assigned to a instance
     }
 
-    public class BehaviourScope
+    public class BehaviourTriggerField
+    {
+        public string Name = "";
+
+        public EfeuValue Literal;
+
+        public BehaviourTriggerField[] Fields = [];
+    }
+
+    public class BehaviourScope : IEfeuScope
     {
         public readonly BehaviourScope? Parent;
 
@@ -84,7 +101,7 @@ namespace Efeu.Router
             this.Constants = constants;
         }
 
-        public EfeuValue GetConstant(string name)
+        public EfeuValue Get(string name)
         {
             BehaviourScope? scope = this;
             while (scope != null)
@@ -219,8 +236,8 @@ namespace Efeu.Router
             foreach (BehaviourDefinitionStep step in lets)
             {
                 BehaviourScope scope = new BehaviourScope(parentScope, constants);
-                BehaviourExpressionContext context = new BehaviourExpressionContext(scope);
-                constants = constants.Add(step.Name, step.Expression(context));
+                EfeuExpressionContext context = new EfeuExpressionContext(scope);
+                constants = constants.Add(step.Name, step.Input.Evaluate(context));
             }
 
             BehaviourScope finalScope = new BehaviourScope(parentScope, constants);
@@ -276,8 +293,8 @@ namespace Efeu.Router
 
         private void RunIfStep(BehaviourDefinitionStep step, string position, BehaviourScope scope)
         {
-            BehaviourExpressionContext context = new BehaviourExpressionContext(scope);
-            if (step.Expression(context))
+            EfeuExpressionContext context = new EfeuExpressionContext(scope);
+            if (step.Input.Evaluate(context))
             {
                 RunSteps(step.Do, $"{position}/Do", scope);
             }
@@ -289,8 +306,8 @@ namespace Efeu.Router
 
         private void RunUnlessStep(BehaviourDefinitionStep step, string position, BehaviourScope scope)
         {
-            BehaviourExpressionContext context = new BehaviourExpressionContext(scope);
-            if (step.Expression(context))
+            EfeuExpressionContext context = new EfeuExpressionContext(scope);
+            if (step.Input.Evaluate(context))
             {
                 RunSteps(step.Else, $"{position}/Else", scope);
             }
@@ -302,8 +319,8 @@ namespace Efeu.Router
 
         private void RunForStep(BehaviourDefinitionStep step, string position, BehaviourScope scope)
         {
-            BehaviourExpressionContext context = new BehaviourExpressionContext(scope);
-            foreach (EfeuValue item in step.Expression(context).Each())
+            EfeuExpressionContext context = new EfeuExpressionContext(scope);
+            foreach (EfeuValue item in step.Input.Evaluate(context).Each())
             {
                 RunSteps(step.Do, $"{position}/Do", scope);
             }

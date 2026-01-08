@@ -15,25 +15,23 @@ namespace Efeu.Router
     {
         static void Main(string[] args)
         {
-            string script =
-                "[1,2 ,3 ]";
+            EfeuScriptScope scope = EfeuScriptScope.Empty
+                .Push("name", 2)
+                .Push("a", 2);
 
-            EfeuScriptScope scope = new EfeuScriptScope();
-            scope.Assign("A", 10);
-
-            Console.WriteLine(EfeuScript.Run(script, scope));
-            return;
-
-
+            string script = "a";
             JsonSerializerOptions options = new JsonSerializerOptions();
             options.Converters.Add(new EfeuValueJsonConverter());
             options.Converters.Add(new JsonStringEnumConverter());
+
+            EfeuValue value = EfeuScript.Run(script, scope);
+            Console.WriteLine(JsonSerializer.Serialize(value, options));
 
             BehaviourDefinitionStep[] steps = [
                 new () {
                     Type = BehaviourStepType.Let,
                     Name = "Value",
-                    Expression = (context) => false
+                    Input = EfeuExpression.Eval(1),
                 },
                 new () {
                     Type = BehaviourStepType.Emit,
@@ -42,20 +40,10 @@ namespace Efeu.Router
                 new () {
                     Type = BehaviourStepType.Await,
                     Name = "Event",
-                    Where = [
-                        new () {
-                            Field = "Name",
-                            Script = "1 + 2"
-                        },
-                        new () {
-                            Field = "Name",
-                            Literal = 1
-                        }
-                    ],
                     Do = [
                         new () {
                             Type = BehaviourStepType.If,
-                            Expression = (context) => context.Constant("Value"),
+                            Input = EfeuExpression.Eval(1),
                             Do = [
                                 new () {
                                     Type = BehaviourStepType.Emit,

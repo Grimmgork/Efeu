@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -33,10 +34,8 @@ namespace Efeu.Router.Script
                 throw new EfeuScriptParseException(errorListener.Errors);
             }
 
-            EfeuScriptVisitor efeuScriptVisitor = new EfeuScriptVisitor();
-            Func<EfeuScriptScope, EfeuValue> run = efeuScriptVisitor.Visit(tree);
-
-            EfeuValue result = run(scope);
+            EfeuScriptVisitor efeuScriptVisitor = new EfeuScriptVisitor(scope);
+            EfeuValue result = efeuScriptVisitor.Visit(tree);
             return result;
         }
 

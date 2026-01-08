@@ -8,6 +8,11 @@
     </form>
 </div>
 
+<form hx-post='/test' hx-ext='json-enc'>
+    <input type="text" name="name" accept="application/json" />
+    <button type="submit">test</button>
+</form>
+
 @foreach (BehaviourDefinitionEntity entity in Model)
 {
     <div>

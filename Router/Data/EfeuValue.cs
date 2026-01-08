@@ -444,7 +444,9 @@ namespace Efeu.Router.Data
             }
             else
             {
-                return left.ToDecimal() + right.ToDecimal();
+                decimal a = left.ToDecimal();
+                decimal b = right.ToDecimal();
+                return a + b;
             }
         }
 
