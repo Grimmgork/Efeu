@@ -8,15 +8,8 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Foreign
 {
-    public enum EffectExecutionState
+    public interface IEfeuEffect
     {
-        Completed,
-        Suspended,
-        Yield
-    }
-
-    public interface IEffect
-    {
-        public Task RunAsync(EffectExecutionContext context, CancellationToken token);
+        public Task RunAsync(EfeuEffectExecutionContext context, CancellationToken token);
     }
 }

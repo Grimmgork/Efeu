@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace Efeu.Router.Data
+namespace Efeu.Router.Value
 {
     public class EfeuObject
     {

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Router.Data
+namespace Efeu.Router.Value
 {
     internal static class DictionaryExtensions
     {

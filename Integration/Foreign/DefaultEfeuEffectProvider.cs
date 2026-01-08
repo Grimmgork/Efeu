@@ -17,13 +17,13 @@ namespace Efeu.Integration.Foreign
 
         public bool IsEffect(string name)
         {
-            object? match = services.GetKeyedService<IEffect>(name);
+            object? match = services.GetKeyedService<IEfeuEffect>(name);
             return match is not null;
         }
 
-        public IEffect? TryGetEffect(string name)
+        public IEfeuEffect? TryGetEffect(string name)
         {
-            return services.GetKeyedService<IEffect>(name);
+            return services.GetKeyedService<IEfeuEffect>(name);
         }
     }
 }

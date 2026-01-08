@@ -1,6 +1,6 @@
 ﻿using Efeu.Integration.Persistence;
 using Efeu.Router;
-using Efeu.Router.Data;
+using Efeu.Router.Value;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Foreign
 {
-    public class EffectExecutionContext
+    public class EfeuEffectExecutionContext
     {
         public readonly int Id;
 
@@ -26,7 +26,7 @@ namespace Efeu.Integration.Foreign
 
         public string Fault = "";
 
-        public EffectExecutionContext(int id, Guid corellationId, DateTimeOffset timestamp, uint times, EfeuValue input)
+        public EfeuEffectExecutionContext(int id, Guid corellationId, DateTimeOffset timestamp, uint times, EfeuValue input)
         {
             Id = id;
             CorellationId = corellationId;

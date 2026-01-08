@@ -3,7 +3,7 @@ using Efeu.Integration.Entities;
 using Efeu.Integration.Foreign;
 using Efeu.Integration.Persistence;
 using Efeu.Router;
-using Efeu.Router.Data;
+using Efeu.Router.Value;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -101,11 +101,11 @@ namespace Efeu.Integration.Services
             {
                 if (effect.Tag == BehaviourEffectTag.Outgoing)
                 {
-                    IEffect? effectInstance = effectProvider.TryGetEffect(effect.Name);
+                    IEfeuEffect? effectInstance = effectProvider.TryGetEffect(effect.Name);
                     if (effectInstance is null)
                         throw new Exception($"Unknown effect '{effect.Name}'.");
 
-                    EffectExecutionContext context = new EffectExecutionContext(effect.Id, effect.CorrelationId, executionTime, effect.Times, effect.Data);
+                    EfeuEffectExecutionContext context = new EfeuEffectExecutionContext(effect.Id, effect.CorrelationId, executionTime, effect.Times, effect.Data);
 
                     await effectInstance.RunAsync(context, token);
                     await behaviourEffectRepository.CompleteEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, context.Output);

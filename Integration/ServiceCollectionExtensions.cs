@@ -27,9 +27,9 @@ namespace Efeu.Integration
             services.AddEfeuEffect<WriteConsoleEffect>("WriteConsole");
         }
 
-        public static void AddEfeuEffect<T>(this IServiceCollection services, string name) where T : IEffect
+        public static void AddEfeuEffect<T>(this IServiceCollection services, string name) where T : IEfeuEffect
         {
-            services.AddKeyedTransient(typeof(IEffect), name, typeof(T));
+            services.AddKeyedTransient(typeof(IEfeuEffect), name, typeof(T));
         }
     }
 }

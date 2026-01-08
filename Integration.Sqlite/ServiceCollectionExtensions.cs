@@ -1,6 +1,6 @@
 ﻿using Efeu.Integration.Persistence;
 using Efeu.Integration.Entities;
-using Efeu.Router.Data;
+using Efeu.Router.Value;
 using LinqToDB;
 using LinqToDB.Data;
 using LinqToDB.Mapping;

@@ -1,5 +1,4 @@
-﻿using Efeu.Router;
-using Efeu.Router.Value;
+﻿using Efeu.Router.Value;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,17 +7,15 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Foreign
 {
-    public class EfeuMessageProcessingData
+    public class EfeuSignal
     {
-        public string Id = "";
+        public Guid Id;
 
         public string Name = "";
 
-        public EfeuMessageTag Tag;
-
         public EfeuValue Data;
 
-        public Guid CorrelationId;
+        public DateTimeOffset Timestamp;
 
         public Guid TriggerId;
     }

@@ -1,5 +1,6 @@
 ﻿using Efeu.Integration.Persistence;
 using Efeu.Router;
+using Efeu.Router.Value;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -13,7 +14,7 @@ namespace Efeu.Integration.Foreign
     {
         public IEfeuUnitOfWork UnitOfWork { get; }
 
-        public Task ProcessSignalAsync(EfeuMessage message, Guid messageId, DateTimeOffset timestamp);
+        public Task ProcessSignalAsync(EfeuSignal signal);
 
         public Task ClearDeduplicationKeysBeforeAsync(DateTimeOffset until);
     }

@@ -1,4 +1,4 @@
-﻿using Efeu.Router.Data;
+﻿using Efeu.Router.Value;
 using System;
 
 namespace Efeu.Integration.Entities

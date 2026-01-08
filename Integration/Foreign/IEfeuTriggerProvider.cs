@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Foreign
 {
-    public interface IEfeuEffectProvider
+    public interface IEfeuTriggerProvider
     {
-        public IEfeuEffect? TryGetEffect(string name);
+        public Task<IEfeuTrigger?> GetTriggerAsync();
     }
 }

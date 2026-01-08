@@ -26,9 +26,16 @@ namespace Efeu.Integration.Foreign
 
         public IEfeuUnitOfWork UnitOfWork => unitOfWork;
 
-        public Task ProcessSignalAsync(EfeuMessage message, Guid messageId, DateTimeOffset timestamp)
+        public Task ProcessSignalAsync(EfeuSignal signal)
         {
-            return behaviourEffectCommands.ProcessSignal(message, messageId, timestamp);
+            EfeuMessage message = new EfeuMessage()
+            {
+                Tag = EfeuMessageTag.Incoming,
+                Name = signal.Name,
+                Data = signal.Data,
+                TriggerId = signal.TriggerId,
+            };
+            return behaviourEffectCommands.ProcessSignal(message, signal.Id, signal.Timestamp);
         }
 
         public Task ClearDeduplicationKeysBeforeAsync(DateTimeOffset before)

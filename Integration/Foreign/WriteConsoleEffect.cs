@@ -9,7 +9,7 @@ using System.Transactions;
 
 namespace Efeu.Integration.Foreign
 {
-    internal class WriteConsoleEffect : IEffect
+    internal class WriteConsoleEffect : IEfeuEffect
     {
         private readonly IEfeuEngine efeu;
 
@@ -18,7 +18,7 @@ namespace Efeu.Integration.Foreign
             this.efeu = efeu;
         }
 
-        public Task RunAsync(EffectExecutionContext context, CancellationToken token)
+        public Task RunAsync(EfeuEffectExecutionContext context, CancellationToken token)
         {
             Console.WriteLine(context.Input);
             return Task.CompletedTask;
