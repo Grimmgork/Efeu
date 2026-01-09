@@ -1,4 +1,5 @@
 ﻿using Efeu.Router;
+using Efeu.Router.Value;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,8 @@ namespace Efeu.Integration.Entities
         public DateTimeOffset CreationTime;
 
         public int DefinitionVersionId;
+
+        public EfeuValue Input;
 
         public Guid CorrelationId;
 

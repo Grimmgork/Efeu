@@ -15,8 +15,6 @@ namespace Efeu.Integration.Foreign
 
         public readonly DateTimeOffset CreatedAt;
 
-        public readonly bool IsStartup;
-
-        public EfeuValue Data;
+        public readonly bool IsInitial;
     }
 }

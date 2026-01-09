@@ -18,5 +18,8 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\Router\Efeu.Router.csproj" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Data\" />
+	</ItemGroup>
 
 </Project>

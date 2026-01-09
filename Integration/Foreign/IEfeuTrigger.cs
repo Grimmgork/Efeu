@@ -11,6 +11,6 @@ namespace Efeu.Integration.Foreign
     {
         public Task AttachAsync(EfeuTriggerContext context, CancellationToken token);
 
-        public Task DetatchAsync(EfeuTriggerContext context, CancellationToken token);
+        public Task DetatchAsync(EfeuTriggerContext context);
     }
 }

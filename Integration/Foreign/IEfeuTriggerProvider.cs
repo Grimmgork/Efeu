@@ -8,6 +8,6 @@ namespace Efeu.Integration.Foreign
 {
     public interface IEfeuTriggerProvider
     {
-        public Task<IEfeuTrigger?> GetTriggerAsync();
+        public IEfeuTrigger? TryGetTrigger(string name);
     }
 }

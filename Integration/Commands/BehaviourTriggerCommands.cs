@@ -1,4 +1,5 @@
 ﻿using Efeu.Integration.Entities;
+using Efeu.Integration.Foreign;
 using Efeu.Integration.Persistence;
 using Efeu.Router;
 using System;
@@ -13,11 +14,13 @@ namespace Efeu.Integration.Commands
     {
         private readonly IEfeuUnitOfWork unitOfWork;
         private readonly IBehaviourTriggerRepository behaviourTriggerRepository;
+        private readonly IEfeuTriggerProvider triggerProvider;
 
-        public BehaviourTriggerCommands(IEfeuUnitOfWork unitOfWork, IBehaviourTriggerRepository behaviourTriggerRepository)
+        public BehaviourTriggerCommands(IEfeuUnitOfWork unitOfWork, IBehaviourTriggerRepository behaviourTriggerRepository, IEfeuTriggerProvider triggerProvider)
         {
             this.unitOfWork = unitOfWork;
             this.behaviourTriggerRepository = behaviourTriggerRepository;
+            this.triggerProvider = triggerProvider;
         }
 
         public Task CreateAsync(BehaviourTrigger trigger, DateTimeOffset timestamp)
@@ -46,13 +49,22 @@ namespace Efeu.Integration.Commands
             return behaviourTriggerRepository.CreateBulkAsync(entites.ToArray());
         }
 
-        public Task DeleteStaticAsync(int definitionVersionId)
+        public async Task DeleteStaticAsync(int definitionVersionId)
         {
-            return behaviourTriggerRepository.DeleteStaticAsync(definitionVersionId);
+            unitOfWork.EnsureTransaction();
+
+            // read all triggers
+            BehaviourTriggerEntity[] triggers = await behaviourTriggerRepository.GetStaticAsync(definitionVersionId);
+            await behaviourTriggerRepository.DeleteStaticAsync(definitionVersionId);
+            IEfeuTrigger[] triggerInstances = triggers.Select(i => triggerProvider.TryGetTrigger(i.MessageName));
+            // get all trigger instances
+            // instantiate and call DetatchAsync
         }
 
         public Task DeleteBulkAsync(Guid[] ids)
         {
+            // foreach trigger
+            // instantiate and call DetatchAsync
             return behaviourTriggerRepository.DeleteBulkAsync(ids);
         }
     }

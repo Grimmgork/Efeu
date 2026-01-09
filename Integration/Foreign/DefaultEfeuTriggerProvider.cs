@@ -7,18 +7,18 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Foreign
 {
-    internal class DefaultEfeuEffectProvider : IEfeuEffectProvider
+    internal class DefaultEfeuTriggerProvider : IEfeuTriggerProvider
     {
         private readonly IServiceProvider services;
 
-        public DefaultEfeuEffectProvider(IServiceProvider serviceProvider) 
+        public DefaultEfeuTriggerProvider(IServiceProvider serviceProvider)
         {
             this.services = serviceProvider;
         }
 
-        public IEfeuEffect? TryGetEffect(string name)
+        public IEfeuTrigger? TryGetTrigger(string name)
         {
-            return services.GetKeyedService<IEfeuEffect>(name);
+            return services.GetKeyedService<IEfeuTrigger>(name);
         }
     }
 }

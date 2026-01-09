@@ -22,7 +22,7 @@ namespace Efeu.Application.Controllers
         [Route("")]
         public Task<IEnumerable<BehaviourTriggerEntity>> GetAll()
         {
-            return behaviourTriggerRepository.GetAllActiveAsync();
+            return behaviourTriggerRepository.GetAllAsync();
         }
     }
 }

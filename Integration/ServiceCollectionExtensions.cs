@@ -31,5 +31,10 @@ namespace Efeu.Integration
         {
             services.AddKeyedTransient(typeof(IEfeuEffect), name, typeof(T));
         }
+
+        public static void AddEfeuTrigger<T>(this IServiceCollection services, string name) where T : IEfeuTrigger
+        {
+            services.AddKeyedTransient(typeof(IEfeuTrigger), name, typeof(T));
+        }
     }
 }

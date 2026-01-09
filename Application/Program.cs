@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Efeu.Integration.Quartz;
 
 namespace Efeu.Application
 {
@@ -39,6 +40,7 @@ namespace Efeu.Application
 
             builder.Services.AddEfeu();
             builder.Services.AddEfeuDefaultEffects();
+            builder.Services.AddEfeuQuartz();
             // builder.Services.AddEfeuSqlite("efeu", "Data Source=data.db");
             builder.Services.AddEfeuSqlite("efeu");
 

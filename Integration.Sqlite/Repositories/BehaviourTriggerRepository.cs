@@ -51,9 +51,17 @@ namespace Efeu.Integration.Sqlite.Repositories
                                && i.CorrelationId == Guid.Empty);
         }
 
-        public async Task<IEnumerable<BehaviourTriggerEntity>> GetAllActiveAsync()
+        public Task<BehaviourTriggerEntity[]> GetAllAsync()
         {
-             return await connection.GetTable<BehaviourTriggerEntity>()
+             return connection.GetTable<BehaviourTriggerEntity>()
+                .ToArrayAsync();
+        }
+
+        public Task<BehaviourTriggerEntity[]> GetStaticAsync(int definitionVersionId)
+        {
+            return connection.GetTable<BehaviourTriggerEntity>()
+                .Where(i => i.DefinitionVersionId == definitionVersionId
+                         && i.CorrelationId == Guid.Empty)
                 .ToArrayAsync();
         }
 
