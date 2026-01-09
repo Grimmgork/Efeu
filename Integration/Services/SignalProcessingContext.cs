@@ -87,8 +87,8 @@ namespace Efeu.Integration.Services
                 {
                     Id = triggerEntity.Id,
                     CorrelationId = triggerEntity.CorrelationId,
-                    MessageName = triggerEntity.MessageName,
-                    MessageTag = triggerEntity.MessageTag,
+                    Name = triggerEntity.Name,
+                    Tag = triggerEntity.Tag,
                     Scope = triggerEntity.Scope,
                     Position = triggerEntity.Position,
                     DefinitionId = triggerEntity.DefinitionVersionId,
@@ -99,8 +99,8 @@ namespace Efeu.Integration.Services
 
             result.AddRange(
                 Triggers.Where(i =>
-                    i.MessageName == messageName &&
-                    i.MessageTag == messageTag &&
+                    i.Name == messageName &&
+                    i.Tag == messageTag &&
                     (triggerId == Guid.Empty ? true : i.Id == triggerId)));
 
             return result.ToArray();

@@ -87,8 +87,8 @@ namespace Efeu.Integration.Sqlite
                     .HasSkipOnInsert(false)
                 .Property(p => p.CorrelationId)
                 .Property(p => p.DefinitionVersionId)
-                .Property(p => p.MessageName)
-                .Property(p => p.MessageTag)
+                .Property(p => p.Name)
+                .Property(p => p.Tag)
                 .Property(p => p.Position)
                 .Property(p => p.Scope)
                 .Property(p => p.EffectId);

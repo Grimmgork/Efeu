@@ -24,9 +24,9 @@ namespace Efeu.Integration.Entities
 
         public EfeuRuntimeScope Scope = new EfeuRuntimeScope(); // Scope around trigger row
 
-        public string MessageName = "";
+        public string Name = "";
 
-        public EfeuMessageTag MessageTag;
+        public EfeuMessageTag Tag;
 
         public int EffectId; // effect to resume
     }

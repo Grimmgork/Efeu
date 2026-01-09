@@ -75,8 +75,8 @@ namespace Efeu.Integration.Sqlite.Repositories
         {
             return connection.GetTable<BehaviourTriggerEntity>()
                 .Where(i => i.CreationTime < timestamp
-                         && i.MessageName == name
-                         && i.MessageTag == tag
+                         && i.Name == name
+                         && i.Tag == tag
                          && (triggerId == Guid.Empty ? true : i.Id == triggerId))
                 .ToArrayAsync();
         }

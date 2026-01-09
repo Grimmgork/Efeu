@@ -17,9 +17,9 @@ namespace Efeu.Router
 
         public EfeuRuntimeScope Scope = new EfeuRuntimeScope(); // Scope around trigger row
 
-        public string MessageName = "";
+        public string Name = "";
 
-        public EfeuMessageTag MessageTag;
+        public EfeuMessageTag Tag;
 
         public EfeuValue Input;
 

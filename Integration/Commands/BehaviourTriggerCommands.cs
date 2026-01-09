@@ -41,8 +41,8 @@ namespace Efeu.Integration.Commands
                     Position = trigger.Position,
                     Scope = trigger.Scope,
                     Input = trigger.Input,
-                    MessageName = trigger.MessageName,
-                    MessageTag = trigger.MessageTag,
+                    Name = trigger.Name,
+                    Tag = trigger.Tag,
                     CreationTime = timestamp
                 });
             }
@@ -57,7 +57,7 @@ namespace Efeu.Integration.Commands
             // read all triggers
             BehaviourTriggerEntity[] triggers = await behaviourTriggerRepository.GetStaticAsync(definitionVersionId);
             await behaviourTriggerRepository.DeleteStaticAsync(definitionVersionId);
-            IEfeuTrigger[] triggerInstances = triggers.Select(i => triggerProvider.TryGetTrigger(i.MessageName)).ToArray();
+            IEfeuTrigger[] triggerInstances = triggers.Select(i => triggerProvider.TryGetTrigger(i.Name)).ToArray();
             // get all trigger instances
             // instantiate and call DetatchAsync
         }
