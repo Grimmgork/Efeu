@@ -23,15 +23,15 @@ namespace Efeu.Integration.Commands
             this.triggerProvider = triggerProvider;
         }
 
-        public Task CreateAsync(BehaviourTrigger trigger, DateTimeOffset timestamp)
+        public Task CreateAsync(EfeuTrigger trigger, DateTimeOffset timestamp)
         {
             return CreateBulkAsync([trigger], timestamp);
         }
 
-        public Task CreateBulkAsync(BehaviourTrigger[] triggers, DateTimeOffset timestamp)
+        public Task CreateBulkAsync(EfeuTrigger[] triggers, DateTimeOffset timestamp)
         {
             List<BehaviourTriggerEntity> entites = new List<BehaviourTriggerEntity>();
-            foreach (BehaviourTrigger trigger in triggers)
+            foreach (EfeuTrigger trigger in triggers)
             {
                 entites.Add(new BehaviourTriggerEntity()
                 {

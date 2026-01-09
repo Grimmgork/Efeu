@@ -22,7 +22,7 @@ namespace Efeu.Integration.Entities
 
         public string Position = ""; // position of trigger row 0/Else/1
 
-        public BehaviourScope Scope = new BehaviourScope(); // Scope around trigger row
+        public EfeuRuntimeScope Scope = new EfeuRuntimeScope(); // Scope around trigger row
 
         public string MessageName = "";
 

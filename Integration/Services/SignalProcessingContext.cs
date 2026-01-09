@@ -13,7 +13,7 @@ namespace Efeu.Integration.Services
     public class SignalProcessingContext
     {
         public readonly DateTimeOffset Timestamp;
-        public readonly List<BehaviourTrigger> Triggers = new List<BehaviourTrigger>();
+        public readonly List<EfeuTrigger> Triggers = new List<EfeuTrigger>();
         public readonly Stack<EfeuMessage> Messages = new Stack<EfeuMessage>();
 
         private readonly IBehaviourTriggerRepository behaviourTriggerRepository;
@@ -32,20 +32,20 @@ namespace Efeu.Integration.Services
 
         public async Task ProcessSignalAsync(EfeuSignal signal)
         {
-            BehaviourTrigger[] matchingTriggers = await GetMatchingTriggersAsync(signal.Name, signal.Tag, signal.TriggerId);
-            foreach (BehaviourTrigger trigger in matchingTriggers)
+            EfeuTrigger[] matchingTriggers = await GetMatchingTriggersAsync(signal.Name, signal.Tag, signal.TriggerId);
+            foreach (EfeuTrigger trigger in matchingTriggers)
             {
-                BehaviourRuntime runtime;
+                EfeuRuntime runtime;
                 if (trigger.IsStatic)
                 {
-                    runtime = BehaviourRuntime.RunStaticTrigger(trigger, signal, Guid.NewGuid());
+                    runtime = EfeuRuntime.RunStaticTrigger(trigger, signal, Guid.NewGuid());
                 }
                 else
                 {
-                    runtime = BehaviourRuntime.RunTrigger(trigger, signal);
+                    runtime = EfeuRuntime.RunTrigger(trigger, signal);
                 }
 
-                if (runtime.Result == BehaviourRuntimeResult.Skipped)
+                if (runtime.Result == EfeuRuntimeResult.Skipped)
                     continue;
 
                 if (!trigger.IsStatic)
@@ -54,7 +54,7 @@ namespace Efeu.Integration.Services
                     DeletedTriggers.Add(trigger.Id);
                 }
 
-                foreach (BehaviourTrigger trigger1 in runtime.Triggers)
+                foreach (EfeuTrigger trigger1 in runtime.Triggers)
                 {
                     Triggers.Add(trigger1);
                 }
@@ -66,7 +66,7 @@ namespace Efeu.Integration.Services
             }
         }
 
-        private async Task<BehaviourTrigger[]> GetMatchingTriggersAsync(string messageName, EfeuMessageTag messageTag, Guid triggerId)
+        private async Task<EfeuTrigger[]> GetMatchingTriggersAsync(string messageName, EfeuMessageTag messageTag, Guid triggerId)
         {
             BehaviourTriggerEntity[] triggerEntities = await behaviourTriggerRepository.GetMatchingAsync(messageName, messageTag, triggerId, Timestamp);
 
@@ -77,13 +77,13 @@ namespace Efeu.Integration.Services
             foreach (BehaviourDefinitionVersionEntity definitionVersionEntity in definitionEntities)
                 definitionEntityCache.Add(definitionVersionEntity.Id, definitionVersionEntity);
 
-            List<BehaviourTrigger> result = new();
+            List<EfeuTrigger> result = new();
             foreach (BehaviourTriggerEntity triggerEntity in triggerEntities)
             {
                 if (DeletedTriggers.Contains(triggerEntity.Id))
                     continue;
 
-                BehaviourTrigger trigger = new BehaviourTrigger()
+                EfeuTrigger trigger = new EfeuTrigger()
                 {
                     Id = triggerEntity.Id,
                     CorrelationId = triggerEntity.CorrelationId,

@@ -10,27 +10,6 @@ using System.Threading.Tasks;
 
 namespace Efeu.Router
 {
-    public class EfeuMessage
-    {
-        public string Name = "";
-
-        public EfeuMessageTag Tag;
-
-        public Guid CorrelationId; // from wich it came
-
-        public Guid TriggerId; // response / fault triggers id
-
-        public EfeuValue Data;
-    }
-
-    public enum EfeuMessageTag
-    {
-        Outbox,
-        Signal,
-        Completion,
-        Fault
-    }
-
     public class EfeuExpressionContext : IEfeuScope
     {
         private readonly IEfeuScope scope;
@@ -48,55 +27,24 @@ namespace Efeu.Router
         public EfeuValue Get(string name) => scope.Get(name);
     }
 
-    public class BehaviourTrigger
+
+    public class EfeuRuntimeScope : IEfeuScope
     {
-        public Guid Id;
-
-        public Guid CorrelationId;
-
-        public string Position = ""; // position of trigger row /0/Else/1
-
-        public BehaviourScope Scope = new BehaviourScope(); // Scope around trigger row
-
-        public string MessageName = "";
-
-        public EfeuMessageTag MessageTag;
-
-        public BehaviourDefinitionStep Step = new BehaviourDefinitionStep();
-
-        public BehaviourTriggerField[] Fields = [];
-
-        public int DefinitionId;
-
-        public bool IsStatic => CorrelationId == Guid.Empty; // a trigger is static if it is not assigned to a instance
-    }
-
-    public class BehaviourTriggerField
-    {
-        public string Name = "";
-
-        public EfeuValue Literal;
-
-        public BehaviourTriggerField[] Fields = [];
-    }
-
-    public class BehaviourScope : IEfeuScope
-    {
-        public readonly BehaviourScope? Parent;
+        public readonly EfeuRuntimeScope? Parent;
 
         public readonly ImmutableDictionary<string, EfeuValue> Constants;
 
-        public BehaviourScope(ImmutableDictionary<string, EfeuValue> constants)
+        public EfeuRuntimeScope(ImmutableDictionary<string, EfeuValue> constants)
         {
             this.Constants = constants;
         }
 
-        public BehaviourScope()
+        public EfeuRuntimeScope()
         {
             this.Constants = ImmutableDictionary<string, EfeuValue>.Empty;
         }
 
-        public BehaviourScope(BehaviourScope parent, ImmutableDictionary<string, EfeuValue> constants)
+        public EfeuRuntimeScope(EfeuRuntimeScope parent, ImmutableDictionary<string, EfeuValue> constants)
         {
             this.Parent = parent;
             this.Constants = constants;
@@ -104,7 +52,7 @@ namespace Efeu.Router
 
         public EfeuValue Get(string name)
         {
-            BehaviourScope? scope = this;
+            EfeuRuntimeScope? scope = this;
             while (scope != null)
             {
                 if (scope.Constants.TryGetValue(name, out EfeuValue value))
@@ -121,31 +69,31 @@ namespace Efeu.Router
         }
     }
 
-    public enum BehaviourRuntimeResult
+    public enum EfeuRuntimeResult
     {
         Executed,
         Skipped
     }
 
-    public class BehaviourRuntime
+    public class EfeuRuntime
     {
         public readonly BehaviourDefinitionStep[] Steps = [];
         public readonly Guid Id;
-        public readonly List<BehaviourTrigger> Triggers = [];
+        public readonly List<EfeuTrigger> Triggers = [];
         public readonly List<EfeuMessage> Messages = [];
 
-        public BehaviourRuntimeResult Result => result;
+        public EfeuRuntimeResult Result => result;
 
         public readonly bool IsImmediate;
 
         
-        private BehaviourRuntimeResult result;
+        private EfeuRuntimeResult result;
 
         private readonly EfeuSignal triggerSignal = new EfeuSignal();
 
-        private readonly BehaviourTrigger trigger = new BehaviourTrigger();
+        private readonly EfeuTrigger trigger = new EfeuTrigger();
 
-        public BehaviourRuntime(BehaviourDefinitionStep[] steps, Guid id, int definitionId)
+        public EfeuRuntime(BehaviourDefinitionStep[] steps, Guid id, int definitionId)
         {
             this.Steps = steps;
             this.Id = id;
@@ -153,7 +101,7 @@ namespace Efeu.Router
             this.trigger.DefinitionId = definitionId;
         }
 
-        public BehaviourRuntime(BehaviourTrigger trigger, EfeuSignal signal, Guid id)
+        public EfeuRuntime(EfeuTrigger trigger, EfeuSignal signal, Guid id)
         {
             this.Id = id;
             this.triggerSignal = signal;
@@ -161,7 +109,7 @@ namespace Efeu.Router
             this.IsImmediate = false;
         }
 
-        public BehaviourRuntime(BehaviourTrigger trigger, EfeuSignal signal)
+        public EfeuRuntime(EfeuTrigger trigger, EfeuSignal signal)
         {
             this.Id = trigger.CorrelationId;
             this.triggerSignal = signal;
@@ -169,38 +117,38 @@ namespace Efeu.Router
             this.IsImmediate = false;
         }
 
-        public static BehaviourRuntime Run(BehaviourDefinitionStep[] steps, Guid id, int definitionId = 0)
+        public static EfeuRuntime Run(BehaviourDefinitionStep[] steps, Guid id, int definitionId = 0)
         {
-            BehaviourRuntime runtime = new BehaviourRuntime(steps, id, definitionId);
+            EfeuRuntime runtime = new EfeuRuntime(steps, id, definitionId);
             runtime.result = runtime.Execute();
             return runtime;
         }
 
-        public static BehaviourRuntime RunStaticTrigger(BehaviourTrigger trigger, EfeuSignal signal, Guid id)
+        public static EfeuRuntime RunStaticTrigger(EfeuTrigger trigger, EfeuSignal signal, Guid id)
         {
             if (!trigger.IsStatic)
                 throw new InvalidOperationException("Trigger must be static!");
 
-            BehaviourRuntime runtime = new BehaviourRuntime(trigger, signal, id);
+            EfeuRuntime runtime = new EfeuRuntime(trigger, signal, id);
             runtime.result = runtime.Execute();
             return runtime;
         }
 
-        public static BehaviourRuntime RunTrigger(BehaviourTrigger trigger, EfeuSignal signal)
+        public static EfeuRuntime RunTrigger(EfeuTrigger trigger, EfeuSignal signal)
         {
             if (trigger.IsStatic)
                 throw new InvalidOperationException("Trigger must not be static!");
 
-            BehaviourRuntime runtime = new BehaviourRuntime(trigger, signal);
+            EfeuRuntime runtime = new EfeuRuntime(trigger, signal);
             runtime.result = runtime.Execute();
             return runtime;
         }
 
-        private BehaviourRuntimeResult Execute()
+        private EfeuRuntimeResult Execute()
         {
             if (IsImmediate)
             {
-                BehaviourScope scope = new BehaviourScope();
+                EfeuRuntimeScope scope = new EfeuRuntimeScope();
                 RunSteps(Steps, "", scope);
             }
             else
@@ -209,39 +157,39 @@ namespace Efeu.Router
                 BehaviourDefinitionStep step = trigger.Step;
                 if (!TriggerMatchesMessage(trigger, triggerSignal, step))
                 {
-                    return BehaviourRuntimeResult.Skipped;
+                    return EfeuRuntimeResult.Skipped;
                 }
 
                 ImmutableDictionary<string, EfeuValue> constants = ImmutableDictionary<string, EfeuValue>.Empty.Add("input", triggerSignal.Data);
-                BehaviourScope scope = new BehaviourScope(trigger.Scope, constants);
+                EfeuRuntimeScope scope = new EfeuRuntimeScope(trigger.Scope, constants);
 
                 BehaviourDefinitionStep[] steps = step.Do;
                 RunSteps(steps, $"{trigger.Position}/Do", scope); // Assumption: all trigger continuations are done in the Do route
             }
 
-            return BehaviourRuntimeResult.Executed;
+            return EfeuRuntimeResult.Executed;
         }
 
-        private static bool TriggerMatchesMessage(BehaviourTrigger trigger, EfeuSignal signal, BehaviourDefinitionStep step)
+        private static bool TriggerMatchesMessage(EfeuTrigger trigger, EfeuSignal signal, BehaviourDefinitionStep step)
         {
             return signal.Tag == trigger.MessageTag &&
                    signal.Name == trigger.MessageName &&
                    signal.TriggerId == Guid.Empty || signal.TriggerId == trigger.Id;
         }
 
-        private void RunSteps(BehaviourDefinitionStep[] steps, string position, BehaviourScope parentScope)
+        private void RunSteps(BehaviourDefinitionStep[] steps, string position, EfeuRuntimeScope parentScope)
         {
             var (lets, remaining) = steps.Partition((item) => item.Type == BehaviourStepType.Let);
 
             var constants = ImmutableDictionary<string, EfeuValue>.Empty;
             foreach (BehaviourDefinitionStep step in lets)
             {
-                BehaviourScope scope = new BehaviourScope(parentScope, constants);
+                EfeuRuntimeScope scope = new EfeuRuntimeScope(parentScope, constants);
                 EfeuExpressionContext context = new EfeuExpressionContext(scope);
                 constants = constants.Add(step.Name, step.Input.Evaluate(context));
             }
 
-            BehaviourScope finalScope = new BehaviourScope(parentScope, constants);
+            EfeuRuntimeScope finalScope = new EfeuRuntimeScope(parentScope, constants);
             int i = 0;
             foreach (BehaviourDefinitionStep step in remaining)
             {
@@ -250,7 +198,7 @@ namespace Efeu.Router
             }
         }
 
-        private void RunStep(BehaviourDefinitionStep step, string position, BehaviourScope scope)
+        private void RunStep(BehaviourDefinitionStep step, string position, EfeuRuntimeScope scope)
         {
             if (step.Type == BehaviourStepType.Emit)
             {
@@ -282,7 +230,7 @@ namespace Efeu.Router
             }
         }
 
-        private void RunEmitStep(BehaviourDefinitionStep step, BehaviourScope scope)
+        private void RunEmitStep(BehaviourDefinitionStep step, EfeuRuntimeScope scope)
         {
             Messages.Add(new EfeuMessage()
             {
@@ -292,7 +240,7 @@ namespace Efeu.Router
             });
         }
 
-        private void RunIfStep(BehaviourDefinitionStep step, string position, BehaviourScope scope)
+        private void RunIfStep(BehaviourDefinitionStep step, string position, EfeuRuntimeScope scope)
         {
             EfeuExpressionContext context = new EfeuExpressionContext(scope);
             if (step.Input.Evaluate(context))
@@ -305,7 +253,7 @@ namespace Efeu.Router
             }
         }
 
-        private void RunUnlessStep(BehaviourDefinitionStep step, string position, BehaviourScope scope)
+        private void RunUnlessStep(BehaviourDefinitionStep step, string position, EfeuRuntimeScope scope)
         {
             EfeuExpressionContext context = new EfeuExpressionContext(scope);
             if (step.Input.Evaluate(context))
@@ -318,7 +266,7 @@ namespace Efeu.Router
             }
         }
 
-        private void RunForStep(BehaviourDefinitionStep step, string position, BehaviourScope scope)
+        private void RunForStep(BehaviourDefinitionStep step, string position, EfeuRuntimeScope scope)
         {
             EfeuExpressionContext context = new EfeuExpressionContext(scope);
             foreach (EfeuValue item in step.Input.Evaluate(context).Each())
@@ -327,7 +275,7 @@ namespace Efeu.Router
             }
         }
 
-        private void RunCallStep(BehaviourDefinitionStep step, string position, BehaviourScope scope)
+        private void RunCallStep(BehaviourDefinitionStep step, string position, EfeuRuntimeScope scope)
         {
             Guid triggerId = Guid.NewGuid();
 
@@ -339,7 +287,7 @@ namespace Efeu.Router
                 TriggerId = triggerId,
             });
 
-            Triggers.Add(new BehaviourTrigger()
+            Triggers.Add(new EfeuTrigger()
             {
                 Id = triggerId,
                 CorrelationId = Id,
@@ -352,9 +300,9 @@ namespace Efeu.Router
             });
         }
 
-        private void RunAwaitStep(BehaviourDefinitionStep step, string position, BehaviourScope scope)
+        private void RunAwaitStep(BehaviourDefinitionStep step, string position, EfeuRuntimeScope scope)
         {
-            Triggers.Add(new BehaviourTrigger()
+            Triggers.Add(new EfeuTrigger()
             {
                 Id = Guid.NewGuid(),
                 CorrelationId = Id,
@@ -367,12 +315,12 @@ namespace Efeu.Router
             });
         }
 
-        private void RunOnStep(BehaviourDefinitionStep step, string position, BehaviourScope scope)
+        private void RunOnStep(BehaviourDefinitionStep step, string position, EfeuRuntimeScope scope)
         {
             if (!IsImmediate)
                 throw new InvalidOperationException("Static Triggers (On) is only available in immediate mode!");
 
-            Triggers.Add(new BehaviourTrigger()
+            Triggers.Add(new EfeuTrigger()
             {
                 Id = Guid.NewGuid(),
                 Scope = scope,

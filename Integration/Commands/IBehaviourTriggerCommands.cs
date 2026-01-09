@@ -9,9 +9,9 @@ namespace Efeu.Integration.Commands
 {
     internal interface IBehaviourTriggerCommands
     {
-        public Task CreateAsync(BehaviourTrigger trigger, DateTimeOffset timestamp);
+        public Task CreateAsync(EfeuTrigger trigger, DateTimeOffset timestamp);
 
-        public Task CreateBulkAsync(BehaviourTrigger[] triggers, DateTimeOffset timestamp);
+        public Task CreateBulkAsync(EfeuTrigger[] triggers, DateTimeOffset timestamp);
 
         public Task DeleteStaticAsync(int definitionVersionId);
 

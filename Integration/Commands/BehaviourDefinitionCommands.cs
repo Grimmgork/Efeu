@@ -56,7 +56,7 @@ namespace Efeu.Integration.Commands
             // create new version
             int newDefinitionVersionId = await CreateVersionAsync(definitionId, steps);
 
-            BehaviourRuntime runtime = BehaviourRuntime.Run(steps, Guid.NewGuid(), newDefinitionVersionId);
+            EfeuRuntime runtime = EfeuRuntime.Run(steps, Guid.NewGuid(), newDefinitionVersionId);
 
             DateTimeOffset timestamp = DateTime.Now;
             await behaviourTriggerCommands.CreateBulkAsync(runtime.Triggers.ToArray(), timestamp);

@@ -65,10 +65,10 @@ namespace Efeu.Router
                 },
             ];
 
-            BehaviourRuntime behaviour1 = BehaviourRuntime.Run(steps, Guid.NewGuid(), 10);
-            BehaviourTrigger trigger = behaviour1.Triggers.First();
+            EfeuRuntime behaviour1 = EfeuRuntime.Run(steps, Guid.NewGuid(), 10);
+            EfeuTrigger trigger = behaviour1.Triggers.First();
 
-            BehaviourRuntime behaviour2 = BehaviourRuntime.RunTrigger(trigger, new EfeuSignal()
+            EfeuRuntime behaviour2 = EfeuRuntime.RunTrigger(trigger, new EfeuSignal()
             {
                  Tag = EfeuMessageTag.Signal,
                  Name = "Event"
