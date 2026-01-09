@@ -21,6 +21,8 @@ namespace Efeu.Router
 
         public EfeuMessageTag MessageTag;
 
+        public EfeuValue Input;
+
         public BehaviourDefinitionStep Step = new BehaviourDefinitionStep();
 
         public EfeuTriggerField[] Fields = [];

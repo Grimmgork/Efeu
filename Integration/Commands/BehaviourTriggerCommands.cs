@@ -40,6 +40,7 @@ namespace Efeu.Integration.Commands
                     CorrelationId = trigger.CorrelationId,
                     Position = trigger.Position,
                     Scope = trigger.Scope,
+                    Input = trigger.Input,
                     MessageName = trigger.MessageName,
                     MessageTag = trigger.MessageTag,
                     CreationTime = timestamp

@@ -302,6 +302,7 @@ namespace Efeu.Router
 
         private void RunAwaitStep(BehaviourDefinitionStep step, string position, EfeuRuntimeScope scope)
         {
+            EfeuExpressionContext context = new EfeuExpressionContext(scope);
             Triggers.Add(new EfeuTrigger()
             {
                 Id = Guid.NewGuid(),
@@ -310,6 +311,7 @@ namespace Efeu.Router
                 MessageTag = EfeuMessageTag.Signal,
                 MessageName = step.Name,
                 Position = position,
+                Input = step.Input.Evaluate(context),
                 DefinitionId = trigger.DefinitionId,
                 Step = step
             });
@@ -320,6 +322,7 @@ namespace Efeu.Router
             if (!IsImmediate)
                 throw new InvalidOperationException("Static Triggers (On) is only available in immediate mode!");
 
+            EfeuExpressionContext context = new EfeuExpressionContext(scope);
             Triggers.Add(new EfeuTrigger()
             {
                 Id = Guid.NewGuid(),
@@ -327,6 +330,7 @@ namespace Efeu.Router
                 MessageTag = EfeuMessageTag.Signal,
                 MessageName = step.Name,
                 DefinitionId = trigger.DefinitionId,
+                Input = step.Input.Evaluate(context),
                 Position = position
             });
         }
