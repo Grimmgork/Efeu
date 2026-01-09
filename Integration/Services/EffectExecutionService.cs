@@ -114,7 +114,8 @@ namespace Efeu.Integration.Services
                 {
                     EfeuSignal signal = new EfeuSignal()
                     {
-                        Tag = EfeuMessageTag.Signal,
+                        Id = Guid.NewGuid(), // effect.Id,
+                        Tag = effect.Tag,
                         Name = effect.Name,
                         Data = effect.Data,
                         TriggerId = effect.TriggerId
