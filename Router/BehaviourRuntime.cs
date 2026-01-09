@@ -25,8 +25,9 @@ namespace Efeu.Router
 
     public enum EfeuMessageTag
     {
-        Incoming,
-        Outgoing,
+        Outbox,
+        Signal,
+        Completion,
         Fault
     }
 
@@ -140,7 +141,7 @@ namespace Efeu.Router
         
         private BehaviourRuntimeResult result;
 
-        private readonly EfeuMessage triggerMessage = new EfeuMessage();
+        private readonly EfeuSignal triggerSignal = new EfeuSignal();
 
         private readonly BehaviourTrigger trigger = new BehaviourTrigger();
 
@@ -152,18 +153,18 @@ namespace Efeu.Router
             this.trigger.DefinitionId = definitionId;
         }
 
-        public BehaviourRuntime(BehaviourTrigger trigger, EfeuMessage message, Guid id)
+        public BehaviourRuntime(BehaviourTrigger trigger, EfeuSignal signal, Guid id)
         {
             this.Id = id;
-            this.triggerMessage = message;
+            this.triggerSignal = signal;
             this.trigger = trigger;
             this.IsImmediate = false;
         }
 
-        public BehaviourRuntime(BehaviourTrigger trigger, EfeuMessage message)
+        public BehaviourRuntime(BehaviourTrigger trigger, EfeuSignal signal)
         {
             this.Id = trigger.CorrelationId;
-            this.triggerMessage = message;
+            this.triggerSignal = signal;
             this.trigger = trigger;
             this.IsImmediate = false;
         }
@@ -175,22 +176,22 @@ namespace Efeu.Router
             return runtime;
         }
 
-        public static BehaviourRuntime RunStaticTrigger(BehaviourTrigger trigger, EfeuMessage message, Guid id)
+        public static BehaviourRuntime RunStaticTrigger(BehaviourTrigger trigger, EfeuSignal signal, Guid id)
         {
             if (!trigger.IsStatic)
                 throw new InvalidOperationException("Trigger must be static!");
 
-            BehaviourRuntime runtime = new BehaviourRuntime(trigger, message, id);
+            BehaviourRuntime runtime = new BehaviourRuntime(trigger, signal, id);
             runtime.result = runtime.Execute();
             return runtime;
         }
 
-        public static BehaviourRuntime RunTrigger(BehaviourTrigger trigger, EfeuMessage message)
+        public static BehaviourRuntime RunTrigger(BehaviourTrigger trigger, EfeuSignal signal)
         {
             if (trigger.IsStatic)
                 throw new InvalidOperationException("Trigger must not be static!");
 
-            BehaviourRuntime runtime = new BehaviourRuntime(trigger, message);
+            BehaviourRuntime runtime = new BehaviourRuntime(trigger, signal);
             runtime.result = runtime.Execute();
             return runtime;
         }
@@ -206,12 +207,12 @@ namespace Efeu.Router
             {
                 // trigger continuation
                 BehaviourDefinitionStep step = trigger.Step;
-                if (!TriggerMatchesMessage(trigger, triggerMessage, step))
+                if (!TriggerMatchesMessage(trigger, triggerSignal, step))
                 {
                     return BehaviourRuntimeResult.Skipped;
                 }
 
-                ImmutableDictionary<string, EfeuValue> constants = ImmutableDictionary<string, EfeuValue>.Empty.Add("input", triggerMessage.Data);
+                ImmutableDictionary<string, EfeuValue> constants = ImmutableDictionary<string, EfeuValue>.Empty.Add("input", triggerSignal.Data);
                 BehaviourScope scope = new BehaviourScope(trigger.Scope, constants);
 
                 BehaviourDefinitionStep[] steps = step.Do;
@@ -221,11 +222,11 @@ namespace Efeu.Router
             return BehaviourRuntimeResult.Executed;
         }
 
-        private static bool TriggerMatchesMessage(BehaviourTrigger trigger, EfeuMessage message, BehaviourDefinitionStep step)
+        private static bool TriggerMatchesMessage(BehaviourTrigger trigger, EfeuSignal signal, BehaviourDefinitionStep step)
         {
-            return message.Tag == trigger.MessageTag &&
-                   message.Name == trigger.MessageName &&
-                   message.TriggerId == Guid.Empty || message.TriggerId == trigger.Id;
+            return signal.Tag == trigger.MessageTag &&
+                   signal.Name == trigger.MessageName &&
+                   signal.TriggerId == Guid.Empty || signal.TriggerId == trigger.Id;
         }
 
         private void RunSteps(BehaviourDefinitionStep[] steps, string position, BehaviourScope parentScope)
@@ -287,7 +288,7 @@ namespace Efeu.Router
             {
                 CorrelationId = Id,
                 Name = step.Name,
-                Tag = EfeuMessageTag.Outgoing
+                Tag = EfeuMessageTag.Outbox
             });
         }
 
@@ -334,7 +335,7 @@ namespace Efeu.Router
             {
                 CorrelationId = Id,
                 Name = step.Name,
-                Tag = EfeuMessageTag.Outgoing,
+                Tag = EfeuMessageTag.Outbox,
                 TriggerId = triggerId,
             });
 
@@ -343,7 +344,7 @@ namespace Efeu.Router
                 Id = triggerId,
                 CorrelationId = Id,
                 Scope = scope,
-                MessageTag = EfeuMessageTag.Incoming,
+                MessageTag = EfeuMessageTag.Completion,
                 MessageName = step.Name,
                 Position = position,
                 DefinitionId = trigger.DefinitionId,
@@ -358,7 +359,7 @@ namespace Efeu.Router
                 Id = Guid.NewGuid(),
                 CorrelationId = Id,
                 Scope = scope,
-                MessageTag = EfeuMessageTag.Incoming,
+                MessageTag = EfeuMessageTag.Signal,
                 MessageName = step.Name,
                 Position = position,
                 DefinitionId = trigger.DefinitionId,
@@ -375,7 +376,7 @@ namespace Efeu.Router
             {
                 Id = Guid.NewGuid(),
                 Scope = scope,
-                MessageTag = EfeuMessageTag.Incoming,
+                MessageTag = EfeuMessageTag.Signal,
                 MessageName = step.Name,
                 DefinitionId = trigger.DefinitionId,
                 Position = position

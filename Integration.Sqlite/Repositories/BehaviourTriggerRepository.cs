@@ -71,7 +71,7 @@ namespace Efeu.Integration.Sqlite.Repositories
                 .FirstAsync(i => i.Id == id);
         }
 
-        public Task<BehaviourTriggerEntity[]> GetMatchingAsync(string name, EfeuMessageTag tag, Guid triggerId, DateTimeOffset timestamp)
+        public Task<BehaviourTriggerEntity[]> GetMatchingAsync(string name, Router.EfeuMessageTag tag, Guid triggerId, DateTimeOffset timestamp)
         {
             return connection.GetTable<BehaviourTriggerEntity>()
                 .Where(i => i.CreationTime < timestamp

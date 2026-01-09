@@ -34,7 +34,7 @@ namespace Efeu.Application.Controllers
 
         [HttpPost]
         [Route("")]
-        public async Task<IActionResult> Create(string name, BehaviourEffectTag tag)
+        public async Task<IActionResult> Create(string name, EfeuMessageTag tag)
         {
             await behaviourEffectCommands.CreateEffect(DateTime.Now, name, tag, default, Guid.Empty, Guid.Empty);
             Response.Headers["HX-Refresh"] = "true";

@@ -1,6 +1,7 @@
 ﻿using Antlr4.Build.Tasks.Util;
 using Efeu.Integration.Entities;
 using Efeu.Integration.Persistence;
+using Efeu.Router;
 using Efeu.Router.Value;
 using LinqToDB;
 using LinqToDB.Data;
@@ -135,7 +136,7 @@ namespace Efeu.Integration.Sqlite.Repositories
                 .Where(u => u.Id == id
                     && u.LockId == lockId
                     && u.State == BehaviourEffectState.Running)
-                .Set(u => u.Tag, BehaviourEffectTag.Incoming)
+                .Set(u => u.Tag, EfeuMessageTag.Completion)
                 .Set(u => u.Input, output)
                 .Set(u => u.CreationTime, timestamp)
                 .Set(u => u.LockId, Guid.Empty)

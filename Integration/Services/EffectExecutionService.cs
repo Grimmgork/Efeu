@@ -38,7 +38,7 @@ namespace Efeu.Integration.Services
 
             await unitOfWork.DoAsync(async () =>
             {
-                await efeu.ProcessSignalAsync(new EfeuMessage(), Guid.NewGuid(), DateTime.Now);
+                await efeu.ProcessSignalAsync(new EfeuSignal());
             });
         }
 
@@ -99,7 +99,7 @@ namespace Efeu.Integration.Services
             await unitOfWork.BeginAsync();
             try
             {
-                if (effect.Tag == BehaviourEffectTag.Outgoing)
+                if (effect.Tag == EfeuMessageTag.Outbox)
                 {
                     IEfeuEffect? effectInstance = effectProvider.TryGetEffect(effect.Name);
                     if (effectInstance is null)
@@ -112,16 +112,15 @@ namespace Efeu.Integration.Services
                 }
                 else
                 {
-                    EfeuMessage message = new EfeuMessage()
+                    EfeuSignal signal = new EfeuSignal()
                     {
-                        Tag = EfeuMessageTag.Incoming,
+                        Tag = EfeuMessageTag.Signal,
                         Name = effect.Name,
-                        CorrelationId = effect.CorrelationId,
                         Data = effect.Data,
                         TriggerId = effect.TriggerId
                     };
 
-                    await behaviourEffectCommands.ProcessSignal(message, Guid.NewGuid(), DateTime.Now);
+                    await behaviourEffectCommands.ProcessSignal(signal, DateTime.Now);
                     await behaviourEffectRepository.DeleteCompletedSignalAsync(effect.Id);
                 }
             }

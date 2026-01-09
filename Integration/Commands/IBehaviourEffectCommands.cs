@@ -15,7 +15,7 @@ namespace Efeu.Integration.Commands
     {
         public Task SkipEffect(int id, DateTimeOffset timestamp, EfeuValue output = default);
 
-        public Task CreateEffect(DateTimeOffset timestamp, string name, BehaviourEffectTag tag, EfeuValue input, Guid triggerId, Guid correlationId);
+        public Task CreateEffect(DateTimeOffset timestamp, string name, EfeuMessageTag tag, EfeuValue input, Guid triggerId, Guid correlationId);
 
         public Task CreateEffectsBulk(EfeuMessage[] messages, DateTimeOffset timestamp);
 
@@ -25,6 +25,6 @@ namespace Efeu.Integration.Commands
 
         public Task DeleteEffect(int id);
 
-        public Task ProcessSignal(EfeuMessage message, Guid messageId, DateTimeOffset timestamp);
+        public Task ProcessSignal(EfeuSignal message, DateTimeOffset timestamp);
     }
 }

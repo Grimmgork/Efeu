@@ -20,7 +20,7 @@ namespace Efeu.Application.Controllers
 
         [HttpGet]
         [Route("")]
-        public Task<IEnumerable<BehaviourTriggerEntity>> GetAll()
+        public Task<BehaviourTriggerEntity[]> GetAll()
         {
             return behaviourTriggerRepository.GetAllAsync();
         }

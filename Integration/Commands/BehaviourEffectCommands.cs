@@ -35,7 +35,7 @@ namespace Efeu.Integration.Commands
             this.deduplicationStore = deduplicationStore;
         }
 
-        public Task CreateEffect(DateTimeOffset timestamp, string name, BehaviourEffectTag tag, EfeuValue input, Guid triggerId, Guid correlationId)
+        public Task CreateEffect(DateTimeOffset timestamp, string name, EfeuMessageTag tag, EfeuValue input, Guid triggerId, Guid correlationId)
         {
             return behaviourEffectRepository.CreateBulkAsync([new BehaviourEffectEntity() {
                 Id = 0,
@@ -61,7 +61,7 @@ namespace Efeu.Integration.Commands
 
         public BehaviourEffectEntity GetEffectFromOutgoingMessage(EfeuMessage message, DateTimeOffset timestamp)
         {
-            if (message.Tag != EfeuMessageTag.Outgoing)
+            if (message.Tag != EfeuMessageTag.Outbox)
                 throw new Exception("message must be outgoing.");
 
             return new BehaviourEffectEntity()
@@ -73,7 +73,7 @@ namespace Efeu.Integration.Commands
                 Input = message.Data,
                 State = BehaviourEffectState.Running,
                 Tag = effectProvider.TryGetEffect(message.Name) == null ?
-                     BehaviourEffectTag.Incoming : BehaviourEffectTag.Outgoing
+                     EfeuMessageTag.Signal : EfeuMessageTag.Outbox
             };
         }
 
@@ -97,35 +97,43 @@ namespace Efeu.Integration.Commands
             return behaviourEffectRepository.DeleteEffectAsync(id);
         }
 
-        public async Task ProcessSignal(EfeuMessage initialMessage, Guid messageId, DateTimeOffset timestamp)
+        public async Task ProcessSignal(EfeuSignal initialSignal, DateTimeOffset timestamp)
         {
             unitOfWork.EnsureTransaction();
             await unitOfWork.LockAsync("Trigger");
-            if (await deduplicationStore.TryInsertAsync(messageId.ToString(), timestamp) == 0)
+            if (await deduplicationStore.TryInsertAsync(initialSignal.Id.ToString(), timestamp) == 0)
             {
                 return;
             }
 
             SignalProcessingContext context = new SignalProcessingContext(behaviourTriggerRepository, behaviourDefinitionRepository, timestamp);
-            await context.ProcessSignalAsync(initialMessage);
+            await context.ProcessSignalAsync(initialSignal);
 
             int iterations = 0;
             List<BehaviourEffectEntity> effects = [];
             while (context.Messages.TryPop(out EfeuMessage? message)) // handle produced messages
             {
                 BehaviourEffectEntity effectEntity = GetEffectFromOutgoingMessage(message, context.Timestamp);
-                if (effectEntity.Tag == BehaviourEffectTag.Incoming)
+                if (effectEntity.Tag == EfeuMessageTag.Outbox)
+                {
+                    effects.Add(effectEntity);
+                }
+                else
                 {
                     iterations++;
                     if (iterations > 50)
                         throw new Exception($"infinite loop detected! ({iterations} iterations)");
 
-                    message.Tag = EfeuMessageTag.Incoming;
-                    await context.ProcessSignalAsync(message);
-                }
-                else
-                {
-                    effects.Add(effectEntity);
+                    EfeuSignal signal = new EfeuSignal()
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = message.Name,
+                        Data = message.Data,
+                        Tag = message.Tag,
+                        TriggerId = message.TriggerId,
+                        Timestamp = timestamp,
+                    };
+                    await context.ProcessSignalAsync(signal);
                 }
             }
 

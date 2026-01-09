@@ -56,7 +56,7 @@ namespace Efeu.Integration.Commands
             // read all triggers
             BehaviourTriggerEntity[] triggers = await behaviourTriggerRepository.GetStaticAsync(definitionVersionId);
             await behaviourTriggerRepository.DeleteStaticAsync(definitionVersionId);
-            IEfeuTrigger[] triggerInstances = triggers.Select(i => triggerProvider.TryGetTrigger(i.MessageName));
+            IEfeuTrigger[] triggerInstances = triggers.Select(i => triggerProvider.TryGetTrigger(i.MessageName)).ToArray();
             // get all trigger instances
             // instantiate and call DetatchAsync
         }

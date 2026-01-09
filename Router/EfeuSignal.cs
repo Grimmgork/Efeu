@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Foreign
+namespace Efeu.Router
 {
     public class EfeuSignal
     {
@@ -18,5 +18,7 @@ namespace Efeu.Integration.Foreign
         public DateTimeOffset Timestamp;
 
         public Guid TriggerId;
+
+        public EfeuMessageTag Tag;
     }
 }

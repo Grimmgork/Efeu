@@ -20,7 +20,7 @@ namespace Efeu.Integration.Services
         public Task StartAsync(CancellationToken cancellationToken)
         {
             // read all triggers
-
+            return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

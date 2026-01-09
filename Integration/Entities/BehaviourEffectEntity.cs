@@ -1,4 +1,5 @@
-﻿using Efeu.Router.Value;
+﻿using Efeu.Router;
+using Efeu.Router.Value;
 using System;
 
 namespace Efeu.Integration.Entities
@@ -25,7 +26,7 @@ namespace Efeu.Integration.Entities
 
         public uint Times;
 
-        public BehaviourEffectTag Tag;
+        public EfeuMessageTag Tag;
 
         public BehaviourEffectState State;
 
@@ -39,11 +40,5 @@ namespace Efeu.Integration.Entities
         Running,
         Suspended,
         Faulted,
-    }
-
-    public enum BehaviourEffectTag
-    {
-         Outgoing,
-         Incoming
     }
 }

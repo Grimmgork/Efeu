@@ -30,19 +30,19 @@ namespace Efeu.Integration.Services
 
         private readonly Dictionary<int, BehaviourDefinitionVersionEntity> definitionEntityCache = new();
 
-        public async Task ProcessSignalAsync(EfeuMessage message)
+        public async Task ProcessSignalAsync(EfeuSignal signal)
         {
-            BehaviourTrigger[] matchingTriggers = await GetMatchingTriggersAsync(message.Name, message.Tag, message.TriggerId);
+            BehaviourTrigger[] matchingTriggers = await GetMatchingTriggersAsync(signal.Name, signal.Tag, signal.TriggerId);
             foreach (BehaviourTrigger trigger in matchingTriggers)
             {
                 BehaviourRuntime runtime;
                 if (trigger.IsStatic)
                 {
-                    runtime = BehaviourRuntime.RunStaticTrigger(trigger, message, Guid.NewGuid());
+                    runtime = BehaviourRuntime.RunStaticTrigger(trigger, signal, Guid.NewGuid());
                 }
                 else
                 {
-                    runtime = BehaviourRuntime.RunTrigger(trigger, message);
+                    runtime = BehaviourRuntime.RunTrigger(trigger, signal);
                 }
 
                 if (runtime.Result == BehaviourRuntimeResult.Skipped)
