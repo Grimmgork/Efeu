@@ -50,7 +50,7 @@ namespace Efeu.Integration.Commands
             if (definitionVersionEntity != null)
             {
                 // clear all static triggers for old definition
-                await behaviourTriggerCommands.DeleteStaticAsync(definitionVersionEntity.Id);
+                await behaviourTriggerCommands.DetatchStaticAsync(definitionVersionEntity.Id);
             }
 
             // create new version
@@ -59,7 +59,7 @@ namespace Efeu.Integration.Commands
             EfeuRuntime runtime = EfeuRuntime.Run(steps, Guid.NewGuid(), newDefinitionVersionId);
 
             DateTimeOffset timestamp = DateTime.Now;
-            await behaviourTriggerCommands.CreateBulkAsync(runtime.Triggers.ToArray(), timestamp);
+            await behaviourTriggerCommands.AttachAsync(runtime.Triggers.ToArray(), timestamp);
             await behaviourEffectCommands.CreateEffectsBulk(runtime.Messages.ToArray(), timestamp);
 
             return newDefinitionVersionId;

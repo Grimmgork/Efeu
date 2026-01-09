@@ -137,8 +137,8 @@ namespace Efeu.Integration.Commands
                 }
             }
 
-            await behaviourTriggerCommands.CreateBulkAsync(context.Triggers.ToArray(), context.Timestamp);
-            await behaviourTriggerCommands.DeleteBulkAsync(context.DeletedTriggers.ToArray());
+            await behaviourTriggerCommands.AttachAsync(context.Triggers.ToArray(), context.Timestamp);
+            await behaviourTriggerCommands.DetatchAsync(context.DeletedTriggers.ToArray());
             await behaviourEffectRepository.CreateBulkAsync(effects.ToArray());
         }
     }

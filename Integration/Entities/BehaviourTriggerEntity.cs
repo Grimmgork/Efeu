@@ -28,6 +28,8 @@ namespace Efeu.Integration.Entities
 
         public EfeuMessageTag Tag;
 
+        // public bool IsManaged; flag to indicate whether or not it is a IEfeuEffect implementation
+
         public int EffectId; // effect to resume
     }
 }

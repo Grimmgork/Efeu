@@ -23,12 +23,7 @@ namespace Efeu.Integration.Commands
             this.triggerProvider = triggerProvider;
         }
 
-        public Task CreateAsync(EfeuTrigger trigger, DateTimeOffset timestamp)
-        {
-            return CreateBulkAsync([trigger], timestamp);
-        }
-
-        public Task CreateBulkAsync(EfeuTrigger[] triggers, DateTimeOffset timestamp)
+        public Task AttachAsync(EfeuTrigger[] triggers, DateTimeOffset timestamp)
         {
             List<BehaviourTriggerEntity> entites = new List<BehaviourTriggerEntity>();
             foreach (EfeuTrigger trigger in triggers)
@@ -50,19 +45,29 @@ namespace Efeu.Integration.Commands
             return behaviourTriggerRepository.CreateBulkAsync(entites.ToArray());
         }
 
-        public async Task DeleteStaticAsync(int definitionVersionId)
+        public async Task DetatchStaticAsync(int definitionVersionId)
         {
             unitOfWork.EnsureTransaction();
 
             // read all triggers
             BehaviourTriggerEntity[] triggers = await behaviourTriggerRepository.GetStaticAsync(definitionVersionId);
             await behaviourTriggerRepository.DeleteStaticAsync(definitionVersionId);
-            IEfeuTrigger[] triggerInstances = triggers.Select(i => triggerProvider.TryGetTrigger(i.Name)).ToArray();
+            List<IEfeuTrigger> instances = new List<IEfeuTrigger>();
+            foreach (BehaviourTriggerEntity entity in triggers)
+            {
+                IEfeuTrigger? instance = triggerProvider.TryGetTrigger(entity.Name);
+                if (instance == null)
+                    throw new Exception("no trigger provider found for ");
+                
+                // TODO
+                instances.Add(instance);
+            }
+
             // get all trigger instances
             // instantiate and call DetatchAsync
         }
 
-        public Task DeleteBulkAsync(Guid[] ids)
+        public Task DetatchAsync(Guid[] ids)
         {
             // foreach trigger
             // instantiate and call DetatchAsync
