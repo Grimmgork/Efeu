@@ -38,7 +38,7 @@ namespace Efeu.Integration.Services
 
             await unitOfWork.DoAsync(async () =>
             {
-                await efeu.ProcessSignalAsync(new EfeuSignal());
+                await efeu.SendMessageAsync(new EfeuMessage());
             });
         }
 
@@ -83,14 +83,14 @@ namespace Efeu.Integration.Services
 
         private async Task<int> ExecuteEffect(Guid workerId, CancellationToken token)
         {
-            BehaviourEffectEntity? effect = await FindAndLockEffect(workerId, token);
+            EfeuEffectEntity? effect = await FindAndLockEffect(workerId, token);
             if (effect is null)
                 return 0;
 
             await using var scope = scopeFactory.CreateAsyncScope();
 
             IServiceProvider services = scope.ServiceProvider;
-            IBehaviourEffectRepository behaviourEffectRepository = services.GetRequiredService<IBehaviourEffectRepository>();
+            IBehaviourEffectRepository behaviourMessageRepository = services.GetRequiredService<IBehaviourEffectRepository>();
             IBehaviourEffectCommands behaviourEffectCommands = services.GetRequiredService<IBehaviourEffectCommands>();
             IEfeuUnitOfWork unitOfWork = services.GetRequiredService<IEfeuUnitOfWork>();
             IEfeuEffectProvider effectProvider = services.GetRequiredService<IEfeuEffectProvider>();
@@ -99,7 +99,7 @@ namespace Efeu.Integration.Services
             await unitOfWork.BeginAsync();
             try
             {
-                if (effect.Tag == EfeuMessageTag.Outbox)
+                if (effect.Tag == EfeuMessageTag.Effect)
                 {
                     IEfeuEffect? effectInstance = effectProvider.TryGetEffect(effect.Name);
                     if (effectInstance is null)
@@ -108,43 +108,47 @@ namespace Efeu.Integration.Services
                     EfeuEffectExecutionContext context = new EfeuEffectExecutionContext(effect.Id, effect.CorrelationId, executionTime, effect.Times, effect.Data);
 
                     await effectInstance.RunAsync(context, token);
-                    await behaviourEffectRepository.CompleteEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, context.Output);
+                    // complete with result signal
+                    // remove result trigger and replace with new trigger on suspension
+                    await behaviourMessageRepository.CompleteEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, context.Output);
                 }
                 else
                 {
-                    EfeuSignal signal = new EfeuSignal()
+                    EfeuMessage message = new EfeuMessage()
                     {
                         Id = Guid.NewGuid(), // effect.Id,
                         Tag = effect.Tag,
                         Name = effect.Name,
                         Data = effect.Data,
-                        TriggerId = effect.TriggerId
+                        TriggerId = effect.TriggerId,
+                        Timestamp = effect.CreationTime,
+                        CorrelationId = effect.CorrelationId,
                     };
 
-                    await behaviourEffectCommands.ProcessSignal(signal, DateTime.Now);
-                    await behaviourEffectRepository.DeleteCompletedSignalAsync(effect.Id);
+                    await behaviourEffectCommands.SendMessage(message, DateTime.Now);
+                    await behaviourMessageRepository.DeleteCompletedSignalAsync(effect.Id);
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-                await behaviourEffectRepository.FaultEffectAndUnlockAsync(workerId, effect.Id, executionTime, ex.ToString());
+                await behaviourMessageRepository.FaultEffectAndUnlockAsync(workerId, effect.Id, executionTime, ex.ToString());
             }
 
             await unitOfWork.CompleteAsync();
             return 1;
         }
 
-        private async Task<BehaviourEffectEntity?> FindAndLockEffect(Guid workerId, CancellationToken token)
+        private async Task<EfeuEffectEntity?> FindAndLockEffect(Guid workerId, CancellationToken token)
         {
             await using var scope = scopeFactory.CreateAsyncScope();
 
             IServiceProvider services = scope.ServiceProvider;
             IBehaviourEffectRepository behaviourEffectRepository = services.GetRequiredService<IBehaviourEffectRepository>();
 
-            int[] candidateIds = await behaviourEffectRepository.GetRunningEffectsNotLockedAsync(DateTime.Now);
-            BehaviourEffectEntity? effect = null;
-            foreach (int candidateId in candidateIds)
+            Guid[] candidateIds = await behaviourEffectRepository.GetRunningEffectsNotLockedAsync(DateTime.Now);
+            EfeuEffectEntity? effect = null;
+            foreach (Guid candidateId in candidateIds)
             {
                 DateTimeOffset timestamp = DateTime.Now;
                 if (await behaviourEffectRepository.TryLockEffectAsync(candidateId, workerId, timestamp, TimeSpan.FromSeconds(30)))

@@ -28,7 +28,7 @@ namespace Efeu.Application.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            BehaviourEffectEntity[] effects = await behaviourEffectRepository.GetAllAsync();
+            EfeuEffectEntity[] effects = await behaviourEffectRepository.GetAllAsync();
             return View(effects);
         }
 
@@ -36,14 +36,21 @@ namespace Efeu.Application.Controllers
         [Route("")]
         public async Task<IActionResult> Create(string name, EfeuMessageTag tag)
         {
-            await behaviourEffectCommands.CreateEffect(DateTime.Now, name, tag, default, Guid.Empty, Guid.Empty);
+            await behaviourEffectCommands.CreateEffect(new EfeuMessage()
+            {
+                Id = Guid.NewGuid(),
+                Timestamp = DateTime.Now,
+                Name = name,
+                Tag = tag,
+                CorrelationId = Guid.NewGuid(),
+            });
             Response.Headers["HX-Refresh"] = "true";
             return Ok();
         }
 
         [HttpDelete]
         [Route("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(Guid id)
         {
             await behaviourEffectCommands.DeleteEffect(id);
             Response.Headers["HX-Refresh"] = "true";
@@ -52,7 +59,7 @@ namespace Efeu.Application.Controllers
 
         [HttpPost]
         [Route("{id}/Nudge")]
-        public async Task<IActionResult> Nudge(int id)
+        public async Task<IActionResult> Nudge(Guid id)
         {
             await behaviourEffectCommands.NudgeEffect(id);
             Response.Headers["HX-Refresh"] = "true";
@@ -61,7 +68,7 @@ namespace Efeu.Application.Controllers
 
         [HttpPost]
         [Route("{id}/Suspend")]
-        public async Task<IActionResult> Suspend(int id)
+        public async Task<IActionResult> Suspend(Guid id)
         {
             await behaviourEffectCommands.SuspendEffect(id, DateTime.Now);
             Response.Headers["HX-Refresh"] = "true";

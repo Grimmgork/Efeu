@@ -68,9 +68,9 @@ namespace Efeu.Router
             EfeuRuntime behaviour1 = EfeuRuntime.Run(steps, Guid.NewGuid(), 10);
             EfeuTrigger trigger = behaviour1.Triggers.First();
 
-            EfeuRuntime behaviour2 = EfeuRuntime.RunTrigger(trigger, new EfeuSignal()
+            EfeuRuntime behaviour2 = EfeuRuntime.RunTrigger(trigger, new EfeuMessage()
             {
-                 Tag = EfeuMessageTag.Signal,
+                 Tag = EfeuMessageTag.Data,
                  Name = "Event"
             });
 

@@ -89,7 +89,7 @@ namespace Efeu.Router
         
         private EfeuRuntimeResult result;
 
-        private readonly EfeuSignal triggerSignal = new EfeuSignal();
+        private readonly EfeuMessage triggerSignal = new EfeuMessage();
 
         private readonly EfeuTrigger trigger = new EfeuTrigger();
 
@@ -101,7 +101,7 @@ namespace Efeu.Router
             this.trigger.DefinitionId = definitionId;
         }
 
-        public EfeuRuntime(EfeuTrigger trigger, EfeuSignal signal, Guid id)
+        public EfeuRuntime(EfeuTrigger trigger, EfeuMessage signal, Guid id)
         {
             this.Id = id;
             this.triggerSignal = signal;
@@ -109,7 +109,7 @@ namespace Efeu.Router
             this.IsImmediate = false;
         }
 
-        public EfeuRuntime(EfeuTrigger trigger, EfeuSignal signal)
+        public EfeuRuntime(EfeuTrigger trigger, EfeuMessage signal)
         {
             this.Id = trigger.CorrelationId;
             this.triggerSignal = signal;
@@ -124,7 +124,7 @@ namespace Efeu.Router
             return runtime;
         }
 
-        public static EfeuRuntime RunStaticTrigger(EfeuTrigger trigger, EfeuSignal signal, Guid id)
+        public static EfeuRuntime RunStaticTrigger(EfeuTrigger trigger, EfeuMessage signal, Guid id)
         {
             if (!trigger.IsStatic)
                 throw new InvalidOperationException("Trigger must be static!");
@@ -134,7 +134,7 @@ namespace Efeu.Router
             return runtime;
         }
 
-        public static EfeuRuntime RunTrigger(EfeuTrigger trigger, EfeuSignal signal)
+        public static EfeuRuntime RunTrigger(EfeuTrigger trigger, EfeuMessage signal)
         {
             if (trigger.IsStatic)
                 throw new InvalidOperationException("Trigger must not be static!");
@@ -170,7 +170,7 @@ namespace Efeu.Router
             return EfeuRuntimeResult.Executed;
         }
 
-        private static bool TriggerMatchesMessage(EfeuTrigger trigger, EfeuSignal signal, BehaviourDefinitionStep step)
+        private static bool TriggerMatchesMessage(EfeuTrigger trigger, EfeuMessage signal, BehaviourDefinitionStep step)
         {
             return signal.Tag == trigger.Tag &&
                    signal.Name == trigger.Name &&
@@ -234,9 +234,10 @@ namespace Efeu.Router
         {
             Messages.Add(new EfeuMessage()
             {
+                Id = Guid.NewGuid(),
                 CorrelationId = Id,
                 Name = step.Name,
-                Tag = EfeuMessageTag.Outbox
+                Tag = EfeuMessageTag.Effect
             });
         }
 
@@ -281,9 +282,10 @@ namespace Efeu.Router
 
             Messages.Add(new EfeuMessage()
             {
+                Id = Guid.NewGuid(),
                 CorrelationId = Id,
                 Name = step.Name,
-                Tag = EfeuMessageTag.Outbox,
+                Tag = EfeuMessageTag.Effect,
                 TriggerId = triggerId,
             });
 
@@ -292,7 +294,7 @@ namespace Efeu.Router
                 Id = triggerId,
                 CorrelationId = Id,
                 Scope = scope,
-                Tag = EfeuMessageTag.Completion,
+                Tag = EfeuMessageTag.Result,
                 Name = step.Name,
                 Position = position,
                 DefinitionId = trigger.DefinitionId,
@@ -308,7 +310,7 @@ namespace Efeu.Router
                 Id = Guid.NewGuid(),
                 CorrelationId = Id,
                 Scope = scope,
-                Tag = EfeuMessageTag.Signal,
+                Tag = EfeuMessageTag.Data,
                 Name = step.Name,
                 Position = position,
                 Input = step.Input.Evaluate(context),
@@ -327,7 +329,7 @@ namespace Efeu.Router
             {
                 Id = Guid.NewGuid(),
                 Scope = scope,
-                Tag = EfeuMessageTag.Signal,
+                Tag = EfeuMessageTag.Data,
                 Name = step.Name,
                 DefinitionId = trigger.DefinitionId,
                 Input = step.Input.Evaluate(context),

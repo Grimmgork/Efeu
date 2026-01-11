@@ -26,9 +26,9 @@ namespace Efeu.Integration.Foreign
 
         public IEfeuUnitOfWork UnitOfWork => unitOfWork;
 
-        public Task ProcessSignalAsync(EfeuSignal signal)
+        public Task SendMessageAsync(EfeuMessage message)
         {
-            return behaviourEffectCommands.ProcessSignal(signal, DateTime.Now);
+            return behaviourEffectCommands.SendMessage(message, DateTime.Now);
         }
 
         public Task ClearDeduplicationKeysBeforeAsync(DateTimeOffset before)

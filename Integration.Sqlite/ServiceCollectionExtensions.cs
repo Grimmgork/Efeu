@@ -93,12 +93,13 @@ namespace Efeu.Integration.Sqlite
                 .Property(p => p.Scope)
                 .Property(p => p.EffectId);
 
-            builder.Entity<BehaviourEffectEntity>()
+            builder.Entity<EfeuEffectEntity>()
                 .HasTableName("Effect")
                 .HasSchemaName(schema)
                 .Property(p => p.Id)
                     .IsIdentity()
                     .IsPrimaryKey()
+                    .HasSkipOnInsert(false)
                 .Property(p => p.CorrelationId)
                 .Property(p => p.CreationTime)
                 .Property(p => p.State)

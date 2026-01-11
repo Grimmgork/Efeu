@@ -25,19 +25,19 @@ namespace Efeu.Router
 
         public BehaviourDefinitionStep Step = new BehaviourDefinitionStep();
 
-        public EfeuTriggerField[] Fields = [];
+        public EfeuTriggerMatch[] Fields = [];
 
         public int DefinitionId;
 
         public bool IsStatic => CorrelationId == Guid.Empty; // a trigger is static if it is not assigned to a instance
     }
 
-    public class EfeuTriggerField
+    public class EfeuTriggerMatch
     {
         public string Name = "";
 
-        public EfeuValue Literal;
+        public EfeuExpression Value = EfeuExpression.Empty;
 
-        public EfeuTriggerField[] Fields = [];
+        public EfeuTriggerMatch[] Fields = [];
     }
 }

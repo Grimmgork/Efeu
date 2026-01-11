@@ -4,9 +4,9 @@ using System;
 
 namespace Efeu.Integration.Entities
 {
-    public class BehaviourEffectEntity
+    public class EfeuEffectEntity
     {
-        public int Id;
+        public Guid Id; // guid similar to message id
 
         public string Name = "";
 

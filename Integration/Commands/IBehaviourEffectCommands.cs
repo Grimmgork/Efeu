@@ -13,18 +13,18 @@ namespace Efeu.Integration.Commands
 {
     public interface IBehaviourEffectCommands
     {
-        public Task SkipEffect(int id, DateTimeOffset timestamp, EfeuValue output = default);
+        public Task SkipEffect(Guid id, DateTimeOffset timestamp, EfeuValue output = default);
 
-        public Task CreateEffect(DateTimeOffset timestamp, string name, EfeuMessageTag tag, EfeuValue input, Guid triggerId, Guid correlationId);
+        public Task SuspendEffect(Guid id, DateTimeOffset timestamp);
 
-        public Task CreateEffectsBulk(EfeuMessage[] messages, DateTimeOffset timestamp);
+        public Task NudgeEffect(Guid id);
 
-        public Task SuspendEffect(int id, DateTimeOffset timestamp);
+        public Task DeleteEffect(Guid id);
 
-        public Task NudgeEffect(int id);
+        public Task CreateEffect(EfeuMessage message);
 
-        public Task DeleteEffect(int id);
+        public Task SendMessage(EfeuMessage message, DateTimeOffset timestamp);
 
-        public Task ProcessSignal(EfeuSignal message, DateTimeOffset timestamp);
+        public Task RunImmediate(BehaviourDefinitionStep[] steps, int definitionVersionId, DateTimeOffset timestamp);
     }
 }

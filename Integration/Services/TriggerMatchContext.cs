@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Services
 {
-    public class SignalProcessingContext
+    public class TriggerMatchContext
     {
         public readonly DateTimeOffset Timestamp;
         public readonly List<EfeuTrigger> Triggers = new List<EfeuTrigger>();
@@ -21,7 +21,7 @@ namespace Efeu.Integration.Services
 
         public readonly HashSet<Guid> DeletedTriggers = new();
 
-        public SignalProcessingContext(IBehaviourTriggerRepository behaviourTriggerRepository, IBehaviourDefinitionRepository behaviourDefinitionRepository, DateTimeOffset timestamp)
+        public TriggerMatchContext(IBehaviourTriggerRepository behaviourTriggerRepository, IBehaviourDefinitionRepository behaviourDefinitionRepository, DateTimeOffset timestamp)
         {
             this.behaviourDefinitionRepository = behaviourDefinitionRepository;
             this.behaviourTriggerRepository = behaviourTriggerRepository;
@@ -30,7 +30,7 @@ namespace Efeu.Integration.Services
 
         private readonly Dictionary<int, BehaviourDefinitionVersionEntity> definitionEntityCache = new();
 
-        public async Task ProcessSignalAsync(EfeuSignal signal)
+        public async Task MatchTriggersAsync(EfeuMessage signal)
         {
             EfeuTrigger[] matchingTriggers = await GetMatchingTriggersAsync(signal.Name, signal.Tag, signal.TriggerId);
             foreach (EfeuTrigger trigger in matchingTriggers)

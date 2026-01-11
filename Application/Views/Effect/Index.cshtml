@@ -1,12 +1,12 @@
 ﻿@using Efeu.Integration.Entities
-@model BehaviourEffectEntity[]
+@model EfeuEffectEntity[]
 
 <div>
     <form hx-post="/Effect">
         <input type="text" name="name"/>
         <select type="text" name="tag" >
-            <option value="Signal">Signal</option>
-            <option value="Outbox">Outbox</option>
+            <option value="Data">Data</option>
+            <option value="Effect">Effect</option>
         </select>
         <button type="submit">emit</button>
     </form>
@@ -26,7 +26,7 @@ else
             <th>State</th>
             <th>Actions</th>
         </tr>
-        @foreach (BehaviourEffectEntity effect in Model)
+        @foreach (EfeuEffectEntity effect in Model)
         {
             <tr>
                 <td>@effect.CreationTime</td>

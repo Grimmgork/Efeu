@@ -10,9 +10,22 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Foreign
 {
+    public enum EfeuEffectResult
+    {
+        Completed,
+        Suspend
+    }
+
+    public class EfeuEffectTrigger
+    {
+        public string Name = "";
+
+        public EfeuTriggerMatch[] Fields = [];
+    }
+
     public class EfeuEffectExecutionContext
     {
-        public readonly int Id;
+        public readonly Guid Id;
 
         public readonly Guid CorellationId;
 
@@ -24,9 +37,11 @@ namespace Efeu.Integration.Foreign
 
         public EfeuValue Output;
 
-        public string Fault = "";
+        public readonly EfeuEffectTrigger Trigger = new EfeuEffectTrigger();
 
-        public EfeuEffectExecutionContext(int id, Guid corellationId, DateTimeOffset timestamp, uint times, EfeuValue input)
+        public bool Suspend;
+
+        public EfeuEffectExecutionContext(Guid id, Guid corellationId, DateTimeOffset timestamp, uint times, EfeuValue input)
         {
             Id = id;
             CorellationId = corellationId;

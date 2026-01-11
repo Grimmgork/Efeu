@@ -18,6 +18,6 @@ namespace Efeu.Integration.Persistence
 
         public void EnsureTransaction();
 
-        public Task LockAsync(params string[] locks);
+        public Task LockAsync(string locks);
     }
 }

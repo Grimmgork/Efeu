@@ -20,6 +20,8 @@ namespace Efeu.Integration.Sqlite
         private TransactionScope? scope;
         private DataConnection connection;
 
+        private HashSet<string> locks = new HashSet<string>();
+
         public EfeuUnitOfWork(DataConnection connection)
         {
             this.connection = connection;
@@ -45,19 +47,21 @@ namespace Efeu.Integration.Sqlite
             scope?.Dispose();
         }
 
-        public async Task LockAsync(params string[] locks)
+        public async Task LockAsync(string key)
         {
             if (scope == null)
                 throw new InvalidOperationException("No transaction is running.");
 
-            await connection.BulkCopyAsync(new BulkCopyOptions()
+            if (locks.Contains(key))
+                return;
+
+            await connection.InsertAsync(new LockEntity()
             {
-                BulkCopyType = BulkCopyType.MultipleRows
-            }, locks.Select(i => new LockEntity()
-            {
-                Name = i,
+                Name = key,
                 Bundle = id
-            }));
+            });
+
+            locks.Add(key);
         }
 
         public void EnsureTransaction()

@@ -9,15 +9,19 @@ namespace Efeu.Router
 {
     public enum EfeuMessageTag
     {
-        Outbox,
-        Signal,
-        Completion,
-        Fault
+        Effect, // effect
+        Data,   // incoming data signal
+        Result, // incoming effect result signal
+        Fault   // incoming effect fault signal
     }
 
     public class EfeuMessage
     {
+        public Guid Id;
+
         public string Name = "";
+
+        public DateTimeOffset Timestamp;
 
         public EfeuMessageTag Tag;
 

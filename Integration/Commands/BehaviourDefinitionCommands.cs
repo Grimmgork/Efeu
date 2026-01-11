@@ -53,15 +53,9 @@ namespace Efeu.Integration.Commands
                 await behaviourTriggerCommands.DetatchStaticAsync(definitionVersionEntity.Id);
             }
 
-            // create new version
             int newDefinitionVersionId = await CreateVersionAsync(definitionId, steps);
 
-            EfeuRuntime runtime = EfeuRuntime.Run(steps, Guid.NewGuid(), newDefinitionVersionId);
-
-            DateTimeOffset timestamp = DateTime.Now;
-            await behaviourTriggerCommands.AttachAsync(runtime.Triggers.ToArray(), timestamp);
-            await behaviourEffectCommands.CreateEffectsBulk(runtime.Messages.ToArray(), timestamp);
-
+            await behaviourEffectCommands.RunImmediate(steps, newDefinitionVersionId, DateTime.Now);
             return newDefinitionVersionId;
         }
 
