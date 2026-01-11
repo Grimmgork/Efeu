@@ -1,4 +1,4 @@
-﻿using Efeu.Router.Value;
+﻿using Efeu.Runtime.Value;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Router.Script
+namespace Efeu.Runtime.Script
 {
 
     public interface IEfeuScope

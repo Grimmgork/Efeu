@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Efeu.Router;
+using Efeu.Runtime;
 
 namespace Efeu.Integration.Sqlite.Repositories
 {
@@ -71,7 +71,7 @@ namespace Efeu.Integration.Sqlite.Repositories
                 .FirstAsync(i => i.Id == id);
         }
 
-        public Task<BehaviourTriggerEntity[]> GetMatchingAsync(string name, Router.EfeuMessageTag tag, Guid triggerId, DateTimeOffset timestamp)
+        public Task<BehaviourTriggerEntity[]> GetMatchingAsync(string name, Runtime.EfeuMessageTag tag, Guid triggerId, DateTimeOffset timestamp)
         {
             return connection.GetTable<BehaviourTriggerEntity>()
                 .Where(i => i.CreationTime < timestamp

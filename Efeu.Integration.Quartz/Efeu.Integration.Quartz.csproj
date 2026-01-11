@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Integration\Efeu.Integration.csproj" />
-    <ProjectReference Include="..\Router\Efeu.Router.csproj" />
+    <ProjectReference Include="..\Runtime\Efeu.Runtime.csproj" />
   </ItemGroup>
 
 </Project>

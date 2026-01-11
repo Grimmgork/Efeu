@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Router.Value
+namespace Efeu.Runtime.Value
 {
     public class EfeuHash : EfeuObject, IEnumerable<KeyValuePair<string, EfeuValue>>
     {

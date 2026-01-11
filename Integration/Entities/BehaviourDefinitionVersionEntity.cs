@@ -1,6 +1,6 @@
 namespace Efeu.Integration.Entities
 {
-    using Efeu.Router;
+    using Efeu.Runtime;
     using System;
 
     public class BehaviourDefinitionVersionEntity

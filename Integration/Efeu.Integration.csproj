@@ -16,10 +16,10 @@
 	  <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.6" />
 	</ItemGroup>
 	<ItemGroup>
-	  <ProjectReference Include="..\Router\Efeu.Router.csproj" />
+	  <Folder Include="Data\" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Folder Include="Data\" />
+	  <ProjectReference Include="..\Runtime\Efeu.Runtime.csproj" />
 	</ItemGroup>
 
 </Project>
