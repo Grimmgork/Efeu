@@ -16,6 +16,8 @@ namespace Efeu.Integration.Foreign
 
         public Task SendMessageAsync(EfeuMessage message);
 
+        public Task CreateEffectAsync(EfeuMessage message);
+
         public Task ClearDeduplicationKeysBeforeAsync(DateTimeOffset until);
     }
 }

@@ -31,6 +31,11 @@ namespace Efeu.Integration.Foreign
             return behaviourEffectCommands.SendMessage(message, DateTime.Now);
         }
 
+        public Task CreateEffectAsync(EfeuMessage message)
+        {
+            return behaviourEffectCommands.CreateEffect(message);
+        }
+
         public Task ClearDeduplicationKeysBeforeAsync(DateTimeOffset before)
         {
             return deduplicationStore.ClearBeforeAsync(before);
