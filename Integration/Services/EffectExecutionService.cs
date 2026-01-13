@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,14 +37,18 @@ namespace Efeu.Integration.Services
             IEfeuUnitOfWork unitOfWork = services.GetRequiredService<IEfeuUnitOfWork>();
             IEfeuEngine efeu = services.GetRequiredService<IEfeuEngine>();
 
-            await unitOfWork.DoAsync(async () =>
-            {
-                await efeu.SendMessageAsync(new EfeuMessage());
-            });
+            await unitOfWork.BeginAsync();
+            await unitOfWork.LockAsync("asdf");
+
+            throw new Exception("adawdawd");
+
+            await unitOfWork.CompleteAsync();
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
+            // return Test();
+
             CancellationToken token = cancellationTokenSource.Token;
 
             List<Task> workers = new List<Task>();
@@ -117,7 +122,7 @@ namespace Efeu.Integration.Services
 
                     // complete with result signal
                     // remove result trigger and replace with new trigger on suspension
-                    await behaviourMessageRepository.CompleteEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, context.Output);
+                    await behaviourMessageRepository.CompleteEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, default);
                 }
                 else
                 {

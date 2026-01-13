@@ -88,7 +88,7 @@ namespace Efeu.Integration.Commands
 
         public async Task RunImmediate(BehaviourDefinitionStep[] steps, int definitionVersionId, DateTimeOffset timestamp)
         {
-            unitOfWork.EnsureTransaction();
+            await unitOfWork.BeginAsync();
 
             EfeuRuntime runtime = EfeuRuntime.Run(steps, Guid.NewGuid(), definitionVersionId);
 
@@ -100,11 +100,12 @@ namespace Efeu.Integration.Commands
 
             await behaviourEffectRepository.CreateBulkAsync(effects.ToArray());
             await behaviourTriggerCommands.AttachAsync(runtime.Triggers.ToArray(), timestamp);
+            await unitOfWork.CompleteAsync();
         }
 
         public async Task SendMessage(EfeuMessage message, DateTimeOffset timestamp)
         {
-            unitOfWork.EnsureTransaction();
+            await unitOfWork.BeginAsync();
             await unitOfWork.LockAsync("Trigger");
             if (await deduplicationStore.TryInsertAsync(message.Id.ToString(), message.Timestamp) == 0)
             {
@@ -127,10 +128,14 @@ namespace Efeu.Integration.Commands
             {
                 await UnlockTriggers(message, timestamp);
             }
+
+            await unitOfWork.CompleteAsync();
         }
 
         private async Task UnlockTriggers(EfeuMessage initialSignal, DateTimeOffset timestamp)
         {
+            await unitOfWork.BeginAsync();
+
             TriggerMatchContext context = new TriggerMatchContext(behaviourTriggerRepository, behaviourDefinitionRepository, timestamp);
             await context.MatchTriggersAsync(initialSignal);
 
@@ -156,6 +161,7 @@ namespace Efeu.Integration.Commands
             await behaviourTriggerCommands.AttachAsync(context.Triggers.ToArray(), context.Timestamp);
             await behaviourTriggerCommands.DetatchAsync(context.DeletedTriggers.ToArray());
             await behaviourEffectRepository.CreateBulkAsync(effects.ToArray());
+            await unitOfWork.CompleteAsync();
         }
     }
 }

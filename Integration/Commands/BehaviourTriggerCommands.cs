@@ -47,7 +47,7 @@ namespace Efeu.Integration.Commands
 
         public async Task DetatchStaticAsync(int definitionVersionId)
         {
-            unitOfWork.EnsureTransaction();
+            await unitOfWork.BeginAsync();
 
             // read all triggers
             BehaviourTriggerEntity[] triggers = await behaviourTriggerRepository.GetStaticAsync(definitionVersionId);
@@ -65,6 +65,8 @@ namespace Efeu.Integration.Commands
 
             // get all trigger instances
             // instantiate and call DetatchAsync
+
+            await unitOfWork.CompleteAsync();
         }
 
         public Task DetatchAsync(Guid[] ids)

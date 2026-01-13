@@ -44,8 +44,7 @@ namespace Efeu.Integration.Commands
 
         public async Task<int> PublishVersionAsync(int definitionId, BehaviourDefinitionStep[] steps)
         {
-            unitOfWork.EnsureTransaction();
-
+            await unitOfWork.BeginAsync();
             BehaviourDefinitionVersionEntity? definitionVersionEntity = await behaviourDefinitionRepository.GetLatestVersionAsync(definitionId);
             if (definitionVersionEntity != null)
             {
@@ -56,6 +55,7 @@ namespace Efeu.Integration.Commands
             int newDefinitionVersionId = await CreateVersionAsync(definitionId, steps);
 
             await behaviourEffectCommands.RunImmediate(steps, newDefinitionVersionId, DateTime.Now);
+            await unitOfWork.CompleteAsync();
             return newDefinitionVersionId;
         }
 
