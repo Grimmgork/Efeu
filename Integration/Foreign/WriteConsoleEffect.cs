@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Efeu.Runtime;
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
@@ -11,10 +12,19 @@ namespace Efeu.Integration.Foreign
 {
     internal class WriteConsoleEffect : IEfeuEffect
     {
-        public Task<EfeuEffectResult> RunAsync(EfeuEffectExecutionContext context, CancellationToken token)
+        public Task RunAsync(EfeuEffectExecutionContext context, CancellationToken token)
         {
             Console.WriteLine(context.Input);
-            return Task.FromResult(EfeuEffectResult.Completed);
+            return context.SuspendAsync(new EfeuEffectTrigger()
+            {
+                Name = "Asdf",
+                Tag = EfeuMessageTag.Data,
+            });
+        }
+
+        public Task OnTriggerAsync(EfeuEffectTriggerContext context)
+        {
+            return context.SuspendAsync(default);
         }
     }
 }

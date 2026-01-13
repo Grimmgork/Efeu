@@ -108,6 +108,13 @@ namespace Efeu.Integration.Services
                     EfeuEffectExecutionContext context = new EfeuEffectExecutionContext(effect.Id, effect.CorrelationId, executionTime, effect.Times, effect.Data);
 
                     await effectInstance.RunAsync(context, token);
+
+                    // complete
+
+                    // respond
+
+                    // suspend
+
                     // complete with result signal
                     // remove result trigger and replace with new trigger on suspension
                     await behaviourMessageRepository.CompleteEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, context.Output);

@@ -1,4 +1,5 @@
 ﻿using Efeu.Integration.Entities;
+using Efeu.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,8 @@ namespace Efeu.Integration.Foreign
 {
     public interface IEfeuEffect
     {
-        public Task<EfeuEffectResult> RunAsync(EfeuEffectExecutionContext context, CancellationToken token);
+        public Task RunAsync(EfeuEffectExecutionContext context, CancellationToken token);
+
+        public Task OnTriggerAsync(EfeuEffectTriggerContext context);
     }
 }

@@ -12,15 +12,38 @@ namespace Efeu.Integration.Foreign
 {
     public enum EfeuEffectResult
     {
-        Completed,
+        Complete,
         Suspend
     }
 
     public class EfeuEffectTrigger
     {
+        public readonly Guid Id = Guid.NewGuid();
+
         public string Name = "";
 
-        public EfeuTriggerMatch[] Fields = [];
+        public EfeuMessageTag Tag;
+    }
+
+    public class EfeuEffectTriggerContext
+    {
+        public readonly Guid Id;
+
+        public readonly Guid CorellationId;
+
+        public readonly DateTimeOffset Timestamp;
+
+        public readonly EfeuValue Input;
+
+        public readonly EfeuValue Data;
+
+        public readonly EfeuMessage Message = new EfeuMessage();
+
+        public Task RespondAsync(EfeuValue output) => Task.CompletedTask;
+
+        public Task SuspendAsync() => Task.CompletedTask;
+
+        public Task SuspendAsync(EfeuEffectTrigger trigger) => Task.CompletedTask;
     }
 
     public class EfeuEffectExecutionContext
@@ -35,11 +58,7 @@ namespace Efeu.Integration.Foreign
 
         public readonly EfeuValue Input;
 
-        public EfeuValue Output;
-
-        public readonly EfeuEffectTrigger Trigger = new EfeuEffectTrigger();
-
-        public bool Suspend;
+        public EfeuValue Data;
 
         public EfeuEffectExecutionContext(Guid id, Guid corellationId, DateTimeOffset timestamp, uint times, EfeuValue input)
         {
@@ -49,5 +68,9 @@ namespace Efeu.Integration.Foreign
             Input = input;
             Timestamp = timestamp;
         }
+
+        public Task RespondAsync(EfeuValue output) => Task.CompletedTask;
+
+        public Task SuspendAsync(EfeuEffectTrigger trigger) => Task.CompletedTask;
     }
 }
