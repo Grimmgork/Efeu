@@ -12,7 +12,7 @@ namespace Efeu.Runtime
         Effect, // effect
         Data,   // incoming data signal
         Result, // incoming effect result signal
-        Fault   // incoming effect fault signal
+        Fault,  // incoming effect fault signal
     }
 
     public class EfeuMessage
@@ -27,8 +27,8 @@ namespace Efeu.Runtime
 
         public Guid CorrelationId; // from wich it came
 
-        public Guid TriggerId; // response / fault triggers id
-
         public EfeuValue Data;
+
+        public Guid Matter;
     }
 }

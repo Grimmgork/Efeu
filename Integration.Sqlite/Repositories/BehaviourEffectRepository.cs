@@ -124,6 +124,7 @@ namespace Efeu.Integration.Sqlite.Repositories
                 .Set(u => u.State, BehaviourEffectState.Faulted)
                 .Set(u => u.ExecutionTime, timestamp)
                 .Set(u => u.LockId, Guid.Empty)
+                .Set(u => u.Matter, id)
                 .Set(u => u.LockedUntil, DateTimeOffset.MinValue)
                 .Set(u => u.Fault, fault)
                 .UpdateAsync();
@@ -139,6 +140,7 @@ namespace Efeu.Integration.Sqlite.Repositories
                 .Set(u => u.Input, output)
                 .Set(u => u.CreationTime, timestamp)
                 .Set(u => u.LockId, Guid.Empty)
+                .Set(u => u.Matter, id)
                 .Set(u => u.LockedUntil, DateTimeOffset.MinValue)
                 .UpdateAsync();
         }

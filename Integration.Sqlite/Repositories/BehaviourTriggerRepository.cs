@@ -51,6 +51,12 @@ namespace Efeu.Integration.Sqlite.Repositories
                                && i.CorrelationId == Guid.Empty);
         }
 
+        public Task DeleteByMatterBulkAsync(Guid[] matters)
+        {
+            return connection.GetTable<BehaviourTriggerEntity>()
+                .DeleteAsync(i => matters.Contains(i.Matter));
+        }
+
         public Task<BehaviourTriggerEntity[]> GetAllAsync()
         {
              return connection.GetTable<BehaviourTriggerEntity>()
@@ -71,13 +77,13 @@ namespace Efeu.Integration.Sqlite.Repositories
                 .FirstAsync(i => i.Id == id);
         }
 
-        public Task<BehaviourTriggerEntity[]> GetMatchingAsync(string name, Runtime.EfeuMessageTag tag, Guid triggerId, DateTimeOffset timestamp)
+        public Task<BehaviourTriggerEntity[]> GetMatchingAsync(string name, EfeuMessageTag tag, Guid matter, DateTimeOffset timestamp)
         {
             return connection.GetTable<BehaviourTriggerEntity>()
                 .Where(i => i.CreationTime < timestamp
                          && i.Name == name
                          && i.Tag == tag
-                         && (triggerId == Guid.Empty ? true : i.Id == triggerId))
+                         && i.Matter == matter)
                 .ToArrayAsync();
         }
     }

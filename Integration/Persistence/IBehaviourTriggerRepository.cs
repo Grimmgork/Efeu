@@ -14,7 +14,7 @@ namespace Efeu.Integration.Persistence
 
         public Task<BehaviourTriggerEntity[]> GetAllAsync();
 
-        public Task<BehaviourTriggerEntity[]> GetMatchingAsync(string name, EfeuMessageTag tag, Guid triggerId, DateTimeOffset timestamp);
+        public Task<BehaviourTriggerEntity[]> GetMatchingAsync(string name, EfeuMessageTag tag, Guid matter, DateTimeOffset timestamp);
 
         public Task<int> CreateAsync(BehaviourTriggerEntity trigger);
 
@@ -27,5 +27,7 @@ namespace Efeu.Integration.Persistence
         public Task DeleteAsync(Guid id);
 
         public Task DeleteBulkAsync(Guid[] ids);
+
+        public Task DeleteByMatterBulkAsync(Guid[] matters);
     }
 }

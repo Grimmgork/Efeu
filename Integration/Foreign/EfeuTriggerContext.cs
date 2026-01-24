@@ -1,4 +1,5 @@
-﻿using Efeu.Runtime.Value;
+﻿using Efeu.Runtime;
+using Efeu.Runtime.Value;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,8 +14,10 @@ namespace Efeu.Integration.Foreign
 
         public readonly EfeuValue Input;
 
-        public readonly DateTimeOffset CreatedAt;
+        public readonly DateTimeOffset Timestamp;
 
-        public readonly bool IsInitial;
+        public Task ModifyAsync(string name, EfeuMessageTag tag) => Task.CompletedTask;
+
+        public Task ScheduleAsync(DateTimeOffset time) => Task.CompletedTask;
     }
 }

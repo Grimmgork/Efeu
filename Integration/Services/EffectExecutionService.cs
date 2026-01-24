@@ -29,26 +29,8 @@ namespace Efeu.Integration.Services
             this.scopeFactory = scopeFactory;
         }
 
-        private async Task Test()
-        {
-            await using var scope = scopeFactory.CreateAsyncScope();
-
-            IServiceProvider services = scope.ServiceProvider;
-            IEfeuUnitOfWork unitOfWork = services.GetRequiredService<IEfeuUnitOfWork>();
-            IEfeuEngine efeu = services.GetRequiredService<IEfeuEngine>();
-
-            await unitOfWork.BeginAsync();
-            await unitOfWork.LockAsync("asdf");
-
-            throw new Exception("adawdawd");
-
-            await unitOfWork.CompleteAsync();
-        }
-
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            // return Test();
-
             CancellationToken token = cancellationTokenSource.Token;
 
             List<Task> workers = new List<Task>();
@@ -113,27 +95,18 @@ namespace Efeu.Integration.Services
                     EfeuEffectExecutionContext context = new EfeuEffectExecutionContext(effect.Id, effect.CorrelationId, executionTime, effect.Times, effect.Data);
 
                     await effectInstance.RunAsync(context, token);
-
-                    // complete
-
-                    // respond
-
-                    // suspend
-
-                    // complete with result signal
-                    // remove result trigger and replace with new trigger on suspension
                     await behaviourMessageRepository.CompleteEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, default);
                 }
                 else
                 {
                     EfeuMessage message = new EfeuMessage()
                     {
-                        Id = Guid.NewGuid(), // effect.Id,
+                        Id = effect.Id,
                         Tag = effect.Tag,
                         Name = effect.Name,
                         Data = effect.Data,
-                        TriggerId = effect.TriggerId,
                         Timestamp = effect.CreationTime,
+                        Matter = effect.Matter,
                         CorrelationId = effect.CorrelationId,
                     };
 

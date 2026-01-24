@@ -14,5 +14,7 @@ namespace Efeu.Integration.Commands
         public Task DetatchStaticAsync(int definitionVersionId);
 
         public Task DetatchAsync(Guid[] ids);
+
+        public Task ResolveMattersAsync(Guid[] matters);
     }
 }

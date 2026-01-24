@@ -23,8 +23,10 @@ namespace Efeu.Integration.Commands
             this.triggerProvider = triggerProvider;
         }
 
-        public Task AttachAsync(EfeuTrigger[] triggers, DateTimeOffset timestamp)
+        public async Task AttachAsync(EfeuTrigger[] triggers, DateTimeOffset timestamp)
         {
+            await unitOfWork.BeginAsync();
+
             List<BehaviourTriggerEntity> entites = new List<BehaviourTriggerEntity>();
             foreach (EfeuTrigger trigger in triggers)
             {
@@ -38,42 +40,33 @@ namespace Efeu.Integration.Commands
                     Input = trigger.Input,
                     Name = trigger.Name,
                     Tag = trigger.Tag,
+                    Matter = trigger.Matter,
                     CreationTime = timestamp
                 });
             }
 
-            return behaviourTriggerRepository.CreateBulkAsync(entites.ToArray());
+            await behaviourTriggerRepository.CreateBulkAsync(entites.ToArray());
+
+            await unitOfWork.CompleteAsync();
         }
 
         public async Task DetatchStaticAsync(int definitionVersionId)
         {
             await unitOfWork.BeginAsync();
-
             // read all triggers
             BehaviourTriggerEntity[] triggers = await behaviourTriggerRepository.GetStaticAsync(definitionVersionId);
             await behaviourTriggerRepository.DeleteStaticAsync(definitionVersionId);
-            List<IEfeuTrigger> instances = new List<IEfeuTrigger>();
-            foreach (BehaviourTriggerEntity entity in triggers)
-            {
-                IEfeuTrigger? instance = triggerProvider.TryGetTrigger(entity.Name);
-                if (instance == null)
-                    throw new Exception("no trigger provider found for ");
-                
-                // TODO
-                instances.Add(instance);
-            }
-
-            // get all trigger instances
-            // instantiate and call DetatchAsync
-
             await unitOfWork.CompleteAsync();
         }
 
         public Task DetatchAsync(Guid[] ids)
         {
-            // foreach trigger
-            // instantiate and call DetatchAsync
             return behaviourTriggerRepository.DeleteBulkAsync(ids);
+        }
+
+        public Task ResolveMattersAsync(Guid[] matters)
+        {
+            return behaviourTriggerRepository.DeleteByMatterBulkAsync(matters);
         }
     }
 }

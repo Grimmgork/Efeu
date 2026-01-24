@@ -12,7 +12,6 @@ namespace Efeu.Runtime
     {
         Emit,
         Let,
-        Call,
         Await,
         If,
         Unless,
@@ -33,6 +32,8 @@ namespace Efeu.Runtime
         public BehaviourDefinitionStep[] Do = [];
 
         public BehaviourDefinitionStep[] Else = [];
+
+        public BehaviourDefinitionStep[] Error = [];
     }
 
     public enum EfeuExpressionType

@@ -174,7 +174,7 @@ namespace Efeu.Runtime
         {
             return signal.Tag == trigger.Tag &&
                    signal.Name == trigger.Name &&
-                   signal.TriggerId == Guid.Empty || signal.TriggerId == trigger.Id;
+                   signal.Matter == trigger.Matter;
         }
 
         private void RunSteps(BehaviourDefinitionStep[] steps, string position, EfeuRuntimeScope parentScope)
@@ -202,7 +202,7 @@ namespace Efeu.Runtime
         {
             if (step.Type == BehaviourStepType.Emit)
             {
-                RunEmitStep(step, scope);
+                RunEmitStep(step, position, scope);
             }
             else if (step.Type == BehaviourStepType.If)
             {
@@ -220,21 +220,36 @@ namespace Efeu.Runtime
             {
                 RunAwaitStep(step, position, scope);
             }
-            else if (step.Type == BehaviourStepType.Call)
-            {
-                RunCallStep(step, position, scope);
-            }
             else if (step.Type == BehaviourStepType.On)
             {
                 RunOnStep(step, position, scope);
             }
         }
 
-        private void RunEmitStep(BehaviourDefinitionStep step, EfeuRuntimeScope scope)
+        private void RunEmitStep(BehaviourDefinitionStep step, string position, EfeuRuntimeScope scope)
         {
+            Guid triggerId = Guid.Empty;
+            Guid messageId = Guid.NewGuid();
+            if (step.Do.Length > 0)
+            {
+                triggerId = Guid.NewGuid();
+                Triggers.Add(new EfeuTrigger()
+                {
+                    Id = triggerId,
+                    CorrelationId = Id,
+                    Scope = scope,
+                    Tag = EfeuMessageTag.Result,
+                    Name = step.Name,
+                    Position = position,
+                    DefinitionId = trigger.DefinitionId,
+                    Matter = messageId,
+                    Step = step,
+                });
+            }
+
             Messages.Add(new EfeuMessage()
             {
-                Id = Guid.NewGuid(),
+                Id = messageId,
                 CorrelationId = Id,
                 Name = step.Name,
                 Tag = EfeuMessageTag.Effect
@@ -274,32 +289,6 @@ namespace Efeu.Runtime
             {
                 RunSteps(step.Do, $"{position}/Do", scope);
             }
-        }
-
-        private void RunCallStep(BehaviourDefinitionStep step, string position, EfeuRuntimeScope scope)
-        {
-            Guid triggerId = Guid.NewGuid();
-
-            Messages.Add(new EfeuMessage()
-            {
-                Id = Guid.NewGuid(),
-                CorrelationId = Id,
-                Name = step.Name,
-                Tag = EfeuMessageTag.Effect,
-                TriggerId = triggerId,
-            });
-
-            Triggers.Add(new EfeuTrigger()
-            {
-                Id = triggerId,
-                CorrelationId = Id,
-                Scope = scope,
-                Tag = EfeuMessageTag.Result,
-                Name = step.Name,
-                Position = position,
-                DefinitionId = trigger.DefinitionId,
-                Step = step,
-            });
         }
 
         private void RunAwaitStep(BehaviourDefinitionStep step, string position, EfeuRuntimeScope scope)

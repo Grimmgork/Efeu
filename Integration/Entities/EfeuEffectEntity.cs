@@ -10,8 +10,6 @@ namespace Efeu.Integration.Entities
 
         public string Name = "";
 
-        public Guid TriggerId; // response trigger
-
         public Guid CorrelationId; // from wich it came
 
         public EfeuValue Data;
@@ -29,6 +27,8 @@ namespace Efeu.Integration.Entities
         public EfeuMessageTag Tag;
 
         public BehaviourEffectState State;
+
+        public Guid Matter;
 
         public DateTimeOffset LockedUntil;
 

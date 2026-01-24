@@ -11,11 +11,11 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Sqlite.Repositories
 {
-    internal class DeduplicationStore : IDeduplicationStore
+    internal class DeduplicationKeyRepository : IDeduplicationKeyRepository
     {
         private readonly DataConnection connection;
 
-        public DeduplicationStore(DataConnection connection)
+        public DeduplicationKeyRepository(DataConnection connection)
         {
             this.connection = connection;
         }
@@ -28,9 +28,6 @@ namespace Efeu.Integration.Sqlite.Repositories
 
         public async Task<int> TryInsertAsync(string key, DateTimeOffset timestamp)
         {
-            if (string.IsNullOrWhiteSpace(key))
-                return 1;
-
             try
             {
                 await connection.InsertAsync(new DeduplicationKeyEntity()

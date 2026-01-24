@@ -14,10 +14,10 @@ namespace Efeu.Integration.Foreign
     internal class EfeuEngine : IEfeuEngine
     {
         private readonly IBehaviourEffectCommands behaviourEffectCommands;
-        private readonly IDeduplicationStore deduplicationStore;
+        private readonly IDeduplicationKeyRepository deduplicationStore;
         private readonly IEfeuUnitOfWork unitOfWork;
 
-        public EfeuEngine(IBehaviourEffectCommands behaviourEffectCommands, IDeduplicationStore deduplicationStore, IEfeuUnitOfWork unitOfWork)
+        public EfeuEngine(IBehaviourEffectCommands behaviourEffectCommands, IDeduplicationKeyRepository deduplicationStore, IEfeuUnitOfWork unitOfWork)
         {
             this.behaviourEffectCommands = behaviourEffectCommands;
             this.deduplicationStore = deduplicationStore;

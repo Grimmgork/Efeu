@@ -29,6 +29,8 @@ namespace Efeu.Runtime
 
         public int DefinitionId;
 
+        public Guid Matter;
+
         public bool IsStatic => CorrelationId == Guid.Empty; // a trigger is static if it is not assigned to a instance
     }
 

@@ -6,13 +6,13 @@ namespace Efeu.Integration.Quartz
     {
         public Task AttachAsync(EfeuTriggerContext context, CancellationToken token)
         {
+            // schedule callback based on cron expression
             throw new NotImplementedException();
         }
 
         public Task DetatchAsync(EfeuTriggerContext context)
         {
             throw new NotImplementedException();
-            // since this trigger is working in memory it must not propagate exceptions to prevent the outer transaction from completing
         }
     }
 }

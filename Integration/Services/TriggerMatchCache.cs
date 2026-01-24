@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Services
 {
-    public class TriggerMatchContext
+    public class TriggerMatchCache
     {
         public readonly DateTimeOffset Timestamp;
         public readonly List<EfeuTrigger> Triggers = new List<EfeuTrigger>();
@@ -20,8 +20,9 @@ namespace Efeu.Integration.Services
         private readonly IBehaviourDefinitionRepository behaviourDefinitionRepository;
 
         public readonly HashSet<Guid> DeletedTriggers = new();
+        public readonly HashSet<Guid> ResolvedMatters = new();
 
-        public TriggerMatchContext(IBehaviourTriggerRepository behaviourTriggerRepository, IBehaviourDefinitionRepository behaviourDefinitionRepository, DateTimeOffset timestamp)
+        public TriggerMatchCache(IBehaviourTriggerRepository behaviourTriggerRepository, IBehaviourDefinitionRepository behaviourDefinitionRepository, DateTimeOffset timestamp)
         {
             this.behaviourDefinitionRepository = behaviourDefinitionRepository;
             this.behaviourTriggerRepository = behaviourTriggerRepository;
@@ -32,7 +33,7 @@ namespace Efeu.Integration.Services
 
         public async Task MatchTriggersAsync(EfeuMessage signal)
         {
-            EfeuTrigger[] matchingTriggers = await GetMatchingTriggersAsync(signal.Name, signal.Tag, signal.TriggerId);
+            EfeuTrigger[] matchingTriggers = await GetMatchingTriggersAsync(signal.Name, signal.Tag, signal.Matter);
             foreach (EfeuTrigger trigger in matchingTriggers)
             {
                 EfeuRuntime runtime;
@@ -52,6 +53,11 @@ namespace Efeu.Integration.Services
                 {
                     Triggers.RemoveAll(item => item.Id == trigger.Id);
                     DeletedTriggers.Add(trigger.Id);
+                    if (trigger.Matter != Guid.Empty)
+                    {
+                        Triggers.RemoveAll(item => item.Matter == trigger.Matter);
+                        ResolvedMatters.Add(trigger.Matter);
+                    }
                 }
 
                 foreach (EfeuTrigger trigger1 in runtime.Triggers)
@@ -66,9 +72,9 @@ namespace Efeu.Integration.Services
             }
         }
 
-        private async Task<EfeuTrigger[]> GetMatchingTriggersAsync(string messageName, EfeuMessageTag messageTag, Guid triggerId)
+        private async Task<EfeuTrigger[]> GetMatchingTriggersAsync(string messageName, EfeuMessageTag messageTag, Guid messageMatter)
         {
-            BehaviourTriggerEntity[] triggerEntities = await behaviourTriggerRepository.GetMatchingAsync(messageName, messageTag, triggerId, Timestamp);
+            BehaviourTriggerEntity[] triggerEntities = await behaviourTriggerRepository.GetMatchingAsync(messageName, messageTag, messageMatter, Timestamp);
 
             BehaviourDefinitionVersionEntity[] definitionEntities = await behaviourDefinitionRepository.GetVersionsByIdsAsync(
                 triggerEntities.Select(i => i.DefinitionVersionId)
@@ -83,6 +89,10 @@ namespace Efeu.Integration.Services
                 if (DeletedTriggers.Contains(triggerEntity.Id))
                     continue;
 
+                if (triggerEntity.Matter != Guid.Empty)
+                    if (ResolvedMatters.Contains(triggerEntity.Matter))
+                        continue;
+
                 EfeuTrigger trigger = new EfeuTrigger()
                 {
                     Id = triggerEntity.Id,
@@ -92,6 +102,7 @@ namespace Efeu.Integration.Services
                     Scope = triggerEntity.Scope,
                     Position = triggerEntity.Position,
                     DefinitionId = triggerEntity.DefinitionVersionId,
+                    Matter = triggerEntity.Matter,
                     Step = definitionEntityCache[triggerEntity.DefinitionVersionId].GetPosition(triggerEntity.Position)
                 };
                 result.Add(trigger);
@@ -101,7 +112,7 @@ namespace Efeu.Integration.Services
                 Triggers.Where(i =>
                     i.Name == messageName &&
                     i.Tag == messageTag &&
-                    (triggerId == Guid.Empty ? true : i.Id == triggerId)));
+                    i.Matter == messageMatter));
 
             return result.ToArray();
         }

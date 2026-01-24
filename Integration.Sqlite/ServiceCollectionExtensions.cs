@@ -91,7 +91,7 @@ namespace Efeu.Integration.Sqlite
                 .Property(p => p.Tag)
                 .Property(p => p.Position)
                 .Property(p => p.Scope)
-                .Property(p => p.EffectId);
+                .Property(p => p.Matter);
 
             builder.Entity<EfeuEffectEntity>()
                 .HasTableName("Effect")
@@ -104,12 +104,12 @@ namespace Efeu.Integration.Sqlite
                 .Property(p => p.CreationTime)
                 .Property(p => p.State)
                 .Property(p => p.Times)
-                .Property(p => p.TriggerId)
                 .Property(p => p.Name)
                 .Property(p => p.Input)
                 .Property(p => p.Data)
                 .Property(p => p.LockId)
-                .Property(p => p.LockedUntil);
+                .Property(p => p.LockedUntil)
+                .Property(p => p.Matter);
 
             builder.Entity<LockEntity>()
                 .HasTableName("Lock")
@@ -167,7 +167,7 @@ namespace Efeu.Integration.Sqlite
             services.AddScoped<IBehaviourTriggerRepository, BehaviourTriggerRepository>();
             services.AddScoped<IBehaviourEffectRepository, BehaviourEffectRepository>();
             services.AddScoped<IEfeuMigrationRunner, MigrationRunner>();
-            services.AddScoped<IDeduplicationStore, DeduplicationStore>();
+            services.AddScoped<IDeduplicationKeyRepository, DeduplicationKeyRepository>();
         }
     }
 }
