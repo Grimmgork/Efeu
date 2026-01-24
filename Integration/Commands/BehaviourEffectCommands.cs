@@ -105,8 +105,9 @@ namespace Efeu.Integration.Commands
         {
             await unitOfWork.BeginAsync();
             await unitOfWork.LockAsync("Trigger");
-            if (await dedupicationKeyCommands.TryInsertAsync(message.Id, message.Timestamp))
+            if (!await dedupicationKeyCommands.TryInsertAsync(message.Id, timestamp))
             {
+                await unitOfWork.CompleteAsync();
                 return;
             }
 
@@ -132,8 +133,6 @@ namespace Efeu.Integration.Commands
 
         private async Task UnlockTriggers(EfeuMessage initialSignal, DateTimeOffset timestamp)
         {
-            await unitOfWork.BeginAsync();
-
             TriggerMatchCache context = new TriggerMatchCache(behaviourTriggerRepository, behaviourDefinitionRepository, timestamp);
             await context.MatchTriggersAsync(initialSignal);
 
@@ -160,7 +159,6 @@ namespace Efeu.Integration.Commands
             await behaviourTriggerCommands.DetatchAsync(context.DeletedTriggers.ToArray());
             await behaviourTriggerCommands.ResolveMattersAsync(context.ResolvedMatters.ToArray());
             await behaviourEffectRepository.CreateBulkAsync(effects.ToArray());
-            await unitOfWork.CompleteAsync();
         }
     }
 }

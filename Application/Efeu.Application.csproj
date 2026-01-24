@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Integration.Quartz\Efeu.Integration.Quartz.csproj" />
     <ProjectReference Include="..\Integration.Sqlite\Efeu.Integration.Sqlite.csproj" />
     <ProjectReference Include="..\Integration\Efeu.Integration.csproj" />
     <ProjectReference Include="..\Runtime\Efeu.Runtime.csproj" />

@@ -33,7 +33,13 @@ namespace Efeu.Integration.Sqlite
         {
             if (depth == 0)
             {
-                scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+                TransactionOptions options = new TransactionOptions
+                {
+                    IsolationLevel = System.Transactions.IsolationLevel.ReadCommitted,
+                    Timeout = TransactionManager.DefaultTimeout
+                };
+
+                scope = new TransactionScope(TransactionScopeOption.Required, options, TransactionScopeAsyncFlowOption.Enabled);
             }
             depth++;
             return Task.CompletedTask;
@@ -41,20 +47,28 @@ namespace Efeu.Integration.Sqlite
 
         public async Task CompleteAsync()
         {
-            if (depth == 1 && scope != null)
+            if (depth == 0 || scope == null)
+                throw new InvalidOperationException("No transaction is running.");
+
+            depth--;
+            if (depth == 0)
             {
-                await connection.GetTable<LockEntity>().DeleteAsync(i => i.Bundle == id);
-                scope.Complete();
-            }
-            else
-            {
-                depth--;
+                try
+                {
+                    await connection.GetTable<LockEntity>().DeleteAsync(i => i.Bundle == id);
+                    scope.Complete();
+                }
+                finally
+                {
+                    scope.Dispose();
+                    scope = null;
+                }
             }
         }
 
         public async Task LockAsync(string key)
         {
-            if (depth <= 0)
+            if (depth == 0)
                 throw new InvalidOperationException("No transaction is running.");
 
             if (locks.Contains(key))

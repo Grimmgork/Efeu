@@ -29,6 +29,38 @@ namespace Efeu.Integration.Services
             this.scopeFactory = scopeFactory;
         }
 
+        public async Task Test()
+        {
+            await using var scope = scopeFactory.CreateAsyncScope();
+
+            IServiceProvider services = scope.ServiceProvider;
+            IDeduplicationKeyCommands deduplicationKeyCommands = services.GetRequiredService<IDeduplicationKeyCommands>();
+            IBehaviourEffectCommands behaviourEffectCommands = services.GetRequiredService<IBehaviourEffectCommands>();
+            IEfeuUnitOfWork unitOfWork = services.GetRequiredService<IEfeuUnitOfWork>();
+
+            try
+            {
+                await unitOfWork.BeginAsync();
+                await unitOfWork.BeginAsync();
+                await unitOfWork.BeginAsync();
+                EfeuMessage message = new EfeuMessage()
+                {
+                    Id = Guid.NewGuid(),
+                    Tag = EfeuMessageTag.Data,
+                    CorrelationId = Guid.NewGuid(),
+                };
+                await behaviourEffectCommands.SendMessage(message, DateTime.Now);
+                await unitOfWork.CompleteAsync();
+                await unitOfWork.CompleteAsync();
+                await unitOfWork.CompleteAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+
+        }
+
         public Task StartAsync(CancellationToken cancellationToken)
         {
             CancellationToken token = cancellationTokenSource.Token;
@@ -84,6 +116,7 @@ namespace Efeu.Integration.Services
 
             DateTimeOffset executionTime = DateTime.Now;
             await unitOfWork.BeginAsync();
+
             try
             {
                 if (effect.Tag == EfeuMessageTag.Effect)
@@ -96,6 +129,7 @@ namespace Efeu.Integration.Services
 
                     await effectInstance.RunAsync(context, token);
                     await behaviourMessageRepository.CompleteEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, default);
+                    await unitOfWork.CompleteAsync();
                 }
                 else
                 {
@@ -112,15 +146,16 @@ namespace Efeu.Integration.Services
 
                     await behaviourEffectCommands.SendMessage(message, DateTime.Now);
                     await behaviourMessageRepository.DeleteCompletedSignalAsync(effect.Id);
+                    await unitOfWork.CompleteAsync();
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
                 await behaviourMessageRepository.FaultEffectAndUnlockAsync(workerId, effect.Id, executionTime, ex.ToString());
+                await unitOfWork.CompleteAsync();
             }
-
-            await unitOfWork.CompleteAsync();
+            
             return 1;
         }
 
