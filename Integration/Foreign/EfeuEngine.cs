@@ -14,31 +14,15 @@ namespace Efeu.Integration.Foreign
     internal class EfeuEngine : IEfeuEngine
     {
         private readonly IBehaviourEffectCommands behaviourEffectCommands;
-        private readonly IDeduplicationKeyRepository deduplicationStore;
-        private readonly IEfeuUnitOfWork unitOfWork;
 
-        public EfeuEngine(IBehaviourEffectCommands behaviourEffectCommands, IDeduplicationKeyRepository deduplicationStore, IEfeuUnitOfWork unitOfWork)
+        public EfeuEngine(IBehaviourEffectCommands behaviourEffectCommands)
         {
             this.behaviourEffectCommands = behaviourEffectCommands;
-            this.deduplicationStore = deduplicationStore;
-            this.unitOfWork = unitOfWork;
         }
-
-        public IEfeuUnitOfWork UnitOfWork => unitOfWork;
 
         public Task SendMessageAsync(EfeuMessage message)
         {
             return behaviourEffectCommands.SendMessage(message, DateTime.Now);
-        }
-
-        public Task CreateEffectAsync(EfeuMessage message)
-        {
-            return behaviourEffectCommands.CreateEffect(message);
-        }
-
-        public Task ClearDeduplicationKeysBeforeAsync(DateTimeOffset before)
-        {
-            return deduplicationStore.ClearBeforeAsync(before);
         }
     }
 }

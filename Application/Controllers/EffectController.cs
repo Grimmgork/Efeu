@@ -39,11 +39,6 @@ namespace Efeu.Application.Controllers
         [Route("")]
         public async Task<IActionResult> Create(string name, EfeuMessageTag tag, Guid matter, string json)
         {
-            JsonSerializerOptions options = new JsonSerializerOptions()
-            {
-
-            };
-
             await behaviourEffectCommands.CreateEffect(new EfeuMessage()
             {
                 Id = Guid.NewGuid(),

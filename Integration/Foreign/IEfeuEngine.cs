@@ -12,12 +12,6 @@ namespace Efeu.Integration.Foreign
 {
     public interface IEfeuEngine
     {
-        public IEfeuUnitOfWork UnitOfWork { get; }
-
         public Task SendMessageAsync(EfeuMessage message);
-
-        public Task CreateEffectAsync(EfeuMessage message);
-
-        public Task ClearDeduplicationKeysBeforeAsync(DateTimeOffset until);
     }
 }
