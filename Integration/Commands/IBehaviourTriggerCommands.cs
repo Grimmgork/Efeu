@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Commands
 {
-    internal interface IBehaviourTriggerCommands
+    public interface IBehaviourTriggerCommands
     {
         public Task AttachAsync(EfeuTrigger[] triggers, DateTimeOffset timestamp);
 

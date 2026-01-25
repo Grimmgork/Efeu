@@ -1,0 +1,35 @@
+﻿@using Efeu.Integration.Entities
+
+@model BehaviourTriggerEntity[]
+
+@if (Model.Length == 0)
+{
+    <span>none</span>
+}
+else
+{
+    <table>
+        <tr>
+            <th>Timestamp</th>
+            <th>Name</th>
+            <th>Tag</th>
+            <th>Correlation</th>
+            <th>Actions</th>
+        </tr>
+        @foreach (BehaviourTriggerEntity trigger in Model)
+        {
+            <tr>
+                <td>@trigger.CreationTime</td>
+                <td>@trigger.Name</td>
+                <td>@trigger.Tag</td>
+                <td>@(trigger.CorrelationId == Guid.Empty ? "-" : trigger.CorrelationId)</td>
+                <td>
+                    <button disabled="@(trigger.CorrelationId == Guid.Empty)" hx-delete="/Trigger/@trigger.Id">delete</button>
+                </td>
+            </tr>
+        }
+    </table>
+}
+
+@{
+}

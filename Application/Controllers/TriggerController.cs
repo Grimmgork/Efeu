@@ -12,17 +12,27 @@ namespace Efeu.Application.Controllers
     public class TriggerController : Controller
     {
         private readonly IBehaviourTriggerRepository behaviourTriggerRepository;
+        private readonly IBehaviourTriggerCommands behaviourTriggerCommands;
 
-        public TriggerController(IBehaviourTriggerRepository workflowInstanceRepository)
+        public TriggerController(IBehaviourTriggerRepository workflowInstanceRepository, IBehaviourTriggerCommands behaviourTriggerCommands)
         {
             this.behaviourTriggerRepository = workflowInstanceRepository;
+            this.behaviourTriggerCommands = behaviourTriggerCommands;
         }
 
-        [HttpGet]
-        [Route("")]
-        public Task<BehaviourTriggerEntity[]> GetAll()
+        public async Task<IActionResult> Index()
         {
-            return behaviourTriggerRepository.GetAllAsync();
+            BehaviourTriggerEntity[] triggers = await behaviourTriggerRepository.GetAllAsync();
+            return View(triggers);
+        }
+
+        [HttpDelete]
+        [Route("{id}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            await behaviourTriggerCommands.DetatchAsync([id]);
+            Response.Headers["HX-Refresh"] = "true";
+            return Ok();
         }
     }
 }

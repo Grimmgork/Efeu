@@ -16,9 +16,6 @@
 	  <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.6" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Folder Include="Data\" />
-	</ItemGroup>
-	<ItemGroup>
 	  <ProjectReference Include="..\Runtime\Efeu.Runtime.csproj" />
 	</ItemGroup>
 

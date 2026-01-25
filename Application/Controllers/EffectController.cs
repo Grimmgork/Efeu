@@ -2,10 +2,11 @@
 using Efeu.Integration.Entities;
 using Efeu.Integration.Persistence;
 using Efeu.Runtime;
-using Efeu.Runtime.Value;
 using Efeu.Runtime.Script;
+using Efeu.Runtime.Value;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -18,11 +19,13 @@ namespace Efeu.Application.Controllers
     {
         private readonly IBehaviourEffectCommands behaviourEffectCommands;
         private readonly IBehaviourEffectRepository behaviourEffectRepository;
+        private readonly JsonOptions jsonOptions;
 
-        public EffectController(IBehaviourEffectCommands behaviourEffectCommands, IBehaviourEffectRepository behaviourEffectRepository)
+        public EffectController(IBehaviourEffectCommands behaviourEffectCommands, IBehaviourEffectRepository behaviourEffectRepository, IOptions<JsonOptions> jsonOptions)
         {
             this.behaviourEffectCommands = behaviourEffectCommands;
             this.behaviourEffectRepository = behaviourEffectRepository;
+            this.jsonOptions = jsonOptions.Value;
         }
 
         [HttpGet]
@@ -34,8 +37,13 @@ namespace Efeu.Application.Controllers
 
         [HttpPost]
         [Route("")]
-        public async Task<IActionResult> Create(string name, EfeuMessageTag tag)
+        public async Task<IActionResult> Create(string name, EfeuMessageTag tag, Guid matter, string json)
         {
+            JsonSerializerOptions options = new JsonSerializerOptions()
+            {
+
+            };
+
             await behaviourEffectCommands.CreateEffect(new EfeuMessage()
             {
                 Id = Guid.NewGuid(),
@@ -43,6 +51,8 @@ namespace Efeu.Application.Controllers
                 Name = name,
                 Tag = tag,
                 CorrelationId = Guid.NewGuid(),
+                Matter = Guid.Empty,
+                Data = JsonSerializer.Deserialize<EfeuValue>(string.IsNullOrWhiteSpace(json) ? "null" : json, jsonOptions.JsonSerializerOptions)
             });
             Response.Headers["HX-Refresh"] = "true";
             return Ok();

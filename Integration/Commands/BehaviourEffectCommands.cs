@@ -44,6 +44,7 @@ namespace Efeu.Integration.Commands
                     Input = message.Data,
                     CorrelationId = message.CorrelationId,
                     CreationTime = message.Timestamp,
+                    Data = message.Data,
                 });
         }
 
