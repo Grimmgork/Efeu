@@ -1,85 +1,45 @@
 ﻿using Efeu.Runtime.Value;
+using Microsoft.VisualBasic;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Efeu.Runtime.Script
 {
-
-    public interface IEfeuScope
+    public class EfeuScriptScope
     {
-        public EfeuValue Get(string name);
-    }
+        public readonly ImmutableDictionary<string, EfeuValue> Constants;
 
-    public class EfeuScriptScope : IEfeuScope
-    {
-        private readonly IEfeuScope? parent;
-
-        private readonly ImmutableDictionary<string, EfeuValue> constants;
-
-        public static EfeuScriptScope Empty = new EfeuScriptScope();
+        public static EfeuScriptScope Empty { get; } = new EfeuScriptScope();
 
         public EfeuScriptScope()
         {
-            this.constants = ImmutableDictionary<string, EfeuValue>.Empty;
+            Constants = ImmutableDictionary<string, EfeuValue>.Empty;
         }
 
-        public EfeuScriptScope(IEfeuScope scope)
+        public EfeuScriptScope(ImmutableDictionary<string, EfeuValue> scope)
         {
-            parent = scope;
-            constants = ImmutableDictionary<string, EfeuValue>.Empty;
+            this.Constants = scope;
         }
 
-        public EfeuScriptScope(IEnumerable<KeyValuePair<string, EfeuValue>> constants)
+        public EfeuScriptScope(EfeuRuntimeScope scope)
         {
-            this.constants = ImmutableDictionary<string, EfeuValue>.Empty.AddRange(constants);
-        }
-
-        public EfeuScriptScope(ImmutableDictionary<string, EfeuValue> constants)
-        {
-            this.constants = constants;
-        }
-
-        private EfeuScriptScope(IEfeuScope parent, ImmutableDictionary<string, EfeuValue> constants)
-        {
-            this.parent = parent;
-            this.constants = constants;
-        }
-
-        private EfeuScriptScope(IEfeuScope parent, IEnumerable<KeyValuePair<string, EfeuValue>> constants)
-        {
-            this.parent = parent;
-            this.constants = ImmutableDictionary<string, EfeuValue>.Empty.AddRange(constants);
+            this.Constants = scope.Constants;
         }
 
         public EfeuValue Get(string name)
         {
-            if (this.constants.TryGetValue(name, out EfeuValue value))
-            {
-                return value;
-            }
-            else
-            {
-                return parent?.Get(name) ?? default;
-            }
+            return this.Constants[name];
         }
 
-        public EfeuScriptScope Push(string name, EfeuValue value)
+        public EfeuScriptScope With(string name, EfeuValue value)
         {
-            return this.Push([new(name, value)]);
-        }
-
-        public EfeuScriptScope Push(ImmutableDictionary<string, EfeuValue> constants)
-        {
-            return new EfeuScriptScope(this, constants);
-        }
-
-        public EfeuScriptScope Push(IEnumerable<KeyValuePair<string, EfeuValue>> constants)
-        {
-            return new EfeuScriptScope(this, constants);
+            return new EfeuScriptScope(Constants.SetItem(name, value));
         }
     }
 }

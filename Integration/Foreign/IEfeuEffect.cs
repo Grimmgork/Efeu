@@ -11,8 +11,6 @@ namespace Efeu.Integration.Foreign
 {
     public interface IEfeuEffect
     {
-        public Task RunAsync(EfeuEffectExecutionContext context, CancellationToken token);
-
-        public Task OnTriggerAsync(EfeuEffectTriggerContext context);
+        public Task<EfeuEffectResult> RunAsync(EfeuEffectExecutionContext context, CancellationToken token);
     }
 }

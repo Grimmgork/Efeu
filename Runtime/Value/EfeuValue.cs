@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Security.AccessControl;
 
 namespace Efeu.Runtime.Value
 {
@@ -46,6 +47,7 @@ namespace Efeu.Runtime.Value
         public static implicit operator EfeuValue(string s) => new EfeuValue(new EfeuString(s));
         public static implicit operator EfeuValue(char c) => new EfeuValue(new EfeuString(c.ToString()));
         public static implicit operator EfeuValue(DateTime dt) => new EfeuValue(new EfeuTime(dt));
+        public static implicit operator EfeuValue(DateTimeOffset dt) => new EfeuValue(new EfeuTime(dt));
         public static implicit operator EfeuValue(EfeuObject obj) => new EfeuValue(obj);
 
         public static EfeuValue Parse(object? value)
@@ -74,7 +76,7 @@ namespace Efeu.Runtime.Value
                 String v => new EfeuString(v),
                 Boolean v => v,
                 Double v => v,
-                Decimal v => new EfeuDecimal(v).ToValue(),
+                Decimal v => new EfeuDecimal(v),
                 DateTime v => new EfeuTime(v),
                 _ => value.GetType().IsClass ? new EfeuWrapper(value) : throw new InvalidCastException($"Cant parse type {value.GetType()} as {nameof(EfeuValue)}.")
             };
@@ -85,36 +87,6 @@ namespace Efeu.Runtime.Value
             return Tag == EfeuValueTag.Nil;
         }
 
-        public bool IsObject()
-        {
-            return Tag == EfeuValueTag.Object;
-        }
-
-        public int ToInt()
-        {
-            return (Int32)ToLong();
-        }
-
-        public EfeuValue First()
-        {
-            if (Tag == EfeuValueTag.Object)
-            {
-                obj!.First();
-            }
-
-            throw new InvalidOperationException();
-        }
-
-        public EfeuValue Last()
-        {
-            if (Tag == EfeuValueTag.Object)
-            {
-                obj!.Last();
-            }
-
-            throw new InvalidOperationException();
-        }
-
         public IEnumerable<EfeuValue> Each()
         {
             if (Tag == EfeuValueTag.Object)
@@ -122,10 +94,6 @@ namespace Efeu.Runtime.Value
                 if (obj is IEnumerable<EfeuValue> enumerable)
                 {
                     return enumerable;
-                }
-                else
-                {
-                    return obj?.Each() ?? [];
                 }
             }
 
@@ -149,38 +117,7 @@ namespace Efeu.Runtime.Value
             }
         }
 
-        public IEnumerable<KeyValuePair<string, EfeuValue>> Fields()
-        {
-            if (Tag == EfeuValueTag.Object)
-            {
-                return obj!.Fields();
-            }
-
-            return [];
-        }
-
-        public int Length()
-        {
-            if (Tag == EfeuValueTag.Object)
-            {
-                if (obj is EfeuArray array)
-                {
-                    return array.Length();
-                }
-                if (obj is ICollection<EfeuValue> collection)
-                {
-                    return collection.Count;
-                }
-                if (obj is IEnumerable<EfeuValue> enumerable)
-                {
-                    return enumerable.Count();
-                }
-            }
-
-            return 0;
-        }
-
-        public long ToLong()
+        public long AsLong()
         {
             if (Tag == EfeuValueTag.Integer)
             {
@@ -200,26 +137,24 @@ namespace Efeu.Runtime.Value
             }
             else if (Tag == EfeuValueTag.Object)
             {
-                return obj!.ToLong();
+                if (obj is EfeuFloat efeuFloat)
+                {
+                    return (long)efeuFloat.Value;
+                }
+                if (obj is EfeuTime efeuTime)
+                {
+                    return efeuTime.Value.ToUnixTimeSeconds();
+                }
             }
 
             throw new InvalidCastException("Value is not an integer.");
         }
 
-        public float ToFloat()
-        {
-            return (float)ToLong();
-        }
-
-        public double ToDouble()
+        public double AsDouble()
         {
             if (Tag == EfeuValueTag.Integer)
             {
                 return integer;
-            }
-            else if (Tag == EfeuValueTag.Object)
-            {
-                return obj!.ToDouble();
             }
             else if (Tag == EfeuValueTag.Nil)
             {
@@ -233,11 +168,18 @@ namespace Efeu.Runtime.Value
             {
                 return 0;
             }
+            else if (Tag == EfeuValueTag.Object)
+            {
+                if (obj is EfeuFloat efeuFloat)
+                {
+                    return efeuFloat.Value;
+                }
+            }
 
             throw new InvalidCastException("Value is not a double.");
         }
 
-        public bool ToBool()
+        public bool AsBool()
         {
             if (Tag == EfeuValueTag.True)
             {
@@ -257,21 +199,40 @@ namespace Efeu.Runtime.Value
             }
             else if (Tag == EfeuValueTag.Object)
             {
-                return obj!.ToBoolean();
+                if (obj is EfeuString efeuString)
+                {
+                    return string.IsNullOrEmpty(efeuString.ToString());
+                }
+
+                if (obj is EfeuDecimal efeuDecimal)
+                {
+                    return efeuDecimal.Value != 0;
+                }
+
+                if (obj is EfeuFloat efeuFloat)
+                {
+                    return efeuFloat.Value != 0;
+                }
+
+                if (obj is EfeuArray efeuArray)
+                {
+                    return efeuArray.Count != 0;
+                }
+
+                if (obj is EfeuRange efeuRange)
+                {
+                    return efeuRange.Any();
+                }
             }
 
             throw new InvalidCastException("Value is not a bool.");
         }
 
-        public decimal ToDecimal()
+        public decimal AsDecimal()
         {
             if (Tag == EfeuValueTag.Integer)
             {
                 return integer;
-            }
-            else if (Tag == EfeuValueTag.Object)
-            {
-                return obj!.ToDecimal();
             }
             else if (Tag == EfeuValueTag.Nil)
             {
@@ -284,6 +245,18 @@ namespace Efeu.Runtime.Value
             else if (Tag == EfeuValueTag.False)
             {
                 return 0;
+            }
+            else if (Tag == EfeuValueTag.Object)
+            {
+                if (obj is EfeuDecimal efeuDecimal)
+                {
+                    return efeuDecimal.Value;
+                }
+
+                if (obj is EfeuFloat efeuFloat)
+                {
+                    return (decimal)efeuFloat.Value;
+                }
             }
 
             throw new InvalidCastException("Value is not a decimal.");
@@ -325,20 +298,16 @@ namespace Efeu.Runtime.Value
             throw new InvalidCastException("Value is not an object.");
         }
 
-        public T As<T>() where T : EfeuObject
-        {
-            EfeuObject obj = AsObject();
-            return (T)obj;
-        }
-
         public EfeuHash AsHash()
         {
-            return As<EfeuHash>();
+            EfeuObject obj = AsObject();
+            return (EfeuHash)obj;
         }
 
         public EfeuArray AsArray()
         {
-            return As<EfeuArray>();
+            EfeuObject obj = AsObject();
+            return (EfeuArray)obj;
         }
 
         public override int GetHashCode()
@@ -362,42 +331,6 @@ namespace Efeu.Runtime.Value
             else
             {
                 return obj!.GetHashCode();
-            }
-        }
-
-        public EfeuValue Call(EfeuValue field, EfeuValue value)
-        {
-            if (Tag == EfeuValueTag.Object)
-            {
-                return obj!.Call(field, value);
-            }
-            else
-            {
-                throw new InvalidOperationException();
-            }
-        }
-
-        public EfeuValue Call(EfeuValue field)
-        {
-            if (Tag == EfeuValueTag.Object)
-            {
-                return obj!.Call(field);
-            }
-            else
-            {
-                return EfeuValue.Nil();
-            }
-        }
-
-        public EfeuValue Push(params EfeuValue[] items)
-        {
-            if (Tag == EfeuValueTag.Object)
-            {
-                return obj!.Push(items);
-            }
-            else
-            {
-                return new EfeuArray([this, ..items]);
             }
         }
 
@@ -425,7 +358,7 @@ namespace Efeu.Runtime.Value
 
             if (this.Tag == EfeuValueTag.Integer)
             {
-                return this.integer == value.ToLong();
+                return this.integer == value.AsLong();
             }
 
             if (this.Tag == EfeuValueTag.Object)
@@ -436,132 +369,14 @@ namespace Efeu.Runtime.Value
             return base.Equals(obj);
         }
 
-        public static EfeuValue operator +(EfeuValue left, EfeuValue right)
-        {
-            if (left.Tag == EfeuValueTag.Object)
-            {
-                return left.AsObject().Add(right);
-            }
-            else
-            {
-                decimal a = left.ToDecimal();
-                decimal b = right.ToDecimal();
-                return a + b;
-            }
-        }
-
-        public static EfeuValue operator -(EfeuValue left, EfeuValue right)
-        {
-            if (left.Tag == EfeuValueTag.Object)
-            {
-                return left.AsObject().Subtract(right);
-            }
-            else
-            {
-                return left.ToDecimal() - right.ToDecimal();
-            }
-        }
-
-        public static EfeuValue operator *(EfeuValue left, EfeuValue right)
-        {
-            if (left.Tag == EfeuValueTag.Object)
-            {
-                return left.AsObject().Multiply(right);
-            }
-            else
-            {
-                return left.ToDecimal() * right.ToDecimal();
-            }
-        }
-
-        public static EfeuValue operator /(EfeuValue left, EfeuValue right)
-        {
-            if (left.Tag == EfeuValueTag.Object)
-            {
-                return left.AsObject().Divide(right);
-            }
-            else
-            {
-                return left.ToDecimal() / right.ToDecimal();
-            }
-        }
-
-        public static EfeuValue operator %(EfeuValue left, EfeuValue right)
-        {
-            if (left.Tag == EfeuValueTag.Object)
-            {
-                return left.AsObject().Modulo(right);
-            }
-            else
-            {
-                return left.ToDecimal() % right.ToDecimal();
-            }
-        }
-
-        public static EfeuValue operator <(EfeuValue left, EfeuValue right)
-        {
-            if (left.Tag == EfeuValueTag.Object)
-            {
-                return left.AsObject().LessThan(right);
-            }
-            else
-            {
-                return left.ToDecimal() < right.ToDecimal();
-            }
-        }
-
-        public static EfeuValue operator >(EfeuValue left, EfeuValue right)
-        {
-            if (left.Tag == EfeuValueTag.Object)
-            {
-                return left.AsObject().GreaterThan(right);
-            }
-            else
-            {
-                return left.ToDecimal() > right.ToDecimal();
-            }
-        }
-
         public static EfeuValue operator ==(EfeuValue left, EfeuValue right) => left.Equals(right);
 
         public static EfeuValue operator !=(EfeuValue left, EfeuValue right) => !left.Equals(right);
 
-        public static bool operator true(EfeuValue x) => x.ToBool();
+        public static bool operator true(EfeuValue x) => x.AsBool();
 
-        public static bool operator false(EfeuValue x) => !x.ToBool();
+        public static bool operator false(EfeuValue x) => !x.AsBool();
 
         public static bool operator !(EfeuValue x) => !x;
-
-        public static EfeuValue operator ++(EfeuValue value)
-        {
-            if (value.Tag == EfeuValueTag.Integer)
-            {
-                return value.ToLong() + 1;
-            }
-            else if (value.Tag == EfeuValueTag.Object)
-            {
-                return value.AsObject().Increment();
-            }
-            else
-            {
-                throw new InvalidOperationException();
-            }
-        }
-
-        public static EfeuValue operator --(EfeuValue value)
-        {
-            if (value.Tag == EfeuValueTag.Integer)
-            {
-                return value.ToLong() - 1;
-            }
-            else if (value.Tag == EfeuValueTag.Object)
-            {
-                return value.AsObject().Decrement();
-            }
-            else
-            {
-                throw new InvalidOperationException();
-            }
-        }
     }
 }

@@ -38,7 +38,7 @@ namespace Efeu.Runtime
     {
         public string Name = "";
 
-        public EfeuExpression Value = EfeuExpression.Empty;
+        public BehaviourDefinitionExpression Value = BehaviourDefinitionExpression.Empty;
 
         public EfeuTriggerMatch[] Fields = [];
     }

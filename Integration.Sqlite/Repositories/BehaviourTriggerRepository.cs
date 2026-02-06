@@ -10,7 +10,7 @@ using Efeu.Runtime;
 
 namespace Efeu.Integration.Sqlite.Repositories
 {
-    internal class BehaviourTriggerRepository : IBehaviourTriggerRepository
+    internal class BehaviourTriggerRepository : IEfeuTriggerRepository
     {
         private readonly DataConnection connection;
 
@@ -19,12 +19,12 @@ namespace Efeu.Integration.Sqlite.Repositories
             this.connection = connection;
         }
 
-        public Task<int> CreateAsync(BehaviourTriggerEntity trigger)
+        public Task<int> CreateAsync(TriggerEntity trigger)
         {
             return connection.InsertWithInt32IdentityAsync(trigger);
         }
 
-        public Task CreateBulkAsync(BehaviourTriggerEntity[] triggers)
+        public Task CreateBulkAsync(TriggerEntity[] triggers)
         {
             return connection.BulkCopyAsync(new BulkCopyOptions()
             {
@@ -34,52 +34,52 @@ namespace Efeu.Integration.Sqlite.Repositories
 
         public Task DeleteAsync(Guid id)
         {
-            return connection.GetTable<BehaviourTriggerEntity>()
+            return connection.GetTable<TriggerEntity>()
                 .DeleteAsync(i => i.Id == id);
         }
 
         public Task DeleteBulkAsync(Guid[] ids)
         {
-            return connection.GetTable<BehaviourTriggerEntity>()
+            return connection.GetTable<TriggerEntity>()
                 .DeleteAsync(i => ids.Contains(i.Id));
         }
 
         public Task DeleteStaticAsync(int definitionVersionId)
         {
-            return connection.GetTable<BehaviourTriggerEntity>()
+            return connection.GetTable<TriggerEntity>()
                 .DeleteAsync(i => i.DefinitionVersionId == definitionVersionId 
                                && i.CorrelationId == Guid.Empty);
         }
 
         public Task DeleteByMatterBulkAsync(Guid[] matters)
         {
-            return connection.GetTable<BehaviourTriggerEntity>()
+            return connection.GetTable<TriggerEntity>()
                 .DeleteAsync(i => matters.Contains(i.Matter));
         }
 
-        public Task<BehaviourTriggerEntity[]> GetAllAsync()
+        public Task<TriggerEntity[]> GetAllAsync()
         {
-             return connection.GetTable<BehaviourTriggerEntity>()
+             return connection.GetTable<TriggerEntity>()
                 .ToArrayAsync();
         }
 
-        public Task<BehaviourTriggerEntity[]> GetStaticAsync(int definitionVersionId)
+        public Task<TriggerEntity[]> GetStaticAsync(int definitionVersionId)
         {
-            return connection.GetTable<BehaviourTriggerEntity>()
+            return connection.GetTable<TriggerEntity>()
                 .Where(i => i.DefinitionVersionId == definitionVersionId
                          && i.CorrelationId == Guid.Empty)
                 .ToArrayAsync();
         }
 
-        public Task<BehaviourTriggerEntity> GetByIdAsync(Guid id)
+        public Task<TriggerEntity> GetByIdAsync(Guid id)
         {
-            return connection.GetTable<BehaviourTriggerEntity>()
+            return connection.GetTable<TriggerEntity>()
                 .FirstAsync(i => i.Id == id);
         }
 
-        public Task<BehaviourTriggerEntity[]> GetMatchingAsync(string name, EfeuMessageTag tag, Guid matter, DateTimeOffset timestamp)
+        public Task<TriggerEntity[]> GetMatchingAsync(string name, EfeuMessageTag tag, Guid matter, DateTimeOffset timestamp)
         {
-            return connection.GetTable<BehaviourTriggerEntity>()
+            return connection.GetTable<TriggerEntity>()
                 .Where(i => i.CreationTime < timestamp
                          && i.Name == name
                          && i.Tag == tag

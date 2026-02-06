@@ -8,17 +8,17 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Entities
 {
-    public class BehaviourTriggerEntity
+    public class TriggerEntity
     {
         public Guid Id;
 
         public DateTimeOffset CreationTime;
 
-        public int DefinitionVersionId;
-
         public EfeuValue Input;
 
         public Guid CorrelationId;
+
+        public int DefinitionVersionId;
 
         public string Position = ""; // position of trigger row 0/Else/1
 

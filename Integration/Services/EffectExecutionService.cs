@@ -29,7 +29,7 @@ namespace Efeu.Integration.Services
 
             IServiceProvider services = scope.ServiceProvider;
             IDeduplicationKeyCommands deduplicationKeyCommands = services.GetRequiredService<IDeduplicationKeyCommands>();
-            IBehaviourEffectCommands behaviourEffectCommands = services.GetRequiredService<IBehaviourEffectCommands>();
+            IEfeuEffectCommands behaviourEffectCommands = services.GetRequiredService<IEfeuEffectCommands>();
             IEfeuUnitOfWork unitOfWork = services.GetRequiredService<IEfeuUnitOfWork>();
 
             try
@@ -104,7 +104,7 @@ namespace Efeu.Integration.Services
 
             IServiceProvider services = scope.ServiceProvider;
             IBehaviourEffectRepository behaviourMessageRepository = services.GetRequiredService<IBehaviourEffectRepository>();
-            IBehaviourEffectCommands behaviourEffectCommands = services.GetRequiredService<IBehaviourEffectCommands>();
+            IEfeuEffectCommands behaviourEffectCommands = services.GetRequiredService<IEfeuEffectCommands>();
             IEfeuUnitOfWork unitOfWork = services.GetRequiredService<IEfeuUnitOfWork>();
             IEfeuEffectProvider effectProvider = services.GetRequiredService<IEfeuEffectProvider>();
 

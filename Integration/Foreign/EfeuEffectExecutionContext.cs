@@ -13,16 +13,16 @@ namespace Efeu.Integration.Foreign
     public enum EfeuEffectResult
     {
         Complete,
-        Suspend
+        Suspended
     }
 
     public class EfeuEffectTrigger
     {
-        public readonly Guid Id = Guid.NewGuid();
-
         public string Name = "";
 
         public EfeuMessageTag Tag;
+
+        public Guid Matter;
     }
 
     public class EfeuEffectTriggerContext
@@ -60,6 +60,10 @@ namespace Efeu.Integration.Foreign
 
         public EfeuValue Data;
 
+        public EfeuValue Output;
+
+        public readonly EfeuEffectTrigger Trigger = new EfeuEffectTrigger();
+
         public EfeuEffectExecutionContext(Guid id, Guid corellationId, DateTimeOffset timestamp, uint times, EfeuValue input)
         {
             Id = id;
@@ -68,9 +72,5 @@ namespace Efeu.Integration.Foreign
             Input = input;
             Timestamp = timestamp;
         }
-
-        public Task RespondAsync(EfeuValue output) => Task.CompletedTask;
-
-        public Task SuspendAsync(EfeuEffectTrigger trigger) => Task.CompletedTask;
     }
 }

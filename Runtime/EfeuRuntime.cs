@@ -7,65 +7,35 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
+using System.Collections;
 
 namespace Efeu.Runtime
 {
-    public class EfeuExpressionContext : IEfeuScope
+    public class EfeuRuntimeScope
     {
-        private readonly IEfeuScope scope;
-
-        public EfeuExpressionContext(IEfeuScope scope)
-        {
-            this.scope = scope;
-        }
-
-        public EfeuExpressionContext()
-        {
-            this.scope = EfeuScriptScope.Empty;
-        }
-
-        public EfeuValue Get(string name) => scope.Get(name);
-    }
-
-
-    public class EfeuRuntimeScope : IEfeuScope
-    {
-        public readonly EfeuRuntimeScope? Parent;
-
         public readonly ImmutableDictionary<string, EfeuValue> Constants;
+
+        public static EfeuRuntimeScope Empty { get; } = new EfeuRuntimeScope();
+
+        public EfeuRuntimeScope()
+        {
+            Constants = ImmutableDictionary<string, EfeuValue>.Empty;
+        }
 
         public EfeuRuntimeScope(ImmutableDictionary<string, EfeuValue> constants)
         {
             this.Constants = constants;
         }
 
-        public EfeuRuntimeScope()
-        {
-            this.Constants = ImmutableDictionary<string, EfeuValue>.Empty;
-        }
-
-        public EfeuRuntimeScope(EfeuRuntimeScope parent, ImmutableDictionary<string, EfeuValue> constants)
-        {
-            this.Parent = parent;
-            this.Constants = constants;
-        }
-
         public EfeuValue Get(string name)
         {
-            EfeuRuntimeScope? scope = this;
-            while (scope != null)
-            {
-                if (scope.Constants.TryGetValue(name, out EfeuValue value))
-                {
-                    return value;
-                }
-                else
-                {
-                    scope = scope.Parent;
-                }
-            }
+            return Constants[name];
+        }
 
-            return default;
+        public EfeuRuntimeScope With(string name, EfeuValue value)
+        {
+            return new EfeuRuntimeScope(Constants.SetItem(name, value));
         }
     }
 
@@ -81,6 +51,8 @@ namespace Efeu.Runtime
         public readonly Guid Id;
         public readonly List<EfeuTrigger> Triggers = [];
         public readonly List<EfeuMessage> Messages = [];
+
+        public readonly DateTimeOffset Now = DateTimeOffset.Now;
 
         public EfeuRuntimeResult Result => result;
 
@@ -148,7 +120,9 @@ namespace Efeu.Runtime
         {
             if (IsImmediate)
             {
-                EfeuRuntimeScope scope = new EfeuRuntimeScope();
+                EfeuRuntimeScope scope = EfeuRuntimeScope.Empty
+                    .With("now", Now);
+
                 RunSteps(Steps, "", scope);
             }
             else
@@ -160,8 +134,9 @@ namespace Efeu.Runtime
                     return EfeuRuntimeResult.Skipped;
                 }
 
-                ImmutableDictionary<string, EfeuValue> constants = ImmutableDictionary<string, EfeuValue>.Empty.Add("input", triggerSignal.Data);
-                EfeuRuntimeScope scope = new EfeuRuntimeScope(trigger.Scope, constants);
+                EfeuRuntimeScope scope = trigger.Scope
+                    .With("now", Now)
+                    .With("input", triggerSignal.Data);
 
                 BehaviourDefinitionStep[] steps = step.Do;
                 RunSteps(steps, $"{trigger.Position}/Do", scope); // Assumption: all trigger continuations are done in the Do route
@@ -181,19 +156,16 @@ namespace Efeu.Runtime
         {
             var (lets, remaining) = steps.Partition((item) => item.Type == BehaviourStepType.Let);
 
-            var constants = ImmutableDictionary<string, EfeuValue>.Empty;
+            EfeuRuntimeScope scope = parentScope;
             foreach (BehaviourDefinitionStep step in lets)
             {
-                EfeuRuntimeScope scope = new EfeuRuntimeScope(parentScope, constants);
-                EfeuExpressionContext context = new EfeuExpressionContext(scope);
-                constants = constants.Add(step.Name, step.Input.Evaluate(context));
+                scope = scope.With(step.Name, step.Input.Evaluate(scope));
             }
 
-            EfeuRuntimeScope finalScope = new EfeuRuntimeScope(parentScope, constants);
             int i = 0;
             foreach (BehaviourDefinitionStep step in remaining)
             {
-                RunStep(step, $"{position}/{i}", finalScope);
+                RunStep(step, $"{position}/{i}", scope);
                 i++;
             }
         }
@@ -258,8 +230,7 @@ namespace Efeu.Runtime
 
         private void RunIfStep(BehaviourDefinitionStep step, string position, EfeuRuntimeScope scope)
         {
-            EfeuExpressionContext context = new EfeuExpressionContext(scope);
-            if (step.Input.Evaluate(context))
+            if (step.Input.Evaluate(scope))
             {
                 RunSteps(step.Do, $"{position}/Do", scope);
             }
@@ -271,8 +242,7 @@ namespace Efeu.Runtime
 
         private void RunUnlessStep(BehaviourDefinitionStep step, string position, EfeuRuntimeScope scope)
         {
-            EfeuExpressionContext context = new EfeuExpressionContext(scope);
-            if (step.Input.Evaluate(context))
+            if (step.Input.Evaluate(scope))
             {
                 RunSteps(step.Else, $"{position}/Else", scope);
             }
@@ -284,8 +254,7 @@ namespace Efeu.Runtime
 
         private void RunForStep(BehaviourDefinitionStep step, string position, EfeuRuntimeScope scope)
         {
-            EfeuExpressionContext context = new EfeuExpressionContext(scope);
-            foreach (EfeuValue item in step.Input.Evaluate(context).Each())
+            foreach (EfeuValue item in step.Input.Evaluate(scope).Each())
             {
                 RunSteps(step.Do, $"{position}/Do", scope);
             }
@@ -293,7 +262,6 @@ namespace Efeu.Runtime
 
         private void RunAwaitStep(BehaviourDefinitionStep step, string position, EfeuRuntimeScope scope)
         {
-            EfeuExpressionContext context = new EfeuExpressionContext(scope);
             Triggers.Add(new EfeuTrigger()
             {
                 Id = Guid.NewGuid(),
@@ -302,7 +270,7 @@ namespace Efeu.Runtime
                 Tag = EfeuMessageTag.Data,
                 Name = step.Name,
                 Position = position,
-                Input = step.Input.Evaluate(context),
+                Input = step.Input.Evaluate(scope),
                 DefinitionId = trigger.DefinitionId,
                 Step = step
             });
@@ -313,7 +281,6 @@ namespace Efeu.Runtime
             if (!IsImmediate)
                 throw new InvalidOperationException("Static Triggers (On) is only available in immediate mode!");
 
-            EfeuExpressionContext context = new EfeuExpressionContext(scope);
             Triggers.Add(new EfeuTrigger()
             {
                 Id = Guid.NewGuid(),
@@ -321,7 +288,7 @@ namespace Efeu.Runtime
                 Tag = EfeuMessageTag.Data,
                 Name = step.Name,
                 DefinitionId = trigger.DefinitionId,
-                Input = step.Input.Evaluate(context),
+                Input = step.Input.Evaluate(scope),
                 Position = position
             });
         }

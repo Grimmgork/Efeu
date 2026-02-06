@@ -16,8 +16,7 @@ namespace Efeu.Runtime
         static void Main(string[] args)
         {
             EfeuScriptScope scope = EfeuScriptScope.Empty
-                .Push("name", 2)
-                .Push("a", 2);
+                .With("a", 42);
 
             string script = "a";
             JsonSerializerOptions options = new JsonSerializerOptions();
@@ -26,12 +25,13 @@ namespace Efeu.Runtime
 
             EfeuValue value = EfeuScript.Run(script, scope);
             Console.WriteLine(JsonSerializer.Serialize(value, options));
+            return;
 
             BehaviourDefinitionStep[] steps = [
                 new () {
                     Type = BehaviourStepType.Let,
                     Name = "Value",
-                    Input = EfeuExpression.Eval(1),
+                    Input = BehaviourDefinitionExpression.Eval(1),
                 },
                 new () {
                     Type = BehaviourStepType.Emit,
@@ -43,7 +43,7 @@ namespace Efeu.Runtime
                     Do = [
                         new () {
                             Type = BehaviourStepType.If,
-                            Input = EfeuExpression.Eval(1),
+                            Input = BehaviourDefinitionExpression.Eval(1),
                             Do = [
                                 new () {
                                     Type = BehaviourStepType.Emit,

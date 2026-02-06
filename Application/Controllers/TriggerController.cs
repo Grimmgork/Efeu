@@ -11,10 +11,10 @@ namespace Efeu.Application.Controllers
     [Route("Trigger")]
     public class TriggerController : Controller
     {
-        private readonly IBehaviourTriggerRepository behaviourTriggerRepository;
-        private readonly IBehaviourTriggerCommands behaviourTriggerCommands;
+        private readonly IEfeuTriggerRepository behaviourTriggerRepository;
+        private readonly IEfeuTriggerCommands behaviourTriggerCommands;
 
-        public TriggerController(IBehaviourTriggerRepository workflowInstanceRepository, IBehaviourTriggerCommands behaviourTriggerCommands)
+        public TriggerController(IEfeuTriggerRepository workflowInstanceRepository, IEfeuTriggerCommands behaviourTriggerCommands)
         {
             this.behaviourTriggerRepository = workflowInstanceRepository;
             this.behaviourTriggerCommands = behaviourTriggerCommands;
@@ -22,7 +22,7 @@ namespace Efeu.Application.Controllers
 
         public async Task<IActionResult> Index()
         {
-            BehaviourTriggerEntity[] triggers = await behaviourTriggerRepository.GetAllAsync();
+            TriggerEntity[] triggers = await behaviourTriggerRepository.GetAllAsync();
             return View(triggers);
         }
 

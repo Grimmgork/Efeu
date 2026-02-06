@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Commands
 {
-    public interface IBehaviourEffectCommands
+    public interface IEfeuEffectCommands
     {
         public Task SkipEffect(Guid id, DateTimeOffset timestamp, EfeuValue output = default);
 

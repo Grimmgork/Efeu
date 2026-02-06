@@ -8,9 +8,15 @@ using System.Threading.Tasks;
 
 namespace Efeu.Runtime.Value
 {
-    public class EfeuArray : EfeuObject, IEnumerable<EfeuValue>
+    public class EfeuArray : EfeuObject, IReadOnlyList<EfeuValue>
     {
         public readonly IImmutableList<EfeuValue> Items = ImmutableList<EfeuValue>.Empty;
+
+        public int Count => Items.Count;
+
+        public static EfeuArray Empty = new EfeuArray();
+
+        public static EfeuArray From(params EfeuValue[] items) => new EfeuArray(items);
 
         public EfeuValue this[int index]
         {
@@ -20,9 +26,9 @@ namespace Efeu.Runtime.Value
             }
         }
 
-        public EfeuArray(IEnumerable<EfeuValue> items)
+        private EfeuArray(IImmutableList<EfeuValue> items)
         {
-            Items = Items.AddRange(items);
+            Items = items;
         }
 
         public EfeuArray(params EfeuValue[] items)
@@ -30,14 +36,41 @@ namespace Efeu.Runtime.Value
             Items = Items.AddRange(items);
         }
 
-        public override IEnumerable<EfeuValue> Each()
+        public EfeuArray(IEnumerable<EfeuValue> items)
         {
-            return Items;
+            Items = Items.AddRange(items);
         }
 
-        public override int Length()
+        public EfeuArray Push(params EfeuValue[] items)
         {
-            return Items.Count;
+            return new EfeuArray(Items.AddRange(items));
+        }
+
+        public EfeuArray Pop()
+        {
+            if (Items.Count == 0)
+                return Empty;
+            return new EfeuArray(Items.RemoveAt(Items.Count - 1));
+        }
+
+        public EfeuArray Unshift(params EfeuValue[] items)
+        {
+            return new EfeuArray(Items.InsertRange(0, items));
+        }
+
+        public EfeuArray Shift(int amount = 1)
+        {
+            return new EfeuArray(Items.Skip(amount));
+        }
+
+        public EfeuValue First()
+        {
+            return Items.First();
+        }
+
+        public EfeuValue Last()
+        {
+            return Items.Last();
         }
 
         public IEnumerator<EfeuValue> GetEnumerator()

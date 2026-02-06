@@ -1,8 +1,10 @@
 ﻿using Efeu.Runtime;
+using Efeu.Runtime.Value;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,19 +14,25 @@ namespace Efeu.Integration.Foreign
 {
     internal class WriteConsoleEffect : IEfeuEffect
     {
-        public Task RunAsync(EfeuEffectExecutionContext context, CancellationToken token)
+        public Task<EfeuEffectResult> RunAsync(EfeuEffectExecutionContext context, CancellationToken token)
         {
-            Console.WriteLine(context.Input);
-            return context.SuspendAsync(new EfeuEffectTrigger()
-            {
-                Name = "Asdf",
-                Tag = EfeuMessageTag.Data,
-            });
-        }
+            context.Output = context.Input.AsHash()
+                .With("name", 1)
+                .With("name", 2);
 
-        public Task OnTriggerAsync(EfeuEffectTriggerContext context)
-        {
-            return context.SuspendAsync(default);
+            context.Output = EfeuHash.Empty
+                .With("name", 2)
+                .Remove("name");
+
+            context.Output = EfeuArray.Empty
+                .Push(1)
+                .Pop()
+                .Unshift(1, 2, 3)
+                .Shift(2)
+                .First();
+
+            Console.WriteLine(context.Input);
+            return Task.FromResult(EfeuEffectResult.Suspended);
         }
     }
 }

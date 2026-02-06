@@ -18,12 +18,6 @@ namespace Efeu.Runtime.Value
             this.End = end;
         }
 
-        public override IEnumerable<EfeuValue> Each()
-        {
-            return Enumerable.Range(Start, End)
-                .Select(i => (EfeuValue)i);
-        }
-
         public IEnumerator<EfeuValue> GetEnumerator()
         {
             return Enumerable.Range(Start, End)

@@ -15,8 +15,8 @@ namespace Efeu.Integration
         public static void AddEfeu(this IServiceCollection services)
         {
             services.AddScoped<IBehaviourDefinitionCommands, BehaviourDefinitionCommands>();
-            services.AddScoped<IBehaviourTriggerCommands, BehaviourTriggerCommands>();
-            services.AddScoped<IBehaviourEffectCommands, BehaviourEffectCommands>();
+            services.AddScoped<IEfeuTriggerCommands, EfeuTriggerCommands>();
+            services.AddScoped<IEfeuEffectCommands, EfeuEffectCommands>();
             services.AddScoped<IDeduplicationKeyCommands, DeduplicationKeyCommands>();
             services.AddScoped<IEfeuEffectProvider, DefaultEfeuEffectProvider>();
             services.AddScoped<IEfeuTriggerProvider, DefaultEfeuTriggerProvider>();

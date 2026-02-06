@@ -42,6 +42,7 @@ namespace Efeu.Integration.Sqlite
             jsonOptions.IncludeFields = true;
             jsonOptions.Converters.Add(new EfeuValueJsonConverter());
             jsonOptions.Converters.Add(new JsonStringEnumConverter());
+            jsonOptions.Converters.Add(new EfeuRuntimeScopeJsonConverter());
 
             var builder = new FluentMappingBuilder();
             builder.MappingSchema.SetConverter<EfeuValue, DataParameter>(c => ConvertToJson(c, jsonOptions));
@@ -78,7 +79,7 @@ namespace Efeu.Integration.Sqlite
                 .Property(p => p.Version)
                 .Property(p => p.Steps);
 
-            builder.Entity<BehaviourTriggerEntity>()
+            builder.Entity<TriggerEntity>()
                 .HasTableName("Trigger")
                 .HasSchemaName(schema)
                 .Property(p => p.Id)
@@ -164,7 +165,7 @@ namespace Efeu.Integration.Sqlite
             services.AddScoped<EfeuUnitOfWork>();
             services.AddScoped<IEfeuUnitOfWork, EfeuUnitOfWork>();
             services.AddScoped<IBehaviourDefinitionRepository, BehaviourDefinitionRepository>();
-            services.AddScoped<IBehaviourTriggerRepository, BehaviourTriggerRepository>();
+            services.AddScoped<IEfeuTriggerRepository, BehaviourTriggerRepository>();
             services.AddScoped<IBehaviourEffectRepository, BehaviourEffectRepository>();
             services.AddScoped<IEfeuMigrationRunner, MigrationRunner>();
             services.AddScoped<IDeduplicationKeyRepository, DeduplicationKeyRepository>();

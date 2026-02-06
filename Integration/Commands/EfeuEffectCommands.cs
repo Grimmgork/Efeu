@@ -12,18 +12,18 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Commands
 {
-    internal class BehaviourEffectCommands : IBehaviourEffectCommands
+    internal class EfeuEffectCommands : IEfeuEffectCommands
     {
         private readonly IEfeuUnitOfWork unitOfWork;
         private readonly IBehaviourEffectRepository behaviourEffectRepository;
 
-        private readonly IBehaviourTriggerCommands behaviourTriggerCommands;
-        private readonly IBehaviourTriggerRepository behaviourTriggerRepository;
+        private readonly IEfeuTriggerCommands behaviourTriggerCommands;
+        private readonly IEfeuTriggerRepository behaviourTriggerRepository;
         private readonly IBehaviourDefinitionRepository behaviourDefinitionRepository;
         private readonly IDeduplicationKeyCommands dedupicationKeyCommands;
         private readonly IEfeuEffectProvider effectProvider;
 
-        public BehaviourEffectCommands(IEfeuEffectProvider effectProvider, IBehaviourEffectRepository messageRepository, IEfeuUnitOfWork unitOfWork, IBehaviourTriggerCommands behaviourTriggerCommands, IBehaviourTriggerRepository behaviourTriggerRepository, IBehaviourDefinitionRepository behaviourDefinitionRepository, IDeduplicationKeyCommands deduplicationKeyCommands)
+        public EfeuEffectCommands(IEfeuEffectProvider effectProvider, IBehaviourEffectRepository messageRepository, IEfeuUnitOfWork unitOfWork, IEfeuTriggerCommands behaviourTriggerCommands, IEfeuTriggerRepository behaviourTriggerRepository, IBehaviourDefinitionRepository behaviourDefinitionRepository, IDeduplicationKeyCommands deduplicationKeyCommands)
         {
             this.behaviourEffectRepository = messageRepository;
             this.effectProvider = effectProvider;

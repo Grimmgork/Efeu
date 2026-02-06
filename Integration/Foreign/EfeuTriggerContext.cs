@@ -14,10 +14,14 @@ namespace Efeu.Integration.Foreign
 
         public readonly EfeuValue Input;
 
-        public readonly DateTimeOffset Timestamp;
+        public readonly DateTimeOffset Time;
 
-        public Task ModifyAsync(string name, EfeuMessageTag tag) => Task.CompletedTask;
+        public DateTimeOffset Schedule;
 
-        public Task ScheduleAsync(DateTimeOffset time) => Task.CompletedTask;
+        public EfeuMessageTag MessageTag;
+
+        public string MessageName = "";
+
+        public EfeuValue Output;
     }
 }

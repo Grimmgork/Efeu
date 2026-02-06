@@ -17,11 +17,11 @@ namespace Efeu.Application.Controllers
     [Route("Effect")]
     public class EffectController : Controller
     {
-        private readonly IBehaviourEffectCommands behaviourEffectCommands;
+        private readonly IEfeuEffectCommands behaviourEffectCommands;
         private readonly IBehaviourEffectRepository behaviourEffectRepository;
         private readonly JsonOptions jsonOptions;
 
-        public EffectController(IBehaviourEffectCommands behaviourEffectCommands, IBehaviourEffectRepository behaviourEffectRepository, IOptions<JsonOptions> jsonOptions)
+        public EffectController(IEfeuEffectCommands behaviourEffectCommands, IBehaviourEffectRepository behaviourEffectRepository, IOptions<JsonOptions> jsonOptions)
         {
             this.behaviourEffectCommands = behaviourEffectCommands;
             this.behaviourEffectRepository = behaviourEffectRepository;

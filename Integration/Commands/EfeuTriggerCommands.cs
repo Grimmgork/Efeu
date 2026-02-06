@@ -10,13 +10,13 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Commands
 {
-    internal class BehaviourTriggerCommands : IBehaviourTriggerCommands
+    internal class EfeuTriggerCommands : IEfeuTriggerCommands
     {
         private readonly IEfeuUnitOfWork unitOfWork;
-        private readonly IBehaviourTriggerRepository behaviourTriggerRepository;
+        private readonly IEfeuTriggerRepository behaviourTriggerRepository;
         private readonly IEfeuTriggerProvider triggerProvider;
 
-        public BehaviourTriggerCommands(IEfeuUnitOfWork unitOfWork, IBehaviourTriggerRepository behaviourTriggerRepository, IEfeuTriggerProvider triggerProvider)
+        public EfeuTriggerCommands(IEfeuUnitOfWork unitOfWork, IEfeuTriggerRepository behaviourTriggerRepository, IEfeuTriggerProvider triggerProvider)
         {
             this.unitOfWork = unitOfWork;
             this.behaviourTriggerRepository = behaviourTriggerRepository;
@@ -27,10 +27,10 @@ namespace Efeu.Integration.Commands
         {
             await unitOfWork.BeginAsync();
 
-            List<BehaviourTriggerEntity> entites = new List<BehaviourTriggerEntity>();
+            List<TriggerEntity> entites = new List<TriggerEntity>();
             foreach (EfeuTrigger trigger in triggers)
             {
-                entites.Add(new BehaviourTriggerEntity()
+                entites.Add(new TriggerEntity()
                 {
                     Id = trigger.Id,
                     DefinitionVersionId = trigger.DefinitionId,
@@ -54,7 +54,7 @@ namespace Efeu.Integration.Commands
         {
             await unitOfWork.BeginAsync();
             // read all triggers
-            BehaviourTriggerEntity[] triggers = await behaviourTriggerRepository.GetStaticAsync(definitionVersionId);
+            TriggerEntity[] triggers = await behaviourTriggerRepository.GetStaticAsync(definitionVersionId);
             await behaviourTriggerRepository.DeleteStaticAsync(definitionVersionId);
             await unitOfWork.CompleteAsync();
         }

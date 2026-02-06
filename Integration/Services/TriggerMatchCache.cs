@@ -16,13 +16,13 @@ namespace Efeu.Integration.Services
         public readonly List<EfeuTrigger> Triggers = new List<EfeuTrigger>();
         public readonly Stack<EfeuMessage> Messages = new Stack<EfeuMessage>();
 
-        private readonly IBehaviourTriggerRepository behaviourTriggerRepository;
+        private readonly IEfeuTriggerRepository behaviourTriggerRepository;
         private readonly IBehaviourDefinitionRepository behaviourDefinitionRepository;
 
         public readonly HashSet<Guid> DeletedTriggers = new();
         public readonly HashSet<Guid> ResolvedMatters = new();
 
-        public TriggerMatchCache(IBehaviourTriggerRepository behaviourTriggerRepository, IBehaviourDefinitionRepository behaviourDefinitionRepository, DateTimeOffset timestamp)
+        public TriggerMatchCache(IEfeuTriggerRepository behaviourTriggerRepository, IBehaviourDefinitionRepository behaviourDefinitionRepository, DateTimeOffset timestamp)
         {
             this.behaviourDefinitionRepository = behaviourDefinitionRepository;
             this.behaviourTriggerRepository = behaviourTriggerRepository;
@@ -74,7 +74,7 @@ namespace Efeu.Integration.Services
 
         private async Task<EfeuTrigger[]> GetMatchingTriggersAsync(string messageName, EfeuMessageTag messageTag, Guid messageMatter)
         {
-            BehaviourTriggerEntity[] triggerEntities = await behaviourTriggerRepository.GetMatchingAsync(messageName, messageTag, messageMatter, Timestamp);
+            TriggerEntity[] triggerEntities = await behaviourTriggerRepository.GetMatchingAsync(messageName, messageTag, messageMatter, Timestamp);
 
             BehaviourDefinitionVersionEntity[] definitionEntities = await behaviourDefinitionRepository.GetVersionsByIdsAsync(
                 triggerEntities.Select(i => i.DefinitionVersionId)
@@ -84,7 +84,7 @@ namespace Efeu.Integration.Services
                 definitionEntityCache.Add(definitionVersionEntity.Id, definitionVersionEntity);
 
             List<EfeuTrigger> result = new();
-            foreach (BehaviourTriggerEntity triggerEntity in triggerEntities)
+            foreach (TriggerEntity triggerEntity in triggerEntities)
             {
                 if (DeletedTriggers.Contains(triggerEntity.Id))
                     continue;

@@ -9,7 +9,9 @@ namespace Efeu.Integration.Foreign
 {
     public interface IEfeuTrigger
     {
-        public Task AttachAsync(EfeuTriggerContext context, CancellationToken token);
+        public Task AttachAsync(EfeuTriggerContext context);
+
+        public Task CallbackAsync(EfeuTriggerContext context);
 
         public Task DetatchAsync(EfeuTriggerContext context);
     }

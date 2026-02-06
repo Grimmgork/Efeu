@@ -2,7 +2,7 @@
 @model BehaviourDefinitionStep;
 
 <div>
-    <span>@Model.Type</span> <span>@Model.Name</span>
+    <span>@(Model.Type.ToString().ToLower())</span> <span>@Model.Name</span>
     @if (Model.Do.Length > 0)
     {
         <span>do</span>
@@ -17,10 +17,14 @@
     {
         <span>else</span>
         <div style="margin-left: 1rem">
-            @foreach (BehaviourDefinitionStep step in Model.Do)
+            @foreach (BehaviourDefinitionStep step in Model.Else)
             {
                 <partial name="BehaviourDefinitionStep" model="@step" />
             }
         </div>
+    }
+    @if (Model.Do.Length > 0)
+    {
+        <span>end</span>
     }
 </div>

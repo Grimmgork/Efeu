@@ -1,6 +1,6 @@
 ﻿@using Efeu.Integration.Entities
 
-@model BehaviourTriggerEntity[]
+@model TriggerEntity[]
 
 @if (Model.Length == 0)
 {
@@ -16,7 +16,7 @@ else
             <th>Correlation</th>
             <th>Actions</th>
         </tr>
-        @foreach (BehaviourTriggerEntity trigger in Model)
+        @foreach (TriggerEntity trigger in Model)
         {
             <tr>
                 <td>@trigger.CreationTime</td>

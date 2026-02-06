@@ -15,10 +15,10 @@ namespace Efeu.Integration.Commands
     {
         private readonly IEfeuUnitOfWork unitOfWork;
         private readonly IBehaviourDefinitionRepository behaviourDefinitionRepository;
-        private readonly IBehaviourEffectCommands behaviourEffectCommands;
-        private readonly IBehaviourTriggerCommands behaviourTriggerCommands;
+        private readonly IEfeuEffectCommands behaviourEffectCommands;
+        private readonly IEfeuTriggerCommands behaviourTriggerCommands;
 
-        public BehaviourDefinitionCommands(IEfeuUnitOfWork unitOfWork, IBehaviourDefinitionRepository repository, IBehaviourEffectCommands behaviourEffectCommands, IBehaviourTriggerCommands behaviourTriggerCommands)
+        public BehaviourDefinitionCommands(IEfeuUnitOfWork unitOfWork, IBehaviourDefinitionRepository repository, IEfeuEffectCommands behaviourEffectCommands, IEfeuTriggerCommands behaviourTriggerCommands)
         {
             this.unitOfWork = unitOfWork;
             this.behaviourDefinitionRepository = repository;

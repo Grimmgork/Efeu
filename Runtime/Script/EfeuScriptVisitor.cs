@@ -31,7 +31,7 @@ namespace Efeu.Runtime.Script
             {
                 string name = assignment.CONST().GetText()[..^1];
                 EfeuValue value = Visit(assignment.expression());
-                scope = scope.Push(name, value);
+                scope = scope.With(name, value);
             }
             EfeuValue result = Visit(context.expression());
             scope = currentScope;
@@ -97,12 +97,12 @@ namespace Efeu.Runtime.Script
             var b = Visit(context.expression()[1]);
             return context.@operator().GetText() switch
             {
-                "+" => a + b,
-                "-" => a - b,
+                "+" => a.AsDecimal() + b.AsDecimal(),
+                "-" => a.AsDecimal() - b.AsDecimal(),
                 "=" => a == b,
-                "*" => a * b,
-                "/" => a / b,
-                "%" => a % b,
+                "*" => a.AsDecimal() * b.AsDecimal(),
+                "/" => a.AsDecimal() / b.AsDecimal(),
+                "%" => a.AsDecimal() % b.AsDecimal(),
                 _ => throw new NotImplementedException()
             };
         }
@@ -155,9 +155,9 @@ namespace Efeu.Runtime.Script
                 }
                 else
                 {
-                    value = value.Call(
-                        Visit(item.expression()[0]).ToInt(),
-                        Visit(item.expression()[1]));
+                    //value = value.Call(
+                    //    Visit(item.expression()[0]).AsLong(),
+                    //    Visit(item.expression()[1]));
                 }
             }
             return value;
@@ -185,9 +185,9 @@ namespace Efeu.Runtime.Script
                 }
                 else
                 {
-                    value = value.Call(
-                        field.CONST().GetText()[..^1],
-                        Visit(field.expression()));
+                    //value = value.Call(
+                    //    field.CONST().GetText()[..^1],
+                    //    Visit(field.expression()));
                 }
             }
             return value;
