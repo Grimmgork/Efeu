@@ -81,7 +81,7 @@ namespace Efeu.Integration.Sqlite.Queries
         {
             return connection.GetTable<TriggerEntity>()
                 .Where(i => i.CreationTime < timestamp
-                         && i.Name == name
+                         && i.Type == name
                          && i.Tag == tag
                          && i.Matter == matter)
                 .ToArrayAsync();

@@ -37,30 +37,32 @@ namespace Efeu.Integration.Commands
         public Task CreateEffect(EfeuMessage message)
         {
             return behaviourEffectQueries.CreateAsync(
-                new EfeuEffectEntity() {
+                new EffectEntity() {
                     Id = message.Id,
-                    Name = message.Name,
+                    Type = message.Type,
                     Tag = message.Tag,
                     Input = message.Data,
                     CorrelationId = message.CorrelationId,
                     CreationTime = message.Timestamp,
                     Data = message.Data,
+                    Matter = message.Matter,
                 });
         }
 
-        private EfeuEffectEntity GetEffectFromOutgoingMessage(EfeuMessage message, DateTimeOffset timestamp)
+        private EffectEntity GetEffectFromOutgoingMessage(EfeuMessage message, DateTimeOffset timestamp)
         {
             if (message.Tag != EfeuMessageTag.Effect)
                 throw new Exception("message must be outgoing.");
 
-            return new EfeuEffectEntity()
+            return new EffectEntity()
             {
                 Id = message.Id,
                 CreationTime = timestamp,
-                Name = message.Name,
+                Type = message.Type,
                 Input = message.Data,
                 State = BehaviourEffectState.Running,
-                Tag = effectProvider.TryGetEffect(message.Name) == null ?
+                Matter = message.Matter,
+                Tag = effectProvider.TryGetEffect(message.Type) == null ?
                      EfeuMessageTag.Data : EfeuMessageTag.Effect
             };
         }
@@ -83,7 +85,6 @@ namespace Efeu.Integration.Commands
         public async Task AbortEffect(Guid id)
         {
             await unitOfWork.BeginAsync();
-
             await behaviourEffectQueries.AbortEffectAsync(id);
             await unitOfWork.CompleteAsync();
         }
@@ -94,7 +95,7 @@ namespace Efeu.Integration.Commands
 
             EfeuRuntime runtime = EfeuRuntime.Run(steps, Guid.NewGuid(), definitionVersionId);
 
-            List<EfeuEffectEntity> effects = new List<EfeuEffectEntity>();
+            List<EffectEntity> effects = new List<EffectEntity>();
             foreach (EfeuMessage message in runtime.Messages)
             {
                 effects.Add(GetEffectFromOutgoingMessage(message, timestamp));
@@ -117,10 +118,10 @@ namespace Efeu.Integration.Commands
 
             if (message.Tag == EfeuMessageTag.Effect)
             {
-                await behaviourEffectQueries.CreateAsync(new EfeuEffectEntity()
+                await behaviourEffectQueries.CreateAsync(new EffectEntity()
                 {
                     Id = message.Id,
-                    Name = message.Name,
+                    Type = message.Type,
                     Tag = EfeuMessageTag.Effect,
                     CreationTime = timestamp,
                     CorrelationId = message.CorrelationId,
@@ -141,10 +142,10 @@ namespace Efeu.Integration.Commands
             await context.MatchTriggersAsync(initialSignal);
 
             int iterations = 0;
-            List<EfeuEffectEntity> effects = [];
+            List<EffectEntity> effects = [];
             while (context.Messages.TryPop(out EfeuMessage? message)) // handle produced messages
             {
-                EfeuEffectEntity effectEntity = GetEffectFromOutgoingMessage(message, context.Timestamp);
+                EffectEntity effectEntity = GetEffectFromOutgoingMessage(message, context.Timestamp);
                 if (effectEntity.Tag == EfeuMessageTag.Effect)
                 {
                     effects.Add(effectEntity);

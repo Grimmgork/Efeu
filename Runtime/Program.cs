@@ -30,39 +30,39 @@ namespace Efeu.Runtime
 
             BehaviourDefinitionStep[] steps = [
                 new () {
-                    Type = BehaviourStepType.Let,
-                    Name = "Value",
+                    Kind = BehaviourStepKind.Let,
+                    Type = "Value",
                     Input = BehaviourDefinitionExpression.Eval(1),
                 },
                 new () {
-                    Type = BehaviourStepType.Emit,
-                    Name = "HelloWorld"
+                    Kind = BehaviourStepKind.Emit,
+                    Type = "HelloWorld"
                 },
                 new () {
-                    Type = BehaviourStepType.Await,
-                    Name = "Event",
+                    Kind = BehaviourStepKind.Await,
+                    Type = "Event",
                     Do = [
                         new () {
-                            Type = BehaviourStepType.If,
+                            Kind = BehaviourStepKind.If,
                             Input = BehaviourDefinitionExpression.Eval(1),
                             Do = [
                                 new () {
-                                    Type = BehaviourStepType.Emit,
-                                    Name = "HelloWorld1"
+                                    Kind = BehaviourStepKind.Emit,
+                                    Type = "HelloWorld1"
                                 }
                             ],
                             Else = [
                                 new () {
-                                    Type = BehaviourStepType.Emit,
-                                    Name = "HelloWorld2"
+                                    Kind = BehaviourStepKind.Emit,
+                                    Type = "HelloWorld2"
                                 }
                             ]
                         },
                     ]
                 },
                 new () {
-                    Type = BehaviourStepType.Emit,
-                    Name = "HelloWorld"
+                    Kind = BehaviourStepKind.Emit,
+                    Type = "HelloWorld"
                 },
             ];
 
@@ -72,7 +72,7 @@ namespace Efeu.Runtime
             EfeuRuntime behaviour2 = EfeuRuntime.RunTrigger(trigger, new EfeuMessage()
             {
                  Tag = EfeuMessageTag.Data,
-                 Name = "Event"
+                 Type = "Event"
             });
 
             Console.WriteLine("done");

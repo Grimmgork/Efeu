@@ -31,19 +31,19 @@ namespace Efeu.Application.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            EfeuEffectEntity[] effects = await behaviourEffectRepository.GetAllAsync();
+            EffectEntity[] effects = await behaviourEffectRepository.GetAllAsync();
             return View(effects);
         }
 
         [HttpPost]
         [Route("")]
-        public async Task<IActionResult> Create(string name, EfeuMessageTag tag, Guid matter, string json)
+        public async Task<IActionResult> Create(string type, EfeuMessageTag tag, Guid matter, string json)
         {
             await behaviourEffectCommands.CreateEffect(new EfeuMessage()
             {
                 Id = Guid.NewGuid(),
                 Timestamp = DateTime.Now,
-                Name = name,
+                Type = type,
                 Tag = tag,
                 CorrelationId = Guid.NewGuid(),
                 Matter = Guid.Empty,

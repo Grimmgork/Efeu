@@ -11,7 +11,7 @@ else
     <table>
         <tr>
             <th>Timestamp</th>
-            <th>Name</th>
+            <th>Type</th>
             <th>Tag</th>
             <th>Correlation</th>
             <th>Actions</th>
@@ -20,7 +20,7 @@ else
         {
             <tr>
                 <td>@trigger.CreationTime</td>
-                <td>@trigger.Name</td>
+                <td>@trigger.Type</td>
                 <td>@trigger.Tag</td>
                 <td>@(trigger.CorrelationId == Guid.Empty ? "-" : trigger.CorrelationId)</td>
                 <td>

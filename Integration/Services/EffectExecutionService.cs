@@ -96,7 +96,7 @@ namespace Efeu.Integration.Services
 
         private async Task<int> ExecuteEffect(Guid workerId, CancellationToken token)
         {
-            EfeuEffectEntity? effect = await FindAndLockEffect(workerId, token);
+            EffectEntity? effect = await FindAndLockEffect(workerId, token);
             if (effect is null)
                 return 0;
 
@@ -115,9 +115,9 @@ namespace Efeu.Integration.Services
             {
                 if (effect.Tag == EfeuMessageTag.Effect)
                 {
-                    IEfeuEffect? effectInstance = effectProvider.TryGetEffect(effect.Name);
+                    IEfeuEffect? effectInstance = effectProvider.TryGetEffect(effect.Type);
                     if (effectInstance is null)
-                        throw new Exception($"Unknown effect '{effect.Name}'.");
+                        throw new Exception($"Unknown effect '{effect.Type}'.");
 
                     EfeuEffectExecutionContext context = new EfeuEffectExecutionContext(effect.Id, effect.CorrelationId, executionTime, effect.Times, effect.Data);
 
@@ -130,7 +130,7 @@ namespace Efeu.Integration.Services
                     {
                         Id = effect.Id,
                         Tag = effect.Tag,
-                        Name = effect.Name,
+                        Type = effect.Type,
                         Data = effect.Data,
                         Timestamp = effect.CreationTime,
                         Matter = effect.Matter,
@@ -155,7 +155,7 @@ namespace Efeu.Integration.Services
             return 1;
         }
 
-        private async Task<EfeuEffectEntity?> FindAndLockEffect(Guid workerId, CancellationToken token)
+        private async Task<EffectEntity?> FindAndLockEffect(Guid workerId, CancellationToken token)
         {
             await using var scope = scopeFactory.CreateAsyncScope();
 
@@ -163,7 +163,7 @@ namespace Efeu.Integration.Services
             IBehaviourEffectQueries behaviourEffectRepository = services.GetRequiredService<IBehaviourEffectQueries>();
 
             Guid[] candidateIds = await behaviourEffectRepository.GetRunningEffectsNotLockedAsync();
-            EfeuEffectEntity? effect = null;
+            EffectEntity? effect = null;
             foreach (Guid candidateId in candidateIds)
             {
                 DateTimeOffset timestamp = DateTime.Now;

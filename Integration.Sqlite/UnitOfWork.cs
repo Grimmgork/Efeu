@@ -47,8 +47,11 @@ namespace Efeu.Integration.Sqlite
 
         public async Task CompleteAsync()
         {
-            if (depth == 0 || scope == null)
+            if (depth == 0)
                 throw new InvalidOperationException("No transaction is running.");
+
+            if (scope == null)
+                throw new Exception();
 
             depth--;
             if (depth == 0)

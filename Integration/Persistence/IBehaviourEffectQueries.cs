@@ -7,19 +7,19 @@ namespace Efeu.Integration.Persistence
 {
     public interface IBehaviourEffectQueries
     {
-        public Task CreateAsync(EfeuEffectEntity entity);
+        public Task CreateAsync(EffectEntity entity);
 
-        public Task CreateBulkAsync(EfeuEffectEntity[] entities);
+        public Task CreateBulkAsync(EffectEntity[] entities);
 
         public Task AbortEffectAsync(Guid id);
 
         public Task DeleteCompletedEffectAsync(Guid lockId, Guid id);
 
-        public Task<EfeuEffectEntity?> GetByIdAsync(Guid id);
+        public Task<EffectEntity?> GetByIdAsync(Guid id);
 
-        public Task<EfeuEffectEntity[]> GetByCorellationAsync(Guid correlationId);
+        public Task<EffectEntity[]> GetByCorellationAsync(Guid correlationId);
 
-        public Task<EfeuEffectEntity[]> GetAllAsync();
+        public Task<EffectEntity[]> GetAllAsync();
 
         public Task FaultEffectAndUnlockAsync(Guid lockId, Guid id, DateTimeOffset timestamp, string fault);
 

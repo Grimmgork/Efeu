@@ -19,7 +19,7 @@ namespace Efeu.Runtime
     {
         public Guid Id;
 
-        public string Name = "";
+        public string Type = "";
 
         public DateTimeOffset Timestamp;
 

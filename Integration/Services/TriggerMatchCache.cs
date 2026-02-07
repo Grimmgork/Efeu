@@ -33,7 +33,7 @@ namespace Efeu.Integration.Services
 
         public async Task MatchTriggersAsync(EfeuMessage signal)
         {
-            EfeuTrigger[] matchingTriggers = await GetMatchingTriggersAsync(signal.Name, signal.Tag, signal.Matter);
+            EfeuTrigger[] matchingTriggers = await GetMatchingTriggersAsync(signal.Type, signal.Tag, signal.Matter);
             foreach (EfeuTrigger trigger in matchingTriggers)
             {
                 EfeuRuntime runtime;
@@ -97,7 +97,7 @@ namespace Efeu.Integration.Services
                 {
                     Id = triggerEntity.Id,
                     CorrelationId = triggerEntity.CorrelationId,
-                    Name = triggerEntity.Name,
+                    Type = triggerEntity.Type,
                     Tag = triggerEntity.Tag,
                     Scope = triggerEntity.Scope,
                     Position = triggerEntity.Position,
@@ -110,7 +110,7 @@ namespace Efeu.Integration.Services
 
             result.AddRange(
                 Triggers.Where(i =>
-                    i.Name == messageName &&
+                    i.Type == messageName &&
                     i.Tag == messageTag &&
                     i.Matter == messageMatter));
 

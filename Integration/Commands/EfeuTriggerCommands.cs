@@ -38,7 +38,7 @@ namespace Efeu.Integration.Commands
                     Position = trigger.Position,
                     Scope = trigger.Scope,
                     Input = trigger.Input,
-                    Name = trigger.Name,
+                    Type = trigger.Type,
                     Tag = trigger.Tag,
                     Matter = trigger.Matter,
                     CreationTime = timestamp

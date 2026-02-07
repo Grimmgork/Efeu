@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 
 namespace Efeu.Runtime
 {
-    public enum BehaviourStepType
+    public enum BehaviourStepKind
     {
         Emit,
         Let,
@@ -23,9 +23,9 @@ namespace Efeu.Runtime
     {
         public Guid Id;
 
-        public BehaviourStepType Type;
+        public BehaviourStepKind Kind;
 
-        public string Name = "";
+        public string Type = "";
 
         public BehaviourDefinitionExpression Input = BehaviourDefinitionExpression.Empty;
 

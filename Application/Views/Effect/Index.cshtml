@@ -1,9 +1,9 @@
 ﻿@using Efeu.Integration.Entities
-@model EfeuEffectEntity[]
+@model EffectEntity[]
 
 <div>
     <form hx-post="/Effect">
-        <input type="text" name="name"/>
+        <input type="text" name="type"/>
         <select type="text" name="tag" >
             <option value="Data">Data</option>
             <option value="Effect">Effect</option>
@@ -25,16 +25,16 @@ else
     <table>
         <tr>
             <th>Timestamp</th>
-            <th>Name</th>
+            <th>Type</th>
             <th>Tag</th>
             <th>State</th>
             <th>Actions</th>
         </tr>
-        @foreach (EfeuEffectEntity effect in Model)
+        @foreach (EffectEntity effect in Model)
         {
             <tr>
                 <td>@effect.CreationTime</td>
-                <td>@effect.Name</td>
+                <td>@effect.Type</td>
                 <td>@effect.Tag</td>
                 <td>@effect.State</td>
                 <td>

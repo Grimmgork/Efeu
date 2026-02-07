@@ -121,18 +121,18 @@ namespace Efeu.Runtime
         private static bool TriggerMatchesMessage(EfeuTrigger trigger, EfeuMessage signal, BehaviourDefinitionStep step)
         {
             return signal.Tag == trigger.Tag &&
-                   signal.Name == trigger.Name &&
+                   signal.Type == trigger.Type &&
                    signal.Matter == trigger.Matter;
         }
 
         private void RunSteps(BehaviourDefinitionStep[] steps, string position, EfeuRuntimeScope parentScope)
         {
-            var (lets, remaining) = steps.Partition((item) => item.Type == BehaviourStepType.Let);
+            var (lets, remaining) = steps.Partition((item) => item.Kind == BehaviourStepKind.Let);
 
             EfeuRuntimeScope scope = parentScope;
             foreach (BehaviourDefinitionStep step in lets)
             {
-                scope = scope.With(step.Name, step.Input.Evaluate(scope));
+                scope = scope.With(step.Type, step.Input.Evaluate(scope));
             }
 
             int i = 0;
@@ -145,27 +145,27 @@ namespace Efeu.Runtime
 
         private void RunStep(BehaviourDefinitionStep step, string position, EfeuRuntimeScope scope)
         {
-            if (step.Type == BehaviourStepType.Emit)
+            if (step.Kind == BehaviourStepKind.Emit)
             {
                 RunEmitStep(step, position, scope);
             }
-            else if (step.Type == BehaviourStepType.If)
+            else if (step.Kind == BehaviourStepKind.If)
             {
                 RunIfStep(step, position, scope);
             }
-            else if (step.Type == BehaviourStepType.Unless)
+            else if (step.Kind == BehaviourStepKind.Unless)
             {
                 RunUnlessStep(step, position, scope);
             }
-            else if (step.Type == BehaviourStepType.For)
+            else if (step.Kind == BehaviourStepKind.For)
             {
                 RunForStep(step, position, scope);
             }
-            else if (step.Type == BehaviourStepType.Await)
+            else if (step.Kind == BehaviourStepKind.Await)
             {
                 RunAwaitStep(step, position, scope);
             }
-            else if (step.Type == BehaviourStepType.On)
+            else if (step.Kind == BehaviourStepKind.On)
             {
                 RunOnStep(step, position, scope);
             }
@@ -184,7 +184,6 @@ namespace Efeu.Runtime
                     CorrelationId = Id,
                     Scope = scope,
                     Tag = EfeuMessageTag.Result,
-                    Name = step.Name,
                     Position = position,
                     DefinitionId = trigger.DefinitionId,
                     Matter = messageId,
@@ -196,8 +195,9 @@ namespace Efeu.Runtime
             {
                 Id = messageId,
                 CorrelationId = Id,
-                Name = step.Name,
-                Tag = EfeuMessageTag.Effect
+                Type = step.Type,
+                Tag = EfeuMessageTag.Effect,
+                Matter = messageId
             });
         }
 
@@ -241,7 +241,7 @@ namespace Efeu.Runtime
                 CorrelationId = Id,
                 Scope = scope,
                 Tag = EfeuMessageTag.Data,
-                Name = step.Name,
+                Type = step.Type,
                 Position = position,
                 Input = step.Input.Evaluate(scope),
                 DefinitionId = trigger.DefinitionId,
@@ -259,7 +259,7 @@ namespace Efeu.Runtime
                 Id = Guid.NewGuid(),
                 Scope = scope,
                 Tag = EfeuMessageTag.Data,
-                Name = step.Name,
+                Type = step.Type,
                 DefinitionId = trigger.DefinitionId,
                 Input = step.Input.Evaluate(scope),
                 Position = position

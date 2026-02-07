@@ -4,11 +4,11 @@ using System;
 
 namespace Efeu.Integration.Entities
 {
-    public class EfeuEffectEntity
+    public class EffectEntity
     {
         public Guid Id; // guid similar to message id
 
-        public string Name = "";
+        public string Type = "";
 
         public Guid CorrelationId; // from wich it came
 

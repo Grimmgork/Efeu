@@ -25,7 +25,7 @@ namespace Efeu.Runtime
 
         public EfeuRuntimeScope Scope = new EfeuRuntimeScope(); // Scope around trigger row
 
-        public string Name = "";
+        public string Type = "";
 
         public EfeuMessageTag Tag;
 
