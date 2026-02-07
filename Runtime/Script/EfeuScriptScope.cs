@@ -34,7 +34,9 @@ namespace Efeu.Runtime.Script
 
         public EfeuValue Get(string name)
         {
-            return this.Constants[name];
+            EfeuValue result = EfeuValue.Nil();
+            this.Constants.TryGetValue(name, out result);
+            return result;
         }
 
         public EfeuScriptScope With(string name, EfeuValue value)

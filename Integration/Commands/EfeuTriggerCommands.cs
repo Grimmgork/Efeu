@@ -53,8 +53,7 @@ namespace Efeu.Integration.Commands
         public async Task DetatchStaticAsync(int definitionVersionId)
         {
             await unitOfWork.BeginAsync();
-            // read all triggers
-            TriggerEntity[] triggers = await behaviourTriggerRepository.GetStaticAsync(definitionVersionId);
+            // TriggerEntity[] triggers = await behaviourTriggerRepository.GetStaticAsync(definitionVersionId);
             await behaviourTriggerRepository.DeleteStaticAsync(definitionVersionId);
             await unitOfWork.CompleteAsync();
         }

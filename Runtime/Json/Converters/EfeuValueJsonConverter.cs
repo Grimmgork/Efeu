@@ -48,7 +48,7 @@ namespace Efeu.Runtime.Json.Converters
             }
             else if (reader.TokenType == JsonTokenType.Number)
             {
-                return reader.GetInt64();
+                return reader.GetDecimal();
             }
             else if (reader.TokenType == JsonTokenType.True)
             {
@@ -82,11 +82,11 @@ namespace Efeu.Runtime.Json.Converters
             }
             else if (value.Tag == EfeuValueTag.Object)
             {
-                if (value.AsObject() is IEnumerable<EfeuValue> array)
+                if (value.AsObject() is EfeuArray array)
                 {
                     WriteArray(writer, array, options);
                 }
-                else if (value.AsObject() is IEnumerable<KeyValuePair<string, EfeuValue>> hash)
+                else if (value.AsObject() is EfeuHash hash)
                 {
                     WriteStruct(writer, hash, options);
                 }
@@ -101,6 +101,10 @@ namespace Efeu.Runtime.Json.Converters
                 else if (value.AsObject() is EfeuString str)
                 {
                     writer.WriteStringValue(str.ToString());
+                }
+                else
+                {
+                    writer.WriteStringValue(value.AsObject().ToString());
                 }
             }
         }

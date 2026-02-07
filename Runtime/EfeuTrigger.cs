@@ -7,6 +7,14 @@ using System.Threading.Tasks;
 
 namespace Efeu.Runtime
 {
+    public class EfeuTriggerMatch
+    {
+        public string Name = "";
+
+        public BehaviourDefinitionExpression Value = BehaviourDefinitionExpression.Empty;
+
+        public EfeuTriggerMatch[] Fields = [];
+    }
     public class EfeuTrigger
     {
         public Guid Id;
@@ -32,14 +40,5 @@ namespace Efeu.Runtime
         public Guid Matter;
 
         public bool IsStatic => CorrelationId == Guid.Empty; // a trigger is static if it is not assigned to a instance
-    }
-
-    public class EfeuTriggerMatch
-    {
-        public string Name = "";
-
-        public BehaviourDefinitionExpression Value = BehaviourDefinitionExpression.Empty;
-
-        public EfeuTriggerMatch[] Fields = [];
     }
 }

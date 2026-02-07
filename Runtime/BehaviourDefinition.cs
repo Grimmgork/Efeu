@@ -47,6 +47,7 @@ namespace Efeu.Runtime
 
     public class BehaviourDefinitionExpression
     {
+        [JsonIgnore]
         public Func<EfeuRuntimeScope, EfeuValue> Func = (_) => default;
 
         public EfeuExpressionType Type;
@@ -58,6 +59,7 @@ namespace Efeu.Runtime
         public Dictionary<string, BehaviourDefinitionExpression> Fields = [];
 
         public BehaviourDefinitionExpression[] Items = [];
+
 
         public static BehaviourDefinitionExpression Empty = new BehaviourDefinitionExpression();
 

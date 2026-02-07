@@ -16,9 +16,10 @@ namespace Efeu.Runtime
         static void Main(string[] args)
         {
             EfeuScriptScope scope = EfeuScriptScope.Empty
-                .With("a", 42);
+                .With("time", DateTime.UtcNow)
+                .With("time", DateTime.Now);
 
-            string script = "a";
+            string script = "time";
             JsonSerializerOptions options = new JsonSerializerOptions();
             options.Converters.Add(new EfeuValueJsonConverter());
             options.Converters.Add(new JsonStringEnumConverter());

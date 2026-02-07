@@ -12,33 +12,6 @@ using System.Collections;
 
 namespace Efeu.Runtime
 {
-    public class EfeuRuntimeScope
-    {
-        public readonly ImmutableDictionary<string, EfeuValue> Constants;
-
-        public static EfeuRuntimeScope Empty { get; } = new EfeuRuntimeScope();
-
-        public EfeuRuntimeScope()
-        {
-            Constants = ImmutableDictionary<string, EfeuValue>.Empty;
-        }
-
-        public EfeuRuntimeScope(ImmutableDictionary<string, EfeuValue> constants)
-        {
-            this.Constants = constants;
-        }
-
-        public EfeuValue Get(string name)
-        {
-            return Constants[name];
-        }
-
-        public EfeuRuntimeScope With(string name, EfeuValue value)
-        {
-            return new EfeuRuntimeScope(Constants.SetItem(name, value));
-        }
-    }
-
     public enum EfeuRuntimeResult
     {
         Executed,
@@ -54,11 +27,11 @@ namespace Efeu.Runtime
 
         public readonly DateTimeOffset Now = DateTimeOffset.Now;
 
-        public EfeuRuntimeResult Result => result;
-
         public readonly bool IsImmediate;
 
-        
+        public EfeuRuntimeResult Result => result;
+
+
         private EfeuRuntimeResult result;
 
         private readonly EfeuMessage triggerSignal = new EfeuMessage();
