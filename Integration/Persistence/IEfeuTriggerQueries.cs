@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Persistence
 {
-    public interface IEfeuTriggerRepository
+    public interface IEfeuTriggerQueries
     {
         public Task<TriggerEntity> GetByIdAsync(Guid id);
 

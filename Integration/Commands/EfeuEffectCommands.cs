@@ -15,28 +15,28 @@ namespace Efeu.Integration.Commands
     internal class EfeuEffectCommands : IEfeuEffectCommands
     {
         private readonly IEfeuUnitOfWork unitOfWork;
-        private readonly IBehaviourEffectRepository behaviourEffectRepository;
+        private readonly IBehaviourEffectQueries behaviourEffectQueries;
 
         private readonly IEfeuTriggerCommands behaviourTriggerCommands;
-        private readonly IEfeuTriggerRepository behaviourTriggerRepository;
-        private readonly IBehaviourDefinitionRepository behaviourDefinitionRepository;
+        private readonly IEfeuTriggerQueries behaviourTriggerQueries;
+        private readonly IBehaviourDefinitionQueries behaviourDefinitionQueries;
         private readonly IDeduplicationKeyCommands dedupicationKeyCommands;
         private readonly IEfeuEffectProvider effectProvider;
 
-        public EfeuEffectCommands(IEfeuEffectProvider effectProvider, IBehaviourEffectRepository messageRepository, IEfeuUnitOfWork unitOfWork, IEfeuTriggerCommands behaviourTriggerCommands, IEfeuTriggerRepository behaviourTriggerRepository, IBehaviourDefinitionRepository behaviourDefinitionRepository, IDeduplicationKeyCommands deduplicationKeyCommands)
+        public EfeuEffectCommands(IEfeuEffectProvider effectProvider, IBehaviourEffectQueries behaviourEffectQueries, IEfeuUnitOfWork unitOfWork, IEfeuTriggerCommands behaviourTriggerCommands, IEfeuTriggerQueries behaviourTriggerQueries, IBehaviourDefinitionQueries behaviourDefinitionQueries, IDeduplicationKeyCommands deduplicationKeyCommands)
         {
-            this.behaviourEffectRepository = messageRepository;
+            this.behaviourEffectQueries = behaviourEffectQueries;
             this.effectProvider = effectProvider;
             this.unitOfWork = unitOfWork;
             this.behaviourTriggerCommands = behaviourTriggerCommands;
-            this.behaviourTriggerRepository = behaviourTriggerRepository;
-            this.behaviourDefinitionRepository = behaviourDefinitionRepository;
+            this.behaviourTriggerQueries = behaviourTriggerQueries;
+            this.behaviourDefinitionQueries = behaviourDefinitionQueries;
             this.dedupicationKeyCommands = deduplicationKeyCommands;
         }
 
         public Task CreateEffect(EfeuMessage message)
         {
-            return behaviourEffectRepository.CreateAsync(
+            return behaviourEffectQueries.CreateAsync(
                 new EfeuEffectEntity() {
                     Id = message.Id,
                     Name = message.Name,
@@ -67,22 +67,22 @@ namespace Efeu.Integration.Commands
 
         public Task NudgeEffect(Guid id)
         {
-            return behaviourEffectRepository.NudgeEffectAsync(id);
+            return behaviourEffectQueries.NudgeEffectAsync(id);
         }
 
         public Task SuspendEffect(Guid id, DateTimeOffset timestamp)
         {
-            return behaviourEffectRepository.SuspendEffectAsync(id, timestamp);
+            return behaviourEffectQueries.SuspendEffectAsync(id, timestamp);
         }
 
         public Task SkipEffect(Guid id, DateTimeOffset timestamp, EfeuValue output = default)
         {
-            return behaviourEffectRepository.CompleteSuspendedEffectAsync(id, timestamp, output);
+            return behaviourEffectQueries.CompleteSuspendedEffectAsync(id, timestamp, output);
         }
 
         public Task DeleteEffect(Guid id)
         {
-            return behaviourEffectRepository.DeleteEffectAsync(id);
+            return behaviourEffectQueries.DeleteEffectAsync(id);
         }
 
         public async Task RunImmediate(BehaviourDefinitionStep[] steps, int definitionVersionId, DateTimeOffset timestamp)
@@ -97,7 +97,7 @@ namespace Efeu.Integration.Commands
                 effects.Add(GetEffectFromOutgoingMessage(message, timestamp));
             }
 
-            await behaviourEffectRepository.CreateBulkAsync(effects.ToArray());
+            await behaviourEffectQueries.CreateBulkAsync(effects.ToArray());
             await behaviourTriggerCommands.AttachAsync(runtime.Triggers.ToArray(), timestamp);
             await unitOfWork.CompleteAsync();
         }
@@ -114,7 +114,7 @@ namespace Efeu.Integration.Commands
 
             if (message.Tag == EfeuMessageTag.Effect)
             {
-                await behaviourEffectRepository.CreateAsync(new EfeuEffectEntity()
+                await behaviourEffectQueries.CreateAsync(new EfeuEffectEntity()
                 {
                     Id = message.Id,
                     Name = message.Name,
@@ -134,7 +134,7 @@ namespace Efeu.Integration.Commands
 
         private async Task UnlockTriggers(EfeuMessage initialSignal, DateTimeOffset timestamp)
         {
-            TriggerMatchCache context = new TriggerMatchCache(behaviourTriggerRepository, behaviourDefinitionRepository, timestamp);
+            TriggerMatchCache context = new TriggerMatchCache(behaviourTriggerQueries, behaviourDefinitionQueries, timestamp);
             await context.MatchTriggersAsync(initialSignal);
 
             int iterations = 0;
@@ -159,7 +159,7 @@ namespace Efeu.Integration.Commands
             await behaviourTriggerCommands.AttachAsync(context.Triggers.ToArray(), context.Timestamp);
             await behaviourTriggerCommands.DetatchAsync(context.DeletedTriggers.ToArray());
             await behaviourTriggerCommands.ResolveMattersAsync(context.ResolvedMatters.ToArray());
-            await behaviourEffectRepository.CreateBulkAsync(effects.ToArray());
+            await behaviourEffectQueries.CreateBulkAsync(effects.ToArray());
         }
     }
 }

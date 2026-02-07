@@ -12,13 +12,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 
-namespace Efeu.Integration.Sqlite.Repositories
+namespace Efeu.Integration.Sqlite.Queries
 {
-    internal class BehaviourEffectRepository : IBehaviourEffectRepository
+    internal class BehaviourEffectQueries : IBehaviourEffectQueries
     {
         private readonly DataConnection connection;
 
-        public BehaviourEffectRepository(DataConnection connection)
+        public BehaviourEffectQueries(DataConnection connection)
         {
             this.connection = connection;
         }

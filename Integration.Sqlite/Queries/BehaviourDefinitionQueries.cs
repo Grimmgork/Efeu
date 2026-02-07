@@ -8,13 +8,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Sqlite.Repositories
+namespace Efeu.Integration.Sqlite.Queries
 {
-    internal class BehaviourDefinitionRepository : IBehaviourDefinitionRepository
+    internal class BehaviourDefinitionQueries : IBehaviourDefinitionQueries
     {
         private readonly DataConnection connection;
 
-        public BehaviourDefinitionRepository(DataConnection connection) 
+        public BehaviourDefinitionQueries(DataConnection connection) 
         { 
             this.connection = connection;
         }

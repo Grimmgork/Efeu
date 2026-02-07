@@ -18,10 +18,10 @@ namespace Efeu.Application.Controllers
     public class EffectController : Controller
     {
         private readonly IEfeuEffectCommands behaviourEffectCommands;
-        private readonly IBehaviourEffectRepository behaviourEffectRepository;
+        private readonly IBehaviourEffectQueries behaviourEffectRepository;
         private readonly JsonOptions jsonOptions;
 
-        public EffectController(IEfeuEffectCommands behaviourEffectCommands, IBehaviourEffectRepository behaviourEffectRepository, IOptions<JsonOptions> jsonOptions)
+        public EffectController(IEfeuEffectCommands behaviourEffectCommands, IBehaviourEffectQueries behaviourEffectRepository, IOptions<JsonOptions> jsonOptions)
         {
             this.behaviourEffectCommands = behaviourEffectCommands;
             this.behaviourEffectRepository = behaviourEffectRepository;

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Persistence
 {
-    public interface IDeduplicationKeyRepository
+    public interface IDeduplicationKeyQueries
     {
         public Task<int> TryInsertAsync(string key, DateTimeOffset timestamp);
 

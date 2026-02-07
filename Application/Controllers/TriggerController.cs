@@ -11,10 +11,10 @@ namespace Efeu.Application.Controllers
     [Route("Trigger")]
     public class TriggerController : Controller
     {
-        private readonly IEfeuTriggerRepository behaviourTriggerRepository;
+        private readonly IEfeuTriggerQueries behaviourTriggerRepository;
         private readonly IEfeuTriggerCommands behaviourTriggerCommands;
 
-        public TriggerController(IEfeuTriggerRepository workflowInstanceRepository, IEfeuTriggerCommands behaviourTriggerCommands)
+        public TriggerController(IEfeuTriggerQueries workflowInstanceRepository, IEfeuTriggerCommands behaviourTriggerCommands)
         {
             this.behaviourTriggerRepository = workflowInstanceRepository;
             this.behaviourTriggerCommands = behaviourTriggerCommands;

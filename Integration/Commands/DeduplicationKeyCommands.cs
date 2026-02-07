@@ -9,12 +9,12 @@ namespace Efeu.Integration.Commands
 {
     internal class DeduplicationKeyCommands : IDeduplicationKeyCommands
     {
-        private readonly IDeduplicationKeyRepository deduplicationKeyRepository;
+        private readonly IDeduplicationKeyQueries deduplicationKeyQueries;
         private readonly IEfeuUnitOfWork unitOfWork;
 
-        public DeduplicationKeyCommands(IDeduplicationKeyRepository deduplicationKeyRepository, IEfeuUnitOfWork unitOfWork)
+        public DeduplicationKeyCommands(IDeduplicationKeyQueries deduplicationKeyQueries, IEfeuUnitOfWork unitOfWork)
         {
-            this.deduplicationKeyRepository = deduplicationKeyRepository;
+            this.deduplicationKeyQueries = deduplicationKeyQueries;
             this.unitOfWork = unitOfWork;
         }
 
@@ -24,8 +24,8 @@ namespace Efeu.Integration.Commands
                 return true;
 
             await unitOfWork.BeginAsync();
-            await deduplicationKeyRepository.ClearBeforeAsync(timestamp.Subtract(TimeSpan.FromDays(5)));
-            int result = await deduplicationKeyRepository.TryInsertAsync(key, timestamp);
+            await deduplicationKeyQueries.ClearBeforeAsync(timestamp.Subtract(TimeSpan.FromDays(5)));
+            int result = await deduplicationKeyQueries.TryInsertAsync(key, timestamp);
             await unitOfWork.CompleteAsync();
             return result != 0;
         }

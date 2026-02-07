@@ -16,16 +16,16 @@ namespace Efeu.Integration.Services
         public readonly List<EfeuTrigger> Triggers = new List<EfeuTrigger>();
         public readonly Stack<EfeuMessage> Messages = new Stack<EfeuMessage>();
 
-        private readonly IEfeuTriggerRepository behaviourTriggerRepository;
-        private readonly IBehaviourDefinitionRepository behaviourDefinitionRepository;
+        private readonly IEfeuTriggerQueries behaviourTriggerQueries;
+        private readonly IBehaviourDefinitionQueries behaviourDefinitionQueries;
 
         public readonly HashSet<Guid> DeletedTriggers = new();
         public readonly HashSet<Guid> ResolvedMatters = new();
 
-        public TriggerMatchCache(IEfeuTriggerRepository behaviourTriggerRepository, IBehaviourDefinitionRepository behaviourDefinitionRepository, DateTimeOffset timestamp)
+        public TriggerMatchCache(IEfeuTriggerQueries behaviourTriggerQueries, IBehaviourDefinitionQueries behaviourDefinitionQueries, DateTimeOffset timestamp)
         {
-            this.behaviourDefinitionRepository = behaviourDefinitionRepository;
-            this.behaviourTriggerRepository = behaviourTriggerRepository;
+            this.behaviourDefinitionQueries = behaviourDefinitionQueries;
+            this.behaviourTriggerQueries = behaviourTriggerQueries;
             Timestamp = timestamp;
         }
 
@@ -74,9 +74,9 @@ namespace Efeu.Integration.Services
 
         private async Task<EfeuTrigger[]> GetMatchingTriggersAsync(string messageName, EfeuMessageTag messageTag, Guid messageMatter)
         {
-            TriggerEntity[] triggerEntities = await behaviourTriggerRepository.GetMatchingAsync(messageName, messageTag, messageMatter, Timestamp);
+            TriggerEntity[] triggerEntities = await behaviourTriggerQueries.GetMatchingAsync(messageName, messageTag, messageMatter, Timestamp);
 
-            BehaviourDefinitionVersionEntity[] definitionEntities = await behaviourDefinitionRepository.GetVersionsByIdsAsync(
+            BehaviourDefinitionVersionEntity[] definitionEntities = await behaviourDefinitionQueries.GetVersionsByIdsAsync(
                 triggerEntities.Select(i => i.DefinitionVersionId)
                     .Where(i => !definitionEntityCache.ContainsKey(i)).ToArray());
 

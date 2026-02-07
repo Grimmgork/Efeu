@@ -8,13 +8,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Efeu.Runtime;
 
-namespace Efeu.Integration.Sqlite.Repositories
+namespace Efeu.Integration.Sqlite.Queries
 {
-    internal class BehaviourTriggerRepository : IEfeuTriggerRepository
+    internal class BehaviourTriggerQueries : IEfeuTriggerQueries
     {
         private readonly DataConnection connection;
 
-        public BehaviourTriggerRepository(DataConnection connection)
+        public BehaviourTriggerQueries(DataConnection connection)
         {
             this.connection = connection;
         }

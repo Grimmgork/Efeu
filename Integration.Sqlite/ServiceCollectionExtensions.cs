@@ -12,7 +12,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Efeu.Integration.Sqlite.Repositories;
+using Efeu.Integration.Sqlite.Queries;
 using Efeu.Runtime;
 using Efeu.Runtime.Json.Converters;
 using System.Data.SqlClient;
@@ -164,11 +164,11 @@ namespace Efeu.Integration.Sqlite
         {
             services.AddScoped<EfeuUnitOfWork>();
             services.AddScoped<IEfeuUnitOfWork, EfeuUnitOfWork>();
-            services.AddScoped<IBehaviourDefinitionRepository, BehaviourDefinitionRepository>();
-            services.AddScoped<IEfeuTriggerRepository, BehaviourTriggerRepository>();
-            services.AddScoped<IBehaviourEffectRepository, BehaviourEffectRepository>();
+            services.AddScoped<IBehaviourDefinitionQueries, BehaviourDefinitionQueries>();
+            services.AddScoped<IEfeuTriggerQueries, BehaviourTriggerQueries>();
+            services.AddScoped<IBehaviourEffectQueries, BehaviourEffectQueries>();
             services.AddScoped<IEfeuMigrationRunner, MigrationRunner>();
-            services.AddScoped<IDeduplicationKeyRepository, DeduplicationKeyRepository>();
+            services.AddScoped<IDeduplicationKeyQueries, DeduplicationKeyQueries>();
         }
     }
 }

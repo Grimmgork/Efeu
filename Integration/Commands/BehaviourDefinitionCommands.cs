@@ -14,14 +14,14 @@ namespace Efeu.Integration.Commands
     internal class BehaviourDefinitionCommands : IBehaviourDefinitionCommands
     {
         private readonly IEfeuUnitOfWork unitOfWork;
-        private readonly IBehaviourDefinitionRepository behaviourDefinitionRepository;
+        private readonly IBehaviourDefinitionQueries behaviourDefinitionQueries;
         private readonly IEfeuEffectCommands behaviourEffectCommands;
         private readonly IEfeuTriggerCommands behaviourTriggerCommands;
 
-        public BehaviourDefinitionCommands(IEfeuUnitOfWork unitOfWork, IBehaviourDefinitionRepository repository, IEfeuEffectCommands behaviourEffectCommands, IEfeuTriggerCommands behaviourTriggerCommands)
+        public BehaviourDefinitionCommands(IEfeuUnitOfWork unitOfWork, IBehaviourDefinitionQueries queries, IEfeuEffectCommands behaviourEffectCommands, IEfeuTriggerCommands behaviourTriggerCommands)
         {
             this.unitOfWork = unitOfWork;
-            this.behaviourDefinitionRepository = repository;
+            this.behaviourDefinitionQueries = queries;
             this.behaviourEffectCommands = behaviourEffectCommands;
             this.behaviourTriggerCommands = behaviourTriggerCommands;
         }
@@ -34,19 +34,19 @@ namespace Efeu.Integration.Commands
                 Version = 0
             };
 
-            return behaviourDefinitionRepository.CreateAsync(definition);
+            return behaviourDefinitionQueries.CreateAsync(definition);
         }
 
         public Task DeleteAsync(int id)
         {
-            return behaviourDefinitionRepository.DeleteAsync(id);
+            return behaviourDefinitionQueries.DeleteAsync(id);
         }
 
         public async Task<int> PublishVersionAsync(int definitionId, BehaviourDefinitionStep[] steps)
         {
             await unitOfWork.BeginAsync();
             await unitOfWork.LockAsync($"Definition:{definitionId}");
-            BehaviourDefinitionVersionEntity? definitionVersionEntity = await behaviourDefinitionRepository.GetLatestVersionAsync(definitionId);
+            BehaviourDefinitionVersionEntity? definitionVersionEntity = await behaviourDefinitionQueries.GetLatestVersionAsync(definitionId);
             if (definitionVersionEntity != null)
             {
                 // clear all static triggers for old definition
@@ -62,12 +62,12 @@ namespace Efeu.Integration.Commands
 
         private async Task<int> CreateVersionAsync(int definitionId, BehaviourDefinitionStep[] steps)
         {
-            BehaviourDefinitionEntity? definition = await behaviourDefinitionRepository.GetByIdAsync(definitionId);
+            BehaviourDefinitionEntity? definition = await behaviourDefinitionQueries.GetByIdAsync(definitionId);
             if (definition == null)
                 throw new Exception();
 
             definition.Version++;
-            await behaviourDefinitionRepository.UpdateAsync(definition);
+            await behaviourDefinitionQueries.UpdateAsync(definition);
 
             BehaviourDefinitionVersionEntity definitionVersion = new BehaviourDefinitionVersionEntity()
             {
@@ -76,7 +76,7 @@ namespace Efeu.Integration.Commands
                 Version = definition.Version,
             };
 
-            return await behaviourDefinitionRepository.CreateVersionAsync(definitionVersion);
+            return await behaviourDefinitionQueries.CreateVersionAsync(definitionVersion);
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Persistence
 {
-    public interface IBehaviourDefinitionRepository
+    public interface IBehaviourDefinitionQueries
     {
         public Task<BehaviourDefinitionEntity?> GetByIdAsync(int id);
 

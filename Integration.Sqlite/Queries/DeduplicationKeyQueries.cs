@@ -9,13 +9,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Sqlite.Repositories
+namespace Efeu.Integration.Sqlite.Queries
 {
-    internal class DeduplicationKeyRepository : IDeduplicationKeyRepository
+    internal class DeduplicationKeyQueries : IDeduplicationKeyQueries
     {
         private readonly DataConnection connection;
 
-        public DeduplicationKeyRepository(DataConnection connection)
+        public DeduplicationKeyQueries(DataConnection connection)
         {
             this.connection = connection;
         }

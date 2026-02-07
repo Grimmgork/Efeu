@@ -103,7 +103,7 @@ namespace Efeu.Integration.Services
             await using var scope = scopeFactory.CreateAsyncScope();
 
             IServiceProvider services = scope.ServiceProvider;
-            IBehaviourEffectRepository behaviourMessageRepository = services.GetRequiredService<IBehaviourEffectRepository>();
+            IBehaviourEffectQueries behaviourMessageRepository = services.GetRequiredService<IBehaviourEffectQueries>();
             IEfeuEffectCommands behaviourEffectCommands = services.GetRequiredService<IEfeuEffectCommands>();
             IEfeuUnitOfWork unitOfWork = services.GetRequiredService<IEfeuUnitOfWork>();
             IEfeuEffectProvider effectProvider = services.GetRequiredService<IEfeuEffectProvider>();
@@ -158,7 +158,7 @@ namespace Efeu.Integration.Services
             await using var scope = scopeFactory.CreateAsyncScope();
 
             IServiceProvider services = scope.ServiceProvider;
-            IBehaviourEffectRepository behaviourEffectRepository = services.GetRequiredService<IBehaviourEffectRepository>();
+            IBehaviourEffectQueries behaviourEffectRepository = services.GetRequiredService<IBehaviourEffectQueries>();
 
             Guid[] candidateIds = await behaviourEffectRepository.GetRunningEffectsNotLockedAsync(DateTime.Now);
             EfeuEffectEntity? effect = null;
