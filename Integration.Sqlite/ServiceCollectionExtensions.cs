@@ -162,8 +162,8 @@ namespace Efeu.Integration.Sqlite
 
         private static void AddEfeuSqliteServices(this IServiceCollection services)
         {
-            services.AddScoped<EfeuUnitOfWork>();
-            services.AddScoped<IEfeuUnitOfWork, EfeuUnitOfWork>();
+            services.AddScoped<UnitOfWork>();
+            services.AddScoped<IEfeuUnitOfWork, UnitOfWork>();
             services.AddScoped<IBehaviourDefinitionQueries, BehaviourDefinitionQueries>();
             services.AddScoped<IEfeuTriggerQueries, BehaviourTriggerQueries>();
             services.AddScoped<IBehaviourEffectQueries, BehaviourEffectQueries>();

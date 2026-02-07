@@ -13,7 +13,7 @@ using System.Transactions;
 
 namespace Efeu.Integration.Sqlite
 {
-    internal class EfeuUnitOfWork : IEfeuUnitOfWork
+    internal class UnitOfWork : IEfeuUnitOfWork
     {
         private readonly Guid id;
 
@@ -23,7 +23,7 @@ namespace Efeu.Integration.Sqlite
         private HashSet<string> locks = new HashSet<string>();
         private int depth;
 
-        public EfeuUnitOfWork(DataConnection connection)
+        public UnitOfWork(DataConnection connection)
         {
             this.connection = connection;
             this.id = Guid.NewGuid();
