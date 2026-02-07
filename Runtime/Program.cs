@@ -31,16 +31,16 @@ namespace Efeu.Runtime
             BehaviourDefinitionStep[] steps = [
                 new () {
                     Kind = BehaviourStepKind.Let,
-                    Type = "Value",
+                    Name = "Value",
                     Input = BehaviourDefinitionExpression.Eval(1),
                 },
                 new () {
                     Kind = BehaviourStepKind.Emit,
-                    Type = "HelloWorld"
+                    Name = "HelloWorld"
                 },
                 new () {
                     Kind = BehaviourStepKind.Await,
-                    Type = "Event",
+                    Name = "Event",
                     Do = [
                         new () {
                             Kind = BehaviourStepKind.If,
@@ -48,13 +48,13 @@ namespace Efeu.Runtime
                             Do = [
                                 new () {
                                     Kind = BehaviourStepKind.Emit,
-                                    Type = "HelloWorld1"
+                                    Name = "HelloWorld1"
                                 }
                             ],
                             Else = [
                                 new () {
                                     Kind = BehaviourStepKind.Emit,
-                                    Type = "HelloWorld2"
+                                    Name = "HelloWorld2"
                                 }
                             ]
                         },
@@ -62,7 +62,7 @@ namespace Efeu.Runtime
                 },
                 new () {
                     Kind = BehaviourStepKind.Emit,
-                    Type = "HelloWorld"
+                    Name = "HelloWorld"
                 },
             ];
 

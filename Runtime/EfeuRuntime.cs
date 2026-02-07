@@ -132,7 +132,7 @@ namespace Efeu.Runtime
             EfeuRuntimeScope scope = parentScope;
             foreach (BehaviourDefinitionStep step in lets)
             {
-                scope = scope.With(step.Type, step.Input.Evaluate(scope));
+                scope = scope.With(step.Name, step.Input.Evaluate(scope));
             }
 
             int i = 0;
@@ -195,7 +195,7 @@ namespace Efeu.Runtime
             {
                 Id = messageId,
                 CorrelationId = Id,
-                Type = step.Type,
+                Type = step.Name,
                 Tag = EfeuMessageTag.Effect,
                 Matter = messageId
             });
@@ -241,7 +241,7 @@ namespace Efeu.Runtime
                 CorrelationId = Id,
                 Scope = scope,
                 Tag = EfeuMessageTag.Data,
-                Type = step.Type,
+                Type = step.Name,
                 Position = position,
                 Input = step.Input.Evaluate(scope),
                 DefinitionId = trigger.DefinitionId,
@@ -259,7 +259,7 @@ namespace Efeu.Runtime
                 Id = Guid.NewGuid(),
                 Scope = scope,
                 Tag = EfeuMessageTag.Data,
-                Type = step.Type,
+                Type = step.Name,
                 DefinitionId = trigger.DefinitionId,
                 Input = step.Input.Evaluate(scope),
                 Position = position

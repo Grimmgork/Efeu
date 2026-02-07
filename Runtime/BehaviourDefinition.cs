@@ -25,7 +25,7 @@ namespace Efeu.Runtime
 
         public BehaviourStepKind Kind;
 
-        public string Type = "";
+        public string Name = "";
 
         public BehaviourDefinitionExpression Input = BehaviourDefinitionExpression.Empty;
 

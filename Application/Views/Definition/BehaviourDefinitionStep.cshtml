@@ -2,7 +2,7 @@
 @model BehaviourDefinitionStep;
 
 <div>
-    <span>@(Model.Kind.ToString().ToLower())</span> <span>@Model.Type</span>
+    <span>@(Model.Kind.ToString().ToLower())</span> <span>@Model.Name</span>
     @if (Model.Do.Length > 0)
     {
         <span>do</span>
