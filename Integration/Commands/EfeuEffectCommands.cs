@@ -80,9 +80,12 @@ namespace Efeu.Integration.Commands
             return behaviourEffectQueries.CompleteSuspendedEffectAsync(id, timestamp, output);
         }
 
-        public Task DeleteEffect(Guid id)
+        public async Task AbortEffect(Guid id)
         {
-            return behaviourEffectQueries.DeleteEffectAsync(id);
+            await unitOfWork.BeginAsync();
+
+            await behaviourEffectQueries.AbortEffectAsync(id);
+            await unitOfWork.CompleteAsync();
         }
 
         public async Task RunImmediate(BehaviourDefinitionStep[] steps, int definitionVersionId, DateTimeOffset timestamp)

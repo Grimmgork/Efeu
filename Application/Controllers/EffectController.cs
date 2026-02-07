@@ -57,7 +57,7 @@ namespace Efeu.Application.Controllers
         [Route("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            await behaviourEffectCommands.DeleteEffect(id);
+            await behaviourEffectCommands.AbortEffect(id);
             Response.Headers["HX-Refresh"] = "true";
             return Ok();
         }

@@ -11,9 +11,9 @@ namespace Efeu.Integration.Persistence
 
         public Task CreateBulkAsync(EfeuEffectEntity[] entities);
 
-        public Task DeleteEffectAsync(Guid id);
+        public Task AbortEffectAsync(Guid id);
 
-        public Task DeleteCompletedSignalAsync(Guid id);
+        public Task DeleteCompletedEffectAsync(Guid lockId, Guid id);
 
         public Task<EfeuEffectEntity?> GetByIdAsync(Guid id);
 
@@ -31,9 +31,9 @@ namespace Efeu.Integration.Persistence
 
         public Task<int> NudgeEffectAsync(Guid id);
 
-        public Task<bool> TryLockEffectAsync(Guid id, Guid lockId, DateTimeOffset timestamp, TimeSpan lease);
+        public Task<bool> TryLockEffectAsync(Guid id, Guid lockId, TimeSpan lease);
 
-        public Task<Guid[]> GetRunningEffectsNotLockedAsync(DateTimeOffset time);
+        public Task<Guid[]> GetRunningEffectsNotLockedAsync();
 
         public Task UnlockEffectAsync(Guid lockId);
     }

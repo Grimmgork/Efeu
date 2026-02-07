@@ -103,7 +103,7 @@ namespace Efeu.Integration.Services
             await using var scope = scopeFactory.CreateAsyncScope();
 
             IServiceProvider services = scope.ServiceProvider;
-            IBehaviourEffectQueries behaviourMessageRepository = services.GetRequiredService<IBehaviourEffectQueries>();
+            IBehaviourEffectQueries behaviourEffectQueries = services.GetRequiredService<IBehaviourEffectQueries>();
             IEfeuEffectCommands behaviourEffectCommands = services.GetRequiredService<IEfeuEffectCommands>();
             IEfeuUnitOfWork unitOfWork = services.GetRequiredService<IEfeuUnitOfWork>();
             IEfeuEffectProvider effectProvider = services.GetRequiredService<IEfeuEffectProvider>();
@@ -122,8 +122,7 @@ namespace Efeu.Integration.Services
                     EfeuEffectExecutionContext context = new EfeuEffectExecutionContext(effect.Id, effect.CorrelationId, executionTime, effect.Times, effect.Data);
 
                     await effectInstance.RunAsync(context, token);
-                    await behaviourMessageRepository.CompleteEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, default);
-                    await unitOfWork.CompleteAsync();
+                    await behaviourEffectQueries.CompleteEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, default);
                 }
                 else
                 {
@@ -139,14 +138,17 @@ namespace Efeu.Integration.Services
                     };
 
                     await behaviourEffectCommands.SendMessage(message, DateTime.Now);
-                    await behaviourMessageRepository.DeleteCompletedSignalAsync(effect.Id);
-                    await unitOfWork.CompleteAsync();
+                    await behaviourEffectQueries.DeleteCompletedEffectAsync(workerId, effect.Id);
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-                await behaviourMessageRepository.FaultEffectAndUnlockAsync(workerId, effect.Id, executionTime, ex.ToString());
+                await behaviourEffectQueries.FaultEffectAndUnlockAsync(workerId, effect.Id, executionTime, ex.ToString());
+                
+            }
+            finally
+            {
                 await unitOfWork.CompleteAsync();
             }
             
@@ -160,12 +162,12 @@ namespace Efeu.Integration.Services
             IServiceProvider services = scope.ServiceProvider;
             IBehaviourEffectQueries behaviourEffectRepository = services.GetRequiredService<IBehaviourEffectQueries>();
 
-            Guid[] candidateIds = await behaviourEffectRepository.GetRunningEffectsNotLockedAsync(DateTime.Now);
+            Guid[] candidateIds = await behaviourEffectRepository.GetRunningEffectsNotLockedAsync();
             EfeuEffectEntity? effect = null;
             foreach (Guid candidateId in candidateIds)
             {
                 DateTimeOffset timestamp = DateTime.Now;
-                if (await behaviourEffectRepository.TryLockEffectAsync(candidateId, workerId, timestamp, TimeSpan.FromSeconds(30)))
+                if (await behaviourEffectRepository.TryLockEffectAsync(candidateId, workerId, TimeSpan.FromSeconds(30)))
                 {
                     effect = await behaviourEffectRepository.GetByIdAsync(candidateId);
                     if (effect is not null)

@@ -19,7 +19,7 @@ namespace Efeu.Integration.Commands
 
         public Task NudgeEffect(Guid id);
 
-        public Task DeleteEffect(Guid id);
+        public Task AbortEffect(Guid id);
 
         public Task CreateEffect(EfeuMessage message);
 

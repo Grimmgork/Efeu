@@ -36,7 +36,7 @@ namespace Efeu.Integration.Sqlite.Queries
             }, entities);
         }
 
-        public Task DeleteEffectAsync(Guid id)
+        public Task AbortEffectAsync(Guid id)
         {
             return connection.GetTable<EfeuEffectEntity>()
                 .DeleteAsync(i => i.Id == id
@@ -83,14 +83,15 @@ namespace Efeu.Integration.Sqlite.Queries
                 .UpdateAsync();
         }
 
-        public async Task<bool> TryLockEffectAsync(Guid id, Guid lockId, DateTimeOffset timestamp, TimeSpan lease)
+        public async Task<bool> TryLockEffectAsync(Guid id, Guid lockId, TimeSpan lease)
         {
+            DateTimeOffset time = DateTimeOffset.Now;
             int result = await connection.GetTable<EfeuEffectEntity>()
                 .Where(u => u.Id == id
                     && u.State == BehaviourEffectState.Running
-                    && (u.LockedUntil < timestamp || u.LockId == lockId))
+                    && (u.LockedUntil < time || u.LockId == lockId))
                 .Set(u => u.LockId, lockId)
-                .Set(u => u.LockedUntil, timestamp + lease)
+                .Set(u => u.LockedUntil, time + lease)
                 .UpdateAsync();
             return result > 0;
         }
@@ -104,8 +105,9 @@ namespace Efeu.Integration.Sqlite.Queries
                 .UpdateAsync();
         }
 
-        public Task<Guid[]> GetRunningEffectsNotLockedAsync(DateTimeOffset time)
+        public Task<Guid[]> GetRunningEffectsNotLockedAsync()
         {
+            DateTimeOffset time = DateTimeOffset.Now;
             return connection.GetTable<EfeuEffectEntity>()
                 .Where(u => u.State == BehaviourEffectState.Running
                     && u.State == BehaviourEffectState.Running
@@ -124,7 +126,6 @@ namespace Efeu.Integration.Sqlite.Queries
                 .Set(u => u.State, BehaviourEffectState.Faulted)
                 .Set(u => u.ExecutionTime, timestamp)
                 .Set(u => u.LockId, Guid.Empty)
-                .Set(u => u.Matter, id)
                 .Set(u => u.LockedUntil, DateTimeOffset.MinValue)
                 .Set(u => u.Fault, fault)
                 .UpdateAsync();
@@ -151,17 +152,20 @@ namespace Efeu.Integration.Sqlite.Queries
                 .Where(u => u.Id == id
                     && u.State == BehaviourEffectState.Suspended)
                 .Set(u => u.State, BehaviourEffectState.Running)
+                .Set(u => u.Tag, EfeuMessageTag.Result)
                 .Set(u => u.Input, output)
                 .Set(u => u.CreationTime, timestamp)
                 .Set(u => u.LockId, Guid.Empty)
+                .Set(u => u.Matter, id)
                 .Set(u => u.LockedUntil, DateTimeOffset.MinValue)
                 .UpdateAsync();
         }
 
-        public Task DeleteCompletedSignalAsync(Guid id)
+        public Task DeleteCompletedEffectAsync(Guid lockId, Guid id)
         {
             return connection.GetTable<EfeuEffectEntity>()
-                .DeleteAsync(u => u.Id == id);
+                .DeleteAsync(u => u.Id == id
+                               && u.LockId == lockId);
         }
     }
 }
