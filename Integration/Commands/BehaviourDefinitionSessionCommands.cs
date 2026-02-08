@@ -29,12 +29,12 @@ namespace Efeu.Integration.Commands
             return Task.CompletedTask;
         }
 
-        public Task<BehaviourDefinitionStep> AddElseStep(Guid sessionId, DateTimeOffset timestamp, Guid stepId)
+        public Task<EfeuBehaviourStep> AddElseStep(Guid sessionId, DateTimeOffset timestamp, Guid stepId)
         {
             throw new Exception();
         }
 
-        public Task<BehaviourDefinitionStep> AddDoStep(Guid sessionId, DateTimeOffset timestamp, Guid stepId)
+        public Task<EfeuBehaviourStep> AddDoStep(Guid sessionId, DateTimeOffset timestamp, Guid stepId)
         {
             throw new Exception();
         }

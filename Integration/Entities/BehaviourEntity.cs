@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Entities
 {
-    public class BehaviourDefinitionEntity
+    public class BehaviourEntity
     {
         public int Id;
 
@@ -16,6 +16,6 @@ namespace Efeu.Integration.Entities
 
         public int Version;
 
-        public BehaviourDefinitionStep[] Steps = [];
+        public EfeuBehaviourStep[] Steps = [];
     }
 }

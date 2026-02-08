@@ -11,7 +11,7 @@ namespace Efeu.Runtime
     {
         public string Name = "";
 
-        public BehaviourDefinitionExpression Value = BehaviourDefinitionExpression.Empty;
+        public EfeuBehaviourExpression Value = EfeuBehaviourExpression.Empty;
 
         public EfeuTriggerMatch[] Fields = [];
     }
@@ -31,11 +31,11 @@ namespace Efeu.Runtime
 
         public EfeuValue Input;
 
-        public BehaviourDefinitionStep Step = new BehaviourDefinitionStep();
+        public EfeuBehaviourStep Step = new EfeuBehaviourStep();
 
         public EfeuTriggerMatch[] Fields = [];
 
-        public int DefinitionId;
+        public int BehaviourId;
 
         public Guid Matter;
 

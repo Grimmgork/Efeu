@@ -20,18 +20,18 @@ namespace Efeu.Integration.Commands
 
         private readonly ITriggerCommands triggerCommands;
         private readonly ITriggerQueries triggerQueries;
-        private readonly IBehaviourDefinitionQueries behaviourDefinitionQueries;
+        private readonly IBehaviourQueries behaviourQueries;
         private readonly IDeduplicationKeyCommands dedupicationKeyCommands;
         private readonly IEfeuEffectProvider effectProvider;
 
-        public EffectCommands(IEfeuEffectProvider effectProvider, IEffectQueries effectQueries, IEfeuUnitOfWork unitOfWork, ITriggerCommands triggerCommands, ITriggerQueries triggerQueries, IBehaviourDefinitionQueries behaviourDefinitionQueries, IDeduplicationKeyCommands deduplicationKeyCommands)
+        public EffectCommands(IEfeuEffectProvider effectProvider, IEffectQueries effectQueries, IEfeuUnitOfWork unitOfWork, ITriggerCommands triggerCommands, ITriggerQueries triggerQueries, IBehaviourQueries behaviourQueries, IDeduplicationKeyCommands deduplicationKeyCommands)
         {
             this.effectQueries = effectQueries;
             this.effectProvider = effectProvider;
             this.unitOfWork = unitOfWork;
             this.triggerCommands = triggerCommands;
             this.triggerQueries = triggerQueries;
-            this.behaviourDefinitionQueries = behaviourDefinitionQueries;
+            this.behaviourQueries = behaviourQueries;
             this.dedupicationKeyCommands = deduplicationKeyCommands;
         }
 
@@ -61,7 +61,7 @@ namespace Efeu.Integration.Commands
                 CreationTime = timestamp,
                 Type = message.Type,
                 Input = message.Data,
-                State = BehaviourEffectState.Running,
+                State = EffectState.Running,
                 Matter = message.Matter,
                 Tag = effectProvider.TryGetEffect(message.Type) == null ?
                      EfeuMessageTag.Data : EfeuMessageTag.Effect
@@ -90,7 +90,7 @@ namespace Efeu.Integration.Commands
             await unitOfWork.CompleteAsync();
         }
 
-        public async Task RunImmediate(BehaviourDefinitionStep[] steps, int definitionVersionId, DateTimeOffset timestamp)
+        public async Task RunImmediate(EfeuBehaviourStep[] steps, int definitionVersionId, DateTimeOffset timestamp)
         {
             await unitOfWork.BeginAsync();
 
@@ -147,7 +147,7 @@ namespace Efeu.Integration.Commands
 
         private async Task UnlockTriggers(EfeuMessage initialSignal, DateTimeOffset timestamp)
         {
-            TriggerMatchCache context = new TriggerMatchCache(triggerQueries, behaviourDefinitionQueries, timestamp);
+            TriggerMatchCache context = new TriggerMatchCache(triggerQueries, behaviourQueries, timestamp);
             await context.MatchTriggersAsync(initialSignal);
 
             int iterations = 0;

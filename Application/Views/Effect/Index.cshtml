@@ -38,9 +38,9 @@ else
                 <td>@effect.Tag</td>
                 <td>@effect.State</td>
                 <td>
-                    <button disabled="@(effect.State == BehaviourEffectState.Running)" hx-post="/Effect/@effect.Id/Nudge">nudge</button>
-                    <button disabled="@(effect.State != BehaviourEffectState.Running)" hx-post="/Effect/@effect.Id/Suspend">suspend</button>
-                    <button disabled="@(effect.State != BehaviourEffectState.Suspended && effect.State != BehaviourEffectState.Faulted)" hx-delete="/Effect/@effect.Id">delete</button>
+                    <button disabled="@(effect.State == EffectState.Running)" hx-post="/Effect/@effect.Id/Nudge">nudge</button>
+                    <button disabled="@(effect.State != EffectState.Running)" hx-post="/Effect/@effect.Id/Suspend">suspend</button>
+                    <button disabled="@(effect.State != EffectState.Suspended && effect.State != EffectState.Faulted)" hx-delete="/Effect/@effect.Id">delete</button>
                 </td>
             </tr>
         }

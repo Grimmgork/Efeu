@@ -26,7 +26,7 @@ namespace Efeu.Integration.Entities
 
         public EfeuMessageTag Tag;
 
-        public BehaviourEffectState State;
+        public EffectState State;
 
         public Guid Matter;
 
@@ -35,7 +35,7 @@ namespace Efeu.Integration.Entities
         public Guid LockId;
     }
 
-    public enum BehaviourEffectState
+    public enum EffectState
     {
         Running,
         Suspended,

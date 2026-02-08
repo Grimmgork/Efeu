@@ -3,17 +3,17 @@ namespace Efeu.Integration.Entities
     using Efeu.Runtime;
     using System;
 
-    public class BehaviourDefinitionVersionEntity
+    public class BehaviourVersionEntity
 	{
         public int Id;
 
-        public int DefinitionId;
+        public int BehaviourId;
 
         public int Version;
 
-        public BehaviourDefinitionStep[] Steps = [];
+        public EfeuBehaviourStep[] Steps = [];
 
-        public BehaviourDefinitionStep GetPosition(string position)
+        public EfeuBehaviourStep GetPosition(string position)
         {
             // 0/Do/0/Else/2
 
@@ -26,10 +26,10 @@ namespace Efeu.Integration.Entities
             if (segments.Length % 2 == 0)
                 throw new Exception();
 
-            BehaviourDefinitionStep[] steps = Steps;
+            EfeuBehaviourStep[] steps = Steps;
 
             int index = int.Parse(segments[0]);
-            BehaviourDefinitionStep step = steps[index];
+            EfeuBehaviourStep step = steps[index];
             for (int i = 1; i < segments.Length; i += 2)
             {
                 string path = segments[i];

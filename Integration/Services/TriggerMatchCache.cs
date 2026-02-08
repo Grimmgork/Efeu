@@ -1,11 +1,9 @@
-﻿using Efeu.Integration.Commands;
-using Efeu.Integration.Entities;
+﻿using Efeu.Integration.Entities;
 using Efeu.Integration.Persistence;
 using Efeu.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Efeu.Integration.Services
@@ -17,19 +15,19 @@ namespace Efeu.Integration.Services
         public readonly Stack<EfeuMessage> Messages = new Stack<EfeuMessage>();
 
         private readonly ITriggerQueries triggerQueries;
-        private readonly IBehaviourDefinitionQueries behaviourDefinitionQueries;
+        private readonly IBehaviourQueries behaviourQueries;
 
         public readonly HashSet<Guid> DeletedTriggers = new();
         public readonly HashSet<Guid> ResolvedMatters = new();
 
-        public TriggerMatchCache(ITriggerQueries triggerQueries, IBehaviourDefinitionQueries behaviourDefinitionQueries, DateTimeOffset timestamp)
+        public TriggerMatchCache(ITriggerQueries triggerQueries, IBehaviourQueries behaviourQueries, DateTimeOffset timestamp)
         {
-            this.behaviourDefinitionQueries = behaviourDefinitionQueries;
+            this.behaviourQueries = behaviourQueries;
             this.triggerQueries = triggerQueries;
             Timestamp = timestamp;
         }
 
-        private readonly Dictionary<int, BehaviourDefinitionVersionEntity> definitionEntityCache = new();
+        private readonly Dictionary<int, BehaviourVersionEntity> behaviourVersionEntityCache = new();
 
         public async Task MatchTriggersAsync(EfeuMessage signal)
         {
@@ -76,12 +74,12 @@ namespace Efeu.Integration.Services
         {
             TriggerEntity[] triggerEntities = await triggerQueries.GetMatchingAsync(messageName, messageTag, messageMatter, Timestamp);
 
-            BehaviourDefinitionVersionEntity[] definitionEntities = await behaviourDefinitionQueries.GetVersionsByIdsAsync(
-                triggerEntities.Select(i => i.DefinitionVersionId)
-                    .Where(i => !definitionEntityCache.ContainsKey(i)).ToArray());
+            BehaviourVersionEntity[] behaviourVersionEntities = await behaviourQueries.GetVersionsByIdsAsync(
+                triggerEntities.Select(i => i.BehaviourVersionId)
+                    .Where(i => !behaviourVersionEntityCache.ContainsKey(i)).ToArray());
 
-            foreach (BehaviourDefinitionVersionEntity definitionVersionEntity in definitionEntities)
-                definitionEntityCache.Add(definitionVersionEntity.Id, definitionVersionEntity);
+            foreach (BehaviourVersionEntity behaviourVersionEntity in behaviourVersionEntities)
+                behaviourVersionEntityCache.Add(behaviourVersionEntity.Id, behaviourVersionEntity);
 
             List<EfeuTrigger> result = new();
             foreach (TriggerEntity triggerEntity in triggerEntities)
@@ -101,9 +99,9 @@ namespace Efeu.Integration.Services
                     Tag = triggerEntity.Tag,
                     Scope = triggerEntity.Scope,
                     Position = triggerEntity.Position,
-                    DefinitionId = triggerEntity.DefinitionVersionId,
+                    BehaviourId = triggerEntity.BehaviourVersionId,
                     Matter = triggerEntity.Matter,
-                    Step = definitionEntityCache[triggerEntity.DefinitionVersionId].GetPosition(triggerEntity.Position)
+                    Step = behaviourVersionEntityCache[triggerEntity.BehaviourVersionId].GetPosition(triggerEntity.Position)
                 };
                 result.Add(trigger);
             }

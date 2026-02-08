@@ -18,7 +18,7 @@ namespace Efeu.Integration.Entities
 
         public Guid CorrelationId;
 
-        public int DefinitionVersionId;
+        public int BehaviourVersionId;
 
         public string Position = ""; // position of trigger row 0/Else/1
 

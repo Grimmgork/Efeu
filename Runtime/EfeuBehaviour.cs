@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 
 namespace Efeu.Runtime
 {
-    public enum BehaviourStepKind
+    public enum EfeuBehaviourStepKind
     {
         Emit,
         Let,
@@ -19,21 +19,21 @@ namespace Efeu.Runtime
         On
     }
 
-    public class BehaviourDefinitionStep
+    public class EfeuBehaviourStep
     {
         public Guid Id;
 
-        public BehaviourStepKind Kind;
+        public EfeuBehaviourStepKind Kind;
 
         public string Name = "";
 
-        public BehaviourDefinitionExpression Input = BehaviourDefinitionExpression.Empty;
+        public EfeuBehaviourExpression Input = EfeuBehaviourExpression.Empty;
 
-        public BehaviourDefinitionStep[] Do = [];
+        public EfeuBehaviourStep[] Do = [];
 
-        public BehaviourDefinitionStep[] Else = [];
+        public EfeuBehaviourStep[] Else = [];
 
-        public BehaviourDefinitionStep[] Error = [];
+        public EfeuBehaviourStep[] Error = [];
     }
 
     public enum EfeuExpressionType
@@ -45,7 +45,7 @@ namespace Efeu.Runtime
         Eval
     }
 
-    public class BehaviourDefinitionExpression
+    public class EfeuBehaviourExpression
     {
         [JsonIgnore]
         public Func<EfeuRuntimeScope, EfeuValue> Func = (_) => default;
@@ -56,43 +56,43 @@ namespace Efeu.Runtime
 
         public string Code = "";
 
-        public Dictionary<string, BehaviourDefinitionExpression> Fields = [];
+        public Dictionary<string, EfeuBehaviourExpression> Fields = [];
 
-        public BehaviourDefinitionExpression[] Items = [];
+        public EfeuBehaviourExpression[] Items = [];
 
 
-        public static BehaviourDefinitionExpression Empty = new BehaviourDefinitionExpression();
+        public static EfeuBehaviourExpression Empty = new EfeuBehaviourExpression();
 
-        public static BehaviourDefinitionExpression Eval(Func<EfeuRuntimeScope, EfeuValue> func)
+        public static EfeuBehaviourExpression Eval(Func<EfeuRuntimeScope, EfeuValue> func)
         {
-            return new BehaviourDefinitionExpression()
+            return new EfeuBehaviourExpression()
             {
                 Type = EfeuExpressionType.Eval,
                 Func = func
             };
         }
 
-        public static BehaviourDefinitionExpression Eval(Func<EfeuValue> func)
+        public static EfeuBehaviourExpression Eval(Func<EfeuValue> func)
         {
-            return new BehaviourDefinitionExpression()
+            return new EfeuBehaviourExpression()
             {
                 Type = EfeuExpressionType.Eval,
                 Func = (_) => func()
             };
         }
 
-        public static BehaviourDefinitionExpression Eval(EfeuValue literal)
+        public static EfeuBehaviourExpression Eval(EfeuValue literal)
         {
-            return new BehaviourDefinitionExpression()
+            return new EfeuBehaviourExpression()
             {
                 Type = EfeuExpressionType.Literal,
                 Value = literal
             };
         }
 
-        public static BehaviourDefinitionExpression Script(string script)
+        public static EfeuBehaviourExpression Script(string script)
         {
-            return new BehaviourDefinitionExpression()
+            return new EfeuBehaviourExpression()
             {
                 Type = EfeuExpressionType.Script,
                 Code = script,

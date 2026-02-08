@@ -48,21 +48,21 @@ namespace Efeu.Integration.Sqlite
             builder.MappingSchema.SetConverter<EfeuValue, DataParameter>(c => ConvertToJson(c, jsonOptions));
             builder.MappingSchema.SetConverter<IDictionary<int, EfeuValue>, DataParameter>(c => ConvertToJson(c, jsonOptions));
             builder.MappingSchema.SetConverter<Stack<int>, DataParameter>(c => ConvertToJson(c, jsonOptions));
-            builder.MappingSchema.SetConverter<BehaviourDefinitionStep[], DataParameter>(c => ConvertToJson(c, jsonOptions));
+            builder.MappingSchema.SetConverter<EfeuBehaviourStep[], DataParameter>(c => ConvertToJson(c, jsonOptions));
             builder.MappingSchema.SetConverter<EfeuRuntimeScope, DataParameter>(c => ConvertToJson(c, jsonOptions));
             builder.MappingSchema.SetConverter<DateTimeOffset, DataParameter>(c => new DataParameter(null, c.ToUnixTimeMilliseconds(), DataType.Long));
 
             builder.MappingSchema.SetConverter<string, EfeuValue>(i => ConvertFromJson<EfeuValue>(i, jsonOptions));
             builder.MappingSchema.SetConverter<string, Stack<int>>(i => ConvertFromJson<Stack<int>>(i, jsonOptions));
             builder.MappingSchema.SetConverter<string, IDictionary<int, EfeuValue>>(i => ConvertFromJson<IDictionary<int, EfeuValue>>(i, jsonOptions));
-            builder.MappingSchema.SetConverter<string, BehaviourDefinitionStep[]>(i => ConvertFromJson<BehaviourDefinitionStep[]>(i, jsonOptions));
+            builder.MappingSchema.SetConverter<string, EfeuBehaviourStep[]>(i => ConvertFromJson<EfeuBehaviourStep[]>(i, jsonOptions));
             builder.MappingSchema.SetConverter<string, EfeuRuntimeScope>(i => ConvertFromJson<EfeuRuntimeScope>(i, jsonOptions));
             builder.MappingSchema.SetConverter<long, DateTimeOffset>(DateTimeOffset.FromUnixTimeMilliseconds);
 
             builder.MappingSchema.SetDataType(typeof(DateTimeOffset), DataType.Int64);
 
-            builder.Entity<BehaviourDefinitionEntity>()
-                .HasTableName("Definition")
+            builder.Entity<BehaviourEntity>()
+                .HasTableName("Behaviour")
                 .HasSchemaName(schema)
                 .Property(p => p.Id)
                     .IsIdentity()
@@ -70,8 +70,8 @@ namespace Efeu.Integration.Sqlite
                 .Property(p => p.Name)
                 .Property(p => p.Version);
 
-            builder.Entity<BehaviourDefinitionVersionEntity>()
-                .HasTableName("DefinitionVersion")
+            builder.Entity<BehaviourVersionEntity>()
+                .HasTableName("BehaviourVersion")
                 .HasSchemaName(schema)
                 .Property(p => p.Id)
                     .IsIdentity()
@@ -87,7 +87,7 @@ namespace Efeu.Integration.Sqlite
                     .IsPrimaryKey()
                     .HasSkipOnInsert(false)
                 .Property(p => p.CorrelationId)
-                .Property(p => p.DefinitionVersionId)
+                .Property(p => p.BehaviourVersionId)
                 .Property(p => p.Type)
                 .Property(p => p.Tag)
                 .Property(p => p.Position)
@@ -164,7 +164,7 @@ namespace Efeu.Integration.Sqlite
         {
             services.AddScoped<UnitOfWork>();
             services.AddScoped<IEfeuUnitOfWork, UnitOfWork>();
-            services.AddScoped<IBehaviourDefinitionQueries, BehaviourDefinitionQueries>();
+            services.AddScoped<IBehaviourQueries, BehaviourQueries>();
             services.AddScoped<ITriggerQueries, TriggerQueries>();
             services.AddScoped<IEffectQueries, EffectQueries>();
             services.AddScoped<IEfeuMigrationRunner, MigrationRunner>();

@@ -28,32 +28,32 @@ namespace Efeu.Runtime
             Console.WriteLine(JsonSerializer.Serialize(value, options));
             return;
 
-            BehaviourDefinitionStep[] steps = [
+            EfeuBehaviourStep[] steps = [
                 new () {
-                    Kind = BehaviourStepKind.Let,
+                    Kind = EfeuBehaviourStepKind.Let,
                     Name = "Value",
-                    Input = BehaviourDefinitionExpression.Eval(1),
+                    Input = EfeuBehaviourExpression.Eval(1),
                 },
                 new () {
-                    Kind = BehaviourStepKind.Emit,
+                    Kind = EfeuBehaviourStepKind.Emit,
                     Name = "HelloWorld"
                 },
                 new () {
-                    Kind = BehaviourStepKind.Await,
+                    Kind = EfeuBehaviourStepKind.Await,
                     Name = "Event",
                     Do = [
                         new () {
-                            Kind = BehaviourStepKind.If,
-                            Input = BehaviourDefinitionExpression.Eval(1),
+                            Kind = EfeuBehaviourStepKind.If,
+                            Input = EfeuBehaviourExpression.Eval(1),
                             Do = [
                                 new () {
-                                    Kind = BehaviourStepKind.Emit,
+                                    Kind = EfeuBehaviourStepKind.Emit,
                                     Name = "HelloWorld1"
                                 }
                             ],
                             Else = [
                                 new () {
-                                    Kind = BehaviourStepKind.Emit,
+                                    Kind = EfeuBehaviourStepKind.Emit,
                                     Name = "HelloWorld2"
                                 }
                             ]
@@ -61,15 +61,15 @@ namespace Efeu.Runtime
                     ]
                 },
                 new () {
-                    Kind = BehaviourStepKind.Emit,
+                    Kind = EfeuBehaviourStepKind.Emit,
                     Name = "HelloWorld"
                 },
             ];
 
-            EfeuRuntime behaviour1 = EfeuRuntime.Run(steps, Guid.NewGuid(), 10);
-            EfeuTrigger trigger = behaviour1.Triggers.First();
+            EfeuRuntime runtime1 = EfeuRuntime.Run(steps, Guid.NewGuid(), 10);
+            EfeuTrigger trigger = runtime1.Triggers.First();
 
-            EfeuRuntime behaviour2 = EfeuRuntime.RunTrigger(trigger, new EfeuMessage()
+            EfeuRuntime runtime2 = EfeuRuntime.RunTrigger(trigger, new EfeuMessage()
             {
                  Tag = EfeuMessageTag.Data,
                  Type = "Event"

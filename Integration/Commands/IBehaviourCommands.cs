@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Commands
 {
-    public interface IBehaviourDefinitionCommands
+    public interface IBehaviourCommands
     {
         public Task<int> CreateAsync(string name);
 
-        public Task<int> PublishVersionAsync(int definitionId, BehaviourDefinitionStep[] steps);
+        public Task<int> PublishVersionAsync(int behaviourId, EfeuBehaviourStep[] steps);
 
         public Task DeleteAsync(int id);
     }

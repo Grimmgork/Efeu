@@ -12,53 +12,53 @@ using System.Threading.Tasks;
 
 namespace Efeu.Application.Controllers
 {
-    [Route("Definition")]
-    public class DefinitionController : Controller
+    [Route("Behaviour")]
+    public class BehaviourController : Controller
     {
-        private readonly IBehaviourDefinitionCommands workflowDefinitionCommands;
-        private readonly IBehaviourDefinitionQueries workflowDefinitionRepository;
+        private readonly IBehaviourCommands behaviourCommands;
+        private readonly IBehaviourQueries behaviourQueries;
         private readonly IEfeuUnitOfWork unitOfWork;
 
-        public DefinitionController(IBehaviourDefinitionCommands workflowDefinitionCommands, IBehaviourDefinitionQueries workflowDefinitionRepository, IEfeuUnitOfWork unitOfWork)
+        public BehaviourController(IBehaviourCommands behaviourCommands, IBehaviourQueries behaviourQueries, IEfeuUnitOfWork unitOfWork)
         {
-            this.workflowDefinitionCommands = workflowDefinitionCommands;
-            this.workflowDefinitionRepository = workflowDefinitionRepository;
+            this.behaviourCommands = behaviourCommands;
+            this.behaviourQueries = behaviourQueries;
             this.unitOfWork = unitOfWork;
         }
 
         [HttpGet]
         public async Task<ActionResult> Index()
         {
-            BehaviourDefinitionEntity[] definitions = await workflowDefinitionRepository.GetAllAsync();
-            return View(definitions);
+            BehaviourEntity[] behaviours = await behaviourQueries.GetAllAsync();
+            return View(behaviours);
         }
 
         [HttpGet]
         [Route("{id}")]
         public async Task<ActionResult> Detail(int id)
         {
-            BehaviourDefinitionEntity? definition = await workflowDefinitionRepository.GetByIdAsync(id);
-            if (definition == null)
+            BehaviourEntity? behaviour = await behaviourQueries.GetByIdAsync(id);
+            if (behaviour == null)
                 return NotFound();
 
-            return View(definition);
+            return View(behaviour);
         }
 
         [HttpGet]
         [Route("{id}/Latest")]
         public async Task<ActionResult> Latest(int id)
         {
-            BehaviourDefinitionVersionEntity? definition = await workflowDefinitionRepository.GetLatestVersionAsync(id);
-            if (definition == null)
+            BehaviourVersionEntity? behaviour = await behaviourQueries.GetLatestVersionAsync(id);
+            if (behaviour == null)
                 return NotFound();
 
-            return View(definition);
+            return View(behaviour);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(string name)
         {
-            await workflowDefinitionCommands.CreateAsync(name);
+            await behaviourCommands.CreateAsync(name);
             Response.Headers["HX-Refresh"] = "true";
             return Ok();
         }
@@ -67,7 +67,7 @@ namespace Efeu.Application.Controllers
         [Route("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await workflowDefinitionCommands.DeleteAsync(id);
+            await behaviourCommands.DeleteAsync(id);
             Response.Headers["HX-Refresh"] = "true";
             return Ok();
         }
@@ -84,9 +84,9 @@ namespace Efeu.Application.Controllers
             options.Converters.Add(new EfeuValueJsonConverter());
             options.Converters.Add(new JsonStringEnumConverter());
 
-            BehaviourDefinitionStep[] steps = JsonSerializer.Deserialize<BehaviourDefinitionStep[]>(file.OpenReadStream(), options);
+            EfeuBehaviourStep[] steps = JsonSerializer.Deserialize<EfeuBehaviourStep[]>(file.OpenReadStream(), options);
 
-            await workflowDefinitionCommands.PublishVersionAsync(id, steps);
+            await behaviourCommands.PublishVersionAsync(id, steps);
 
             Response.Headers["HX-Redirect"] = Url.Action($"{id}");
             return Ok();

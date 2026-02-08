@@ -40,7 +40,7 @@ namespace Efeu.Integration.Sqlite.Queries
         {
             return connection.GetTable<EffectEntity>()
                 .DeleteAsync(i => i.Id == id
-                            && (i.State == BehaviourEffectState.Suspended || i.State == BehaviourEffectState.Faulted));
+                            && (i.State == EffectState.Suspended || i.State == EffectState.Faulted));
         }
 
         public Task<EffectEntity[]> GetAllAsync()
@@ -66,8 +66,8 @@ namespace Efeu.Integration.Sqlite.Queries
         {
             return connection.GetTable<EffectEntity>()
                 .Where(u => u.Id == id
-                    && (u.State == BehaviourEffectState.Suspended || u.State == BehaviourEffectState.Faulted))
-                .Set(u => u.State, BehaviourEffectState.Running)
+                    && (u.State == EffectState.Suspended || u.State == EffectState.Faulted))
+                .Set(u => u.State, EffectState.Running)
                 .UpdateAsync();
         }
 
@@ -75,11 +75,11 @@ namespace Efeu.Integration.Sqlite.Queries
         {
             return connection.GetTable<EffectEntity>()
                 .Where(u => u.Id == id
-                    && u.State == BehaviourEffectState.Running
+                    && u.State == EffectState.Running
                     && (u.LockedUntil < timestamp))
                 .Set(u => u.LockId, Guid.Empty)
                 .Set(u => u.LockedUntil, DateTimeOffset.MinValue)
-                .Set(u => u.State, BehaviourEffectState.Suspended)
+                .Set(u => u.State, EffectState.Suspended)
                 .UpdateAsync();
         }
 
@@ -88,7 +88,7 @@ namespace Efeu.Integration.Sqlite.Queries
             DateTimeOffset time = DateTimeOffset.Now;
             int result = await connection.GetTable<EffectEntity>()
                 .Where(u => u.Id == id
-                    && u.State == BehaviourEffectState.Running
+                    && u.State == EffectState.Running
                     && (u.LockedUntil < time || u.LockId == lockId))
                 .Set(u => u.LockId, lockId)
                 .Set(u => u.LockedUntil, time + lease)
@@ -109,8 +109,8 @@ namespace Efeu.Integration.Sqlite.Queries
         {
             DateTimeOffset time = DateTimeOffset.Now;
             return connection.GetTable<EffectEntity>()
-                .Where(u => u.State == BehaviourEffectState.Running
-                    && u.State == BehaviourEffectState.Running
+                .Where(u => u.State == EffectState.Running
+                    && u.State == EffectState.Running
                     && u.LockedUntil < time)
                 .OrderBy(u => u.CreationTime)
                 .Select(p => p.Id)
@@ -122,8 +122,8 @@ namespace Efeu.Integration.Sqlite.Queries
             return connection.GetTable<EffectEntity>()
                 .Where(u => u.Id == id 
                     && u.LockId == lockId
-                    && u.State == BehaviourEffectState.Running)
-                .Set(u => u.State, BehaviourEffectState.Faulted)
+                    && u.State == EffectState.Running)
+                .Set(u => u.State, EffectState.Faulted)
                 .Set(u => u.ExecutionTime, timestamp)
                 .Set(u => u.LockId, Guid.Empty)
                 .Set(u => u.LockedUntil, DateTimeOffset.MinValue)
@@ -136,7 +136,7 @@ namespace Efeu.Integration.Sqlite.Queries
             return connection.GetTable<EffectEntity>()
                 .Where(u => u.Id == id
                     && u.LockId == lockId
-                    && u.State == BehaviourEffectState.Running)
+                    && u.State == EffectState.Running)
                 .Set(u => u.Tag, EfeuMessageTag.Result)
                 .Set(u => u.Input, output)
                 .Set(u => u.Type, "")
@@ -150,8 +150,8 @@ namespace Efeu.Integration.Sqlite.Queries
         {
             return connection.GetTable<EffectEntity>()
                 .Where(u => u.Id == id
-                    && u.State == BehaviourEffectState.Suspended)
-                .Set(u => u.State, BehaviourEffectState.Running)
+                    && u.State == EffectState.Suspended)
+                .Set(u => u.State, EffectState.Running)
                 .Set(u => u.Tag, EfeuMessageTag.Result)
                 .Set(u => u.Input, output)
                 .Set(u => u.CreationTime, timestamp)

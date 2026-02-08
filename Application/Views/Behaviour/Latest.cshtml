@@ -1,8 +1,8 @@
 ﻿@using Efeu.Integration.Entities
 @using Efeu.Runtime
-@model BehaviourDefinitionVersionEntity;
+@model BehaviourVersionEntity;
 
-@foreach (BehaviourDefinitionStep step in Model.Steps)
+@foreach (EfeuBehaviourStep step in Model.Steps)
 {
     <partial name="BehaviourDefinitionStep" model="@step" />
 }

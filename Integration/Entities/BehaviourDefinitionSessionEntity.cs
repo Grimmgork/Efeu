@@ -13,7 +13,7 @@ namespace Efeu.Integration.Entities
 
         public string UserId = "";
 
-        public BehaviourDefinitionStep[] Steps = [];
+        public EfeuBehaviourStep[] Steps = [];
 
         public int BehaviourDefinitionId;
 

@@ -20,9 +20,9 @@ namespace Efeu.Integration.Sqlite.Migrations
 
         public async Task Up()
         {
-            await connection.ExecuteAsync("CREATE TABLE Definition (Id INTEGER PRIMARY KEY, Name TEXT, Version INTEGER, UNIQUE(Name))");
-            await connection.ExecuteAsync("CREATE TABLE DefinitionVersion (Id INTEGER PRIMARY KEY, DefinitionId INTEGER, Version INTEGER, Steps TEXT, FOREIGN KEY(DefinitionId) REFERENCES Definition(Id))");
-            await connection.ExecuteAsync("CREATE TABLE Trigger (Id TEXT PRIMARY KEY, DefinitionVersionId INTEGER, CorrelationId TEXT, CreationTime INTEGER, Input TEXT, Position TEXT, Scope TEXT, Type TEXT, Tag TEXT, Matter TEXT, FOREIGN KEY(DefinitionVersionId) REFERENCES DefinitionVersion(Id))");
+            await connection.ExecuteAsync("CREATE TABLE Behaviour (Id INTEGER PRIMARY KEY, Name TEXT, Version INTEGER, UNIQUE(Name))");
+            await connection.ExecuteAsync("CREATE TABLE BehaviourVersion (Id INTEGER PRIMARY KEY, BehaviourId INTEGER, Version INTEGER, Steps TEXT, FOREIGN KEY(BehaviourId) REFERENCES Behaviour(Id))");
+            await connection.ExecuteAsync("CREATE TABLE Trigger (Id TEXT PRIMARY KEY, BehaviourVersionId INTEGER, CorrelationId TEXT, CreationTime INTEGER, Input TEXT, Position TEXT, Scope TEXT, Type TEXT, Tag TEXT, Matter TEXT, FOREIGN KEY(BehaviourVersionId) REFERENCES BehaviourVersion(Id))");
             await connection.ExecuteAsync("CREATE TABLE Effect (Id TEXT PRIMARY KEY, Type TEXT, CorrelationId TEXT, Input TEXT, Data TEXT, CreationTime INTEGER, State TEXT, Times INTEGER, ExecutionTime INTEGER, Fault TEXT, Tag INTEGER, Matter TEXT, LockId TEXT, LockedUntil INTEGER)");
             await connection.ExecuteAsync("CREATE TABLE Lock (Name TEXT PRIMARY KEY, Bundle TEXT)");
             await connection.ExecuteAsync("CREATE TABLE DeduplicationKey (Key TEXT PRIMARY KEY, Timestamp INTEGER)");
@@ -30,11 +30,11 @@ namespace Efeu.Integration.Sqlite.Migrations
 
         public async Task Down()
         {
-            await connection.ExecuteAsync("DROP TABLE DefinitionVersion");
-            await connection.ExecuteAsync("DROP TABLE Definition");
             await connection.ExecuteAsync("DROP TABLE Trigger");
             await connection.ExecuteAsync("DROP TABLE Effect");
             await connection.ExecuteAsync("DROP TABLE Lock");
+            await connection.ExecuteAsync("DROP TABLE BahaviourVersion");
+            await connection.ExecuteAsync("DROP TABLE Behaviour");
             await connection.ExecuteAsync("DROP TABLE DeduplicationKey");
         }
     }

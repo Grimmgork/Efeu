@@ -20,7 +20,7 @@ namespace Efeu.Runtime
 
     public class EfeuRuntime
     {
-        public readonly BehaviourDefinitionStep[] Steps = [];
+        public readonly EfeuBehaviourStep[] Steps = [];
         public readonly Guid Id;
         public readonly List<EfeuTrigger> Triggers = [];
         public readonly List<EfeuMessage> Messages = [];
@@ -38,12 +38,12 @@ namespace Efeu.Runtime
 
         private readonly EfeuTrigger trigger = new EfeuTrigger();
 
-        public EfeuRuntime(BehaviourDefinitionStep[] steps, Guid id, int definitionId)
+        public EfeuRuntime(EfeuBehaviourStep[] steps, Guid id, int behaviourId)
         {
             this.Steps = steps;
             this.Id = id;
             this.IsImmediate = true;
-            this.trigger.DefinitionId = definitionId;
+            this.trigger.BehaviourId = behaviourId;
         }
 
         public EfeuRuntime(EfeuTrigger trigger, EfeuMessage signal, Guid id)
@@ -62,9 +62,9 @@ namespace Efeu.Runtime
             this.IsImmediate = false;
         }
 
-        public static EfeuRuntime Run(BehaviourDefinitionStep[] steps, Guid id, int definitionId = 0)
+        public static EfeuRuntime Run(EfeuBehaviourStep[] steps, Guid id, int behaviourId = 0)
         {
-            EfeuRuntime runtime = new EfeuRuntime(steps, id, definitionId);
+            EfeuRuntime runtime = new EfeuRuntime(steps, id, behaviourId);
             runtime.result = runtime.Execute();
             return runtime;
         }
@@ -101,7 +101,7 @@ namespace Efeu.Runtime
             else
             {
                 // trigger continuation
-                BehaviourDefinitionStep step = trigger.Step;
+                EfeuBehaviourStep step = trigger.Step;
                 if (!TriggerMatchesMessage(trigger, triggerSignal, step))
                 {
                     return EfeuRuntimeResult.Skipped;
@@ -111,67 +111,67 @@ namespace Efeu.Runtime
                     .With("now", Now)
                     .With("input", triggerSignal.Data);
 
-                BehaviourDefinitionStep[] steps = step.Do;
+                EfeuBehaviourStep[] steps = step.Do;
                 RunSteps(steps, $"{trigger.Position}/Do", scope); // Assumption: all trigger continuations are done in the Do route
             }
 
             return EfeuRuntimeResult.Executed;
         }
 
-        private static bool TriggerMatchesMessage(EfeuTrigger trigger, EfeuMessage signal, BehaviourDefinitionStep step)
+        private static bool TriggerMatchesMessage(EfeuTrigger trigger, EfeuMessage signal, EfeuBehaviourStep step)
         {
             return signal.Tag == trigger.Tag &&
                    signal.Type == trigger.Type &&
                    signal.Matter == trigger.Matter;
         }
 
-        private void RunSteps(BehaviourDefinitionStep[] steps, string position, EfeuRuntimeScope parentScope)
+        private void RunSteps(EfeuBehaviourStep[] steps, string position, EfeuRuntimeScope parentScope)
         {
-            var (lets, remaining) = steps.Partition((item) => item.Kind == BehaviourStepKind.Let);
+            var (lets, remaining) = steps.Partition((item) => item.Kind == EfeuBehaviourStepKind.Let);
 
             EfeuRuntimeScope scope = parentScope;
-            foreach (BehaviourDefinitionStep step in lets)
+            foreach (EfeuBehaviourStep step in lets)
             {
                 scope = scope.With(step.Name, step.Input.Evaluate(scope));
             }
 
             int i = 0;
-            foreach (BehaviourDefinitionStep step in remaining)
+            foreach (EfeuBehaviourStep step in remaining)
             {
                 RunStep(step, $"{position}/{i}", scope);
                 i++;
             }
         }
 
-        private void RunStep(BehaviourDefinitionStep step, string position, EfeuRuntimeScope scope)
+        private void RunStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
         {
-            if (step.Kind == BehaviourStepKind.Emit)
+            if (step.Kind == EfeuBehaviourStepKind.Emit)
             {
                 RunEmitStep(step, position, scope);
             }
-            else if (step.Kind == BehaviourStepKind.If)
+            else if (step.Kind == EfeuBehaviourStepKind.If)
             {
                 RunIfStep(step, position, scope);
             }
-            else if (step.Kind == BehaviourStepKind.Unless)
+            else if (step.Kind == EfeuBehaviourStepKind.Unless)
             {
                 RunUnlessStep(step, position, scope);
             }
-            else if (step.Kind == BehaviourStepKind.For)
+            else if (step.Kind == EfeuBehaviourStepKind.For)
             {
                 RunForStep(step, position, scope);
             }
-            else if (step.Kind == BehaviourStepKind.Await)
+            else if (step.Kind == EfeuBehaviourStepKind.Await)
             {
                 RunAwaitStep(step, position, scope);
             }
-            else if (step.Kind == BehaviourStepKind.On)
+            else if (step.Kind == EfeuBehaviourStepKind.On)
             {
                 RunOnStep(step, position, scope);
             }
         }
 
-        private void RunEmitStep(BehaviourDefinitionStep step, string position, EfeuRuntimeScope scope)
+        private void RunEmitStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
         {
             Guid triggerId = Guid.Empty;
             Guid messageId = Guid.NewGuid();
@@ -185,7 +185,7 @@ namespace Efeu.Runtime
                     Scope = scope,
                     Tag = EfeuMessageTag.Result,
                     Position = position,
-                    DefinitionId = trigger.DefinitionId,
+                    BehaviourId = trigger.BehaviourId,
                     Matter = messageId,
                     Step = step,
                 });
@@ -201,7 +201,7 @@ namespace Efeu.Runtime
             });
         }
 
-        private void RunIfStep(BehaviourDefinitionStep step, string position, EfeuRuntimeScope scope)
+        private void RunIfStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
         {
             if (step.Input.Evaluate(scope))
             {
@@ -213,7 +213,7 @@ namespace Efeu.Runtime
             }
         }
 
-        private void RunUnlessStep(BehaviourDefinitionStep step, string position, EfeuRuntimeScope scope)
+        private void RunUnlessStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
         {
             if (step.Input.Evaluate(scope))
             {
@@ -225,7 +225,7 @@ namespace Efeu.Runtime
             }
         }
 
-        private void RunForStep(BehaviourDefinitionStep step, string position, EfeuRuntimeScope scope)
+        private void RunForStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
         {
             foreach (EfeuValue item in step.Input.Evaluate(scope).Each())
             {
@@ -233,7 +233,7 @@ namespace Efeu.Runtime
             }
         }
 
-        private void RunAwaitStep(BehaviourDefinitionStep step, string position, EfeuRuntimeScope scope)
+        private void RunAwaitStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
         {
             Triggers.Add(new EfeuTrigger()
             {
@@ -244,12 +244,12 @@ namespace Efeu.Runtime
                 Type = step.Name,
                 Position = position,
                 Input = step.Input.Evaluate(scope),
-                DefinitionId = trigger.DefinitionId,
+                BehaviourId = trigger.BehaviourId,
                 Step = step
             });
         }
 
-        private void RunOnStep(BehaviourDefinitionStep step, string position, EfeuRuntimeScope scope)
+        private void RunOnStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
         {
             if (!IsImmediate)
                 throw new InvalidOperationException("Static Triggers (On) is only available in immediate mode!");
@@ -260,7 +260,7 @@ namespace Efeu.Runtime
                 Scope = scope,
                 Tag = EfeuMessageTag.Data,
                 Type = step.Name,
-                DefinitionId = trigger.DefinitionId,
+                BehaviourId = trigger.BehaviourId,
                 Input = step.Input.Evaluate(scope),
                 Position = position
             });

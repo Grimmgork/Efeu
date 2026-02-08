@@ -11,7 +11,7 @@ namespace Efeu.Integration.Commands
     {
         public Task AttachAsync(EfeuTrigger[] triggers, DateTimeOffset timestamp);
 
-        public Task DetatchStaticAsync(int definitionVersionId);
+        public Task DetatchStaticAsync(int behaviourVersionId);
 
         public Task DetatchAsync(Guid[] ids);
 

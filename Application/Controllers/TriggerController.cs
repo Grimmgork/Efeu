@@ -11,18 +11,18 @@ namespace Efeu.Application.Controllers
     [Route("Trigger")]
     public class TriggerController : Controller
     {
-        private readonly ITriggerQueries behaviourTriggerRepository;
-        private readonly ITriggerCommands behaviourTriggerCommands;
+        private readonly ITriggerQueries triggerQueries;
+        private readonly ITriggerCommands triggerCommands;
 
-        public TriggerController(ITriggerQueries workflowInstanceRepository, ITriggerCommands behaviourTriggerCommands)
+        public TriggerController(ITriggerQueries triggerQueries, ITriggerCommands triggerCommands)
         {
-            this.behaviourTriggerRepository = workflowInstanceRepository;
-            this.behaviourTriggerCommands = behaviourTriggerCommands;
+            this.triggerQueries = triggerQueries;
+            this.triggerCommands = triggerCommands;
         }
 
         public async Task<IActionResult> Index()
         {
-            TriggerEntity[] triggers = await behaviourTriggerRepository.GetAllAsync();
+            TriggerEntity[] triggers = await triggerQueries.GetAllAsync();
             return View(triggers);
         }
 
@@ -30,7 +30,7 @@ namespace Efeu.Application.Controllers
         [Route("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            await behaviourTriggerCommands.DetatchAsync([id]);
+            await triggerCommands.DetatchAsync([id]);
             Response.Headers["HX-Refresh"] = "true";
             return Ok();
         }

@@ -17,21 +17,21 @@ namespace Efeu.Application.Controllers
     [Route("Effect")]
     public class EffectController : Controller
     {
-        private readonly IEffectCommands behaviourEffectCommands;
-        private readonly IEffectQueries behaviourEffectRepository;
+        private readonly IEffectCommands effectCommands;
+        private readonly IEffectQueries effectQueries;
         private readonly JsonOptions jsonOptions;
 
-        public EffectController(IEffectCommands behaviourEffectCommands, IEffectQueries behaviourEffectRepository, IOptions<JsonOptions> jsonOptions)
+        public EffectController(IEffectCommands effectCommands, IEffectQueries effectQueries, IOptions<JsonOptions> jsonOptions)
         {
-            this.behaviourEffectCommands = behaviourEffectCommands;
-            this.behaviourEffectRepository = behaviourEffectRepository;
+            this.effectCommands = effectCommands;
+            this.effectQueries = effectQueries;
             this.jsonOptions = jsonOptions.Value;
         }
 
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            EffectEntity[] effects = await behaviourEffectRepository.GetAllAsync();
+            EffectEntity[] effects = await effectQueries.GetAllAsync();
             return View(effects);
         }
 
@@ -39,7 +39,7 @@ namespace Efeu.Application.Controllers
         [Route("")]
         public async Task<IActionResult> Create(string type, EfeuMessageTag tag, Guid matter, string json)
         {
-            await behaviourEffectCommands.CreateEffect(new EfeuMessage()
+            await effectCommands.CreateEffect(new EfeuMessage()
             {
                 Id = Guid.NewGuid(),
                 Timestamp = DateTime.Now,
@@ -57,7 +57,7 @@ namespace Efeu.Application.Controllers
         [Route("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            await behaviourEffectCommands.AbortEffect(id);
+            await effectCommands.AbortEffect(id);
             Response.Headers["HX-Refresh"] = "true";
             return Ok();
         }
@@ -66,7 +66,7 @@ namespace Efeu.Application.Controllers
         [Route("{id}/Nudge")]
         public async Task<IActionResult> Nudge(Guid id)
         {
-            await behaviourEffectCommands.NudgeEffect(id);
+            await effectCommands.NudgeEffect(id);
             Response.Headers["HX-Refresh"] = "true";
             return Ok();
         }
@@ -75,7 +75,7 @@ namespace Efeu.Application.Controllers
         [Route("{id}/Suspend")]
         public async Task<IActionResult> Suspend(Guid id)
         {
-            await behaviourEffectCommands.SuspendEffect(id, DateTime.Now);
+            await effectCommands.SuspendEffect(id, DateTime.Now);
             Response.Headers["HX-Refresh"] = "true";
             return Ok();
         }

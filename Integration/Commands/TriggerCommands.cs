@@ -33,7 +33,7 @@ namespace Efeu.Integration.Commands
                 entites.Add(new TriggerEntity()
                 {
                     Id = trigger.Id,
-                    DefinitionVersionId = trigger.DefinitionId,
+                    BehaviourVersionId = trigger.BehaviourId,
                     CorrelationId = trigger.CorrelationId,
                     Position = trigger.Position,
                     Scope = trigger.Scope,

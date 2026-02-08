@@ -47,7 +47,7 @@ namespace Efeu.Integration.Sqlite.Queries
         public Task DeleteStaticAsync(int definitionVersionId)
         {
             return connection.GetTable<TriggerEntity>()
-                .DeleteAsync(i => i.DefinitionVersionId == definitionVersionId 
+                .DeleteAsync(i => i.BehaviourVersionId == definitionVersionId 
                                && i.CorrelationId == Guid.Empty);
         }
 
@@ -66,7 +66,7 @@ namespace Efeu.Integration.Sqlite.Queries
         public Task<TriggerEntity[]> GetStaticAsync(int definitionVersionId)
         {
             return connection.GetTable<TriggerEntity>()
-                .Where(i => i.DefinitionVersionId == definitionVersionId
+                .Where(i => i.BehaviourVersionId == definitionVersionId
                          && i.CorrelationId == Guid.Empty)
                 .ToArrayAsync();
         }
