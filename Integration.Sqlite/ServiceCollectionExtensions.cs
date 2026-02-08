@@ -165,8 +165,8 @@ namespace Efeu.Integration.Sqlite
             services.AddScoped<UnitOfWork>();
             services.AddScoped<IEfeuUnitOfWork, UnitOfWork>();
             services.AddScoped<IBehaviourDefinitionQueries, BehaviourDefinitionQueries>();
-            services.AddScoped<IEfeuTriggerQueries, BehaviourTriggerQueries>();
-            services.AddScoped<IBehaviourEffectQueries, BehaviourEffectQueries>();
+            services.AddScoped<ITriggerQueries, TriggerQueries>();
+            services.AddScoped<IEffectQueries, EffectQueries>();
             services.AddScoped<IEfeuMigrationRunner, MigrationRunner>();
             services.AddScoped<IDeduplicationKeyQueries, DeduplicationKeyQueries>();
         }

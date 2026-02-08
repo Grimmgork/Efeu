@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Commands
 {
-    public interface IEfeuEffectCommands
+    public interface IEffectCommands
     {
         public Task SkipEffect(Guid id, DateTimeOffset timestamp, EfeuValue output = default);
 
@@ -24,6 +24,8 @@ namespace Efeu.Integration.Commands
         public Task CreateEffect(EfeuMessage message);
 
         public Task SendMessage(EfeuMessage message, DateTimeOffset timestamp);
+
+        public Task SendMessageDeduplicatedAsync(EfeuMessage message, DateTimeOffset timestamp);
 
         public Task RunImmediate(BehaviourDefinitionStep[] steps, int definitionVersionId, DateTimeOffset timestamp);
     }

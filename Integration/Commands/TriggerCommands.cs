@@ -10,16 +10,16 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Commands
 {
-    internal class EfeuTriggerCommands : IEfeuTriggerCommands
+    internal class TriggerCommands : ITriggerCommands
     {
         private readonly IEfeuUnitOfWork unitOfWork;
-        private readonly IEfeuTriggerQueries behaviourTriggerQueries;
+        private readonly ITriggerQueries triggerQueries;
         private readonly IEfeuTriggerProvider triggerProvider;
 
-        public EfeuTriggerCommands(IEfeuUnitOfWork unitOfWork, IEfeuTriggerQueries behaviourTriggerQueries, IEfeuTriggerProvider triggerProvider)
+        public TriggerCommands(IEfeuUnitOfWork unitOfWork, ITriggerQueries triggerQueries, IEfeuTriggerProvider triggerProvider)
         {
             this.unitOfWork = unitOfWork;
-            this.behaviourTriggerQueries = behaviourTriggerQueries;
+            this.triggerQueries = triggerQueries;
             this.triggerProvider = triggerProvider;
         }
 
@@ -45,7 +45,7 @@ namespace Efeu.Integration.Commands
                 });
             }
 
-            await behaviourTriggerQueries.CreateBulkAsync(entites.ToArray());
+            await triggerQueries.CreateBulkAsync(entites.ToArray());
 
             await unitOfWork.CompleteAsync();
         }
@@ -54,18 +54,18 @@ namespace Efeu.Integration.Commands
         {
             await unitOfWork.BeginAsync();
             // TriggerEntity[] triggers = await behaviourTriggerRepository.GetStaticAsync(definitionVersionId);
-            await behaviourTriggerQueries.DeleteStaticAsync(definitionVersionId);
+            await triggerQueries.DeleteStaticAsync(definitionVersionId);
             await unitOfWork.CompleteAsync();
         }
 
         public Task DetatchAsync(Guid[] ids)
         {
-            return behaviourTriggerQueries.DeleteBulkAsync(ids);
+            return triggerQueries.DeleteBulkAsync(ids);
         }
 
         public Task ResolveMattersAsync(Guid[] matters)
         {
-            return behaviourTriggerQueries.DeleteByMatterBulkAsync(matters);
+            return triggerQueries.DeleteByMatterBulkAsync(matters);
         }
     }
 }

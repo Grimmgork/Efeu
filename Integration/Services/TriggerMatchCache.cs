@@ -16,16 +16,16 @@ namespace Efeu.Integration.Services
         public readonly List<EfeuTrigger> Triggers = new List<EfeuTrigger>();
         public readonly Stack<EfeuMessage> Messages = new Stack<EfeuMessage>();
 
-        private readonly IEfeuTriggerQueries behaviourTriggerQueries;
+        private readonly ITriggerQueries triggerQueries;
         private readonly IBehaviourDefinitionQueries behaviourDefinitionQueries;
 
         public readonly HashSet<Guid> DeletedTriggers = new();
         public readonly HashSet<Guid> ResolvedMatters = new();
 
-        public TriggerMatchCache(IEfeuTriggerQueries behaviourTriggerQueries, IBehaviourDefinitionQueries behaviourDefinitionQueries, DateTimeOffset timestamp)
+        public TriggerMatchCache(ITriggerQueries triggerQueries, IBehaviourDefinitionQueries behaviourDefinitionQueries, DateTimeOffset timestamp)
         {
             this.behaviourDefinitionQueries = behaviourDefinitionQueries;
-            this.behaviourTriggerQueries = behaviourTriggerQueries;
+            this.triggerQueries = triggerQueries;
             Timestamp = timestamp;
         }
 
@@ -74,7 +74,7 @@ namespace Efeu.Integration.Services
 
         private async Task<EfeuTrigger[]> GetMatchingTriggersAsync(string messageName, EfeuMessageTag messageTag, Guid messageMatter)
         {
-            TriggerEntity[] triggerEntities = await behaviourTriggerQueries.GetMatchingAsync(messageName, messageTag, messageMatter, Timestamp);
+            TriggerEntity[] triggerEntities = await triggerQueries.GetMatchingAsync(messageName, messageTag, messageMatter, Timestamp);
 
             BehaviourDefinitionVersionEntity[] definitionEntities = await behaviourDefinitionQueries.GetVersionsByIdsAsync(
                 triggerEntities.Select(i => i.DefinitionVersionId)

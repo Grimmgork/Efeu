@@ -15,15 +15,15 @@ namespace Efeu.Integration.Commands
     {
         private readonly IEfeuUnitOfWork unitOfWork;
         private readonly IBehaviourDefinitionQueries behaviourDefinitionQueries;
-        private readonly IEfeuEffectCommands behaviourEffectCommands;
-        private readonly IEfeuTriggerCommands behaviourTriggerCommands;
+        private readonly IEffectCommands effectCommands;
+        private readonly ITriggerCommands triggerCommands;
 
-        public BehaviourDefinitionCommands(IEfeuUnitOfWork unitOfWork, IBehaviourDefinitionQueries queries, IEfeuEffectCommands behaviourEffectCommands, IEfeuTriggerCommands behaviourTriggerCommands)
+        public BehaviourDefinitionCommands(IEfeuUnitOfWork unitOfWork, IBehaviourDefinitionQueries queries, IEffectCommands effectCommands, ITriggerCommands triggerCommands)
         {
             this.unitOfWork = unitOfWork;
             this.behaviourDefinitionQueries = queries;
-            this.behaviourEffectCommands = behaviourEffectCommands;
-            this.behaviourTriggerCommands = behaviourTriggerCommands;
+            this.effectCommands = effectCommands;
+            this.triggerCommands = triggerCommands;
         }
 
         public Task<int> CreateAsync(string name)
@@ -50,12 +50,12 @@ namespace Efeu.Integration.Commands
             if (definitionVersionEntity != null)
             {
                 // clear all static triggers for old definition
-                await behaviourTriggerCommands.DetatchStaticAsync(definitionVersionEntity.Id);
+                await triggerCommands.DetatchStaticAsync(definitionVersionEntity.Id);
             }
 
             int newDefinitionVersionId = await CreateVersionAsync(definitionId, steps);
 
-            await behaviourEffectCommands.RunImmediate(steps, newDefinitionVersionId, DateTime.Now);
+            await effectCommands.RunImmediate(steps, newDefinitionVersionId, DateTime.Now);
             await unitOfWork.CompleteAsync();
             return newDefinitionVersionId;
         }

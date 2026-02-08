@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Persistence
 {
-    public interface IBehaviourEffectQueries
+    public interface IEffectQueries
     {
         public Task CreateAsync(EffectEntity entity);
 

@@ -13,9 +13,9 @@ namespace Efeu.Integration.Foreign
 {
     internal class EfeuEngine : IEfeuEngine
     {
-        private readonly IEfeuEffectCommands behaviourEffectCommands;
+        private readonly IEffectCommands behaviourEffectCommands;
 
-        public EfeuEngine(IEfeuEffectCommands behaviourEffectCommands)
+        public EfeuEngine(IEffectCommands behaviourEffectCommands)
         {
             this.behaviourEffectCommands = behaviourEffectCommands;
         }

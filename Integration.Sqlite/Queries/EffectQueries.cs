@@ -14,11 +14,11 @@ using System.Timers;
 
 namespace Efeu.Integration.Sqlite.Queries
 {
-    internal class BehaviourEffectQueries : IBehaviourEffectQueries
+    internal class EffectQueries : IEffectQueries
     {
         private readonly DataConnection connection;
 
-        public BehaviourEffectQueries(DataConnection connection)
+        public EffectQueries(DataConnection connection)
         {
             this.connection = connection;
         }

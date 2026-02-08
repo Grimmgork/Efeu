@@ -1,4 +1,5 @@
-﻿using Efeu.Integration.Entities;
+﻿using Antlr4.Build.Tasks;
+using Efeu.Integration.Entities;
 using Efeu.Integration.Foreign;
 using Efeu.Integration.Persistence;
 using Efeu.Integration.Services;
@@ -12,31 +13,31 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Commands
 {
-    internal class EfeuEffectCommands : IEfeuEffectCommands
+    internal class EffectCommands : IEffectCommands
     {
         private readonly IEfeuUnitOfWork unitOfWork;
-        private readonly IBehaviourEffectQueries behaviourEffectQueries;
+        private readonly IEffectQueries effectQueries;
 
-        private readonly IEfeuTriggerCommands behaviourTriggerCommands;
-        private readonly IEfeuTriggerQueries behaviourTriggerQueries;
+        private readonly ITriggerCommands triggerCommands;
+        private readonly ITriggerQueries triggerQueries;
         private readonly IBehaviourDefinitionQueries behaviourDefinitionQueries;
         private readonly IDeduplicationKeyCommands dedupicationKeyCommands;
         private readonly IEfeuEffectProvider effectProvider;
 
-        public EfeuEffectCommands(IEfeuEffectProvider effectProvider, IBehaviourEffectQueries behaviourEffectQueries, IEfeuUnitOfWork unitOfWork, IEfeuTriggerCommands behaviourTriggerCommands, IEfeuTriggerQueries behaviourTriggerQueries, IBehaviourDefinitionQueries behaviourDefinitionQueries, IDeduplicationKeyCommands deduplicationKeyCommands)
+        public EffectCommands(IEfeuEffectProvider effectProvider, IEffectQueries effectQueries, IEfeuUnitOfWork unitOfWork, ITriggerCommands triggerCommands, ITriggerQueries triggerQueries, IBehaviourDefinitionQueries behaviourDefinitionQueries, IDeduplicationKeyCommands deduplicationKeyCommands)
         {
-            this.behaviourEffectQueries = behaviourEffectQueries;
+            this.effectQueries = effectQueries;
             this.effectProvider = effectProvider;
             this.unitOfWork = unitOfWork;
-            this.behaviourTriggerCommands = behaviourTriggerCommands;
-            this.behaviourTriggerQueries = behaviourTriggerQueries;
+            this.triggerCommands = triggerCommands;
+            this.triggerQueries = triggerQueries;
             this.behaviourDefinitionQueries = behaviourDefinitionQueries;
             this.dedupicationKeyCommands = deduplicationKeyCommands;
         }
 
         public Task CreateEffect(EfeuMessage message)
         {
-            return behaviourEffectQueries.CreateAsync(
+            return effectQueries.CreateAsync(
                 new EffectEntity() {
                     Id = message.Id,
                     Type = message.Type,
@@ -69,23 +70,23 @@ namespace Efeu.Integration.Commands
 
         public Task NudgeEffect(Guid id)
         {
-            return behaviourEffectQueries.NudgeEffectAsync(id);
+            return effectQueries.NudgeEffectAsync(id);
         }
 
         public Task SuspendEffect(Guid id, DateTimeOffset timestamp)
         {
-            return behaviourEffectQueries.SuspendEffectAsync(id, timestamp);
+            return effectQueries.SuspendEffectAsync(id, timestamp);
         }
 
         public Task SkipEffect(Guid id, DateTimeOffset timestamp, EfeuValue output = default)
         {
-            return behaviourEffectQueries.CompleteSuspendedEffectAsync(id, timestamp, output);
+            return effectQueries.CompleteSuspendedEffectAsync(id, timestamp, output);
         }
 
         public async Task AbortEffect(Guid id)
         {
             await unitOfWork.BeginAsync();
-            await behaviourEffectQueries.AbortEffectAsync(id);
+            await effectQueries.AbortEffectAsync(id);
             await unitOfWork.CompleteAsync();
         }
 
@@ -101,8 +102,8 @@ namespace Efeu.Integration.Commands
                 effects.Add(GetEffectFromOutgoingMessage(message, timestamp));
             }
 
-            await behaviourEffectQueries.CreateBulkAsync(effects.ToArray());
-            await behaviourTriggerCommands.AttachAsync(runtime.Triggers.ToArray(), timestamp);
+            await effectQueries.CreateBulkAsync(effects.ToArray());
+            await triggerCommands.AttachAsync(runtime.Triggers.ToArray(), timestamp);
             await unitOfWork.CompleteAsync();
         }
 
@@ -116,9 +117,17 @@ namespace Efeu.Integration.Commands
                 return;
             }
 
+            await SendMessageDeduplicatedAsync(message, timestamp);
+            await unitOfWork.CompleteAsync();
+        }
+
+        public async Task SendMessageDeduplicatedAsync(EfeuMessage message, DateTimeOffset timestamp)
+        {
+            await unitOfWork.BeginAsync();
+            await unitOfWork.LockAsync("Trigger");
             if (message.Tag == EfeuMessageTag.Effect)
             {
-                await behaviourEffectQueries.CreateAsync(new EffectEntity()
+                await effectQueries.CreateAsync(new EffectEntity()
                 {
                     Id = message.Id,
                     Type = message.Type,
@@ -138,7 +147,7 @@ namespace Efeu.Integration.Commands
 
         private async Task UnlockTriggers(EfeuMessage initialSignal, DateTimeOffset timestamp)
         {
-            TriggerMatchCache context = new TriggerMatchCache(behaviourTriggerQueries, behaviourDefinitionQueries, timestamp);
+            TriggerMatchCache context = new TriggerMatchCache(triggerQueries, behaviourDefinitionQueries, timestamp);
             await context.MatchTriggersAsync(initialSignal);
 
             int iterations = 0;
@@ -160,10 +169,10 @@ namespace Efeu.Integration.Commands
                 }
             }
 
-            await behaviourTriggerCommands.AttachAsync(context.Triggers.ToArray(), context.Timestamp);
-            await behaviourTriggerCommands.DetatchAsync(context.DeletedTriggers.ToArray());
-            await behaviourTriggerCommands.ResolveMattersAsync(context.ResolvedMatters.ToArray());
-            await behaviourEffectQueries.CreateBulkAsync(effects.ToArray());
+            await triggerCommands.AttachAsync(context.Triggers.ToArray(), context.Timestamp);
+            await triggerCommands.DetatchAsync(context.DeletedTriggers.ToArray());
+            await triggerCommands.ResolveMattersAsync(context.ResolvedMatters.ToArray());
+            await effectQueries.CreateBulkAsync(effects.ToArray());
         }
     }
 }

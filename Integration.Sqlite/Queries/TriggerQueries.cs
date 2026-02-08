@@ -10,11 +10,11 @@ using Efeu.Runtime;
 
 namespace Efeu.Integration.Sqlite.Queries
 {
-    internal class BehaviourTriggerQueries : IEfeuTriggerQueries
+    internal class TriggerQueries : ITriggerQueries
     {
         private readonly DataConnection connection;
 
-        public BehaviourTriggerQueries(DataConnection connection)
+        public TriggerQueries(DataConnection connection)
         {
             this.connection = connection;
         }
