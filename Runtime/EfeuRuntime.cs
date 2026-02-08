@@ -109,7 +109,7 @@ namespace Efeu.Runtime
 
                 EfeuRuntimeScope scope = trigger.Scope
                     .With("now", Now)
-                    .With("input", triggerSignal.Data);
+                    .With("input", triggerSignal.Payload);
 
                 EfeuBehaviourStep[] steps = step.Do;
                 RunSteps(steps, $"{trigger.Position}/Do", scope); // Assumption: all trigger continuations are done in the Do route
@@ -197,7 +197,8 @@ namespace Efeu.Runtime
                 CorrelationId = Id,
                 Type = step.Name,
                 Tag = EfeuMessageTag.Effect,
-                Matter = messageId
+                Matter = messageId,
+                Payload = step.Input.Evaluate(scope)
             });
         }
 

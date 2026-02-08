@@ -4,6 +4,10 @@
     <TargetFramework>net8</TargetFramework>
   </PropertyGroup>
 
+	<PropertyGroup>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Integration.Sqlite\Efeu.Integration.Sqlite.csproj" />
     <ProjectReference Include="..\Integration\Efeu.Integration.csproj" />

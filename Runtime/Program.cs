@@ -32,7 +32,14 @@ namespace Efeu.Runtime
                 new () {
                     Kind = EfeuBehaviourStepKind.Let,
                     Name = "Value",
-                    Input = EfeuBehaviourExpression.Eval(1),
+                    Input = new () {
+                        Type = EfeuExpressionType.Struct,
+                        Fields = {
+                            ["a"] = new () { Type = EfeuExpressionType.Boolean, Value = true },
+                            ["b"] = new () { Type = EfeuExpressionType.Boolean, Value = true },
+                            ["c"] = new () { Type = EfeuExpressionType.Boolean, Value = true },
+                        }
+                    },
                 },
                 new () {
                     Kind = EfeuBehaviourStepKind.Emit,
@@ -44,7 +51,7 @@ namespace Efeu.Runtime
                     Do = [
                         new () {
                             Kind = EfeuBehaviourStepKind.If,
-                            Input = EfeuBehaviourExpression.Eval(1),
+                            Input = new () { Type = EfeuExpressionType.Boolean, Value = true },
                             Do = [
                                 new () {
                                     Kind = EfeuBehaviourStepKind.Emit,

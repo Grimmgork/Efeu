@@ -27,7 +27,7 @@ namespace Efeu.Runtime
 
         public Guid CorrelationId; // from wich it came
 
-        public EfeuValue Data;
+        public EfeuValue Payload;
 
         public Guid Matter;
     }

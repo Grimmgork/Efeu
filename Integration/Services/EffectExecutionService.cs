@@ -119,7 +119,7 @@ namespace Efeu.Integration.Services
                     if (effectInstance is null)
                         throw new Exception($"Unknown effect '{effect.Type}'.");
 
-                    EfeuEffectExecutionContext context = new EfeuEffectExecutionContext(effect.Id, effect.CorrelationId, executionTime, effect.Times, effect.Data);
+                    EfeuEffectExecutionContext context = new EfeuEffectExecutionContext(effect.Id, effect.CorrelationId, executionTime, effect.Times, effect.Input);
 
                     await effectInstance.RunAsync(context, token);
                     await effectQueries.CompleteEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, default);
@@ -131,7 +131,7 @@ namespace Efeu.Integration.Services
                         Id = effect.Id,
                         Tag = effect.Tag,
                         Type = effect.Type,
-                        Data = effect.Data,
+                        Payload = effect.Data,
                         Timestamp = effect.CreationTime,
                         Matter = effect.Matter,
                         CorrelationId = effect.CorrelationId,

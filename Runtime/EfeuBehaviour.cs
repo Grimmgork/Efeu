@@ -38,7 +38,12 @@ namespace Efeu.Runtime
 
     public enum EfeuExpressionType
     {
-        Literal,
+        Nil,
+        String,
+        Boolean,
+        Integer,
+        Decimal,
+        Float,
         Struct,
         Array,
         Script,
@@ -81,29 +86,16 @@ namespace Efeu.Runtime
             };
         }
 
-        public static EfeuBehaviourExpression Eval(EfeuValue literal)
-        {
-            return new EfeuBehaviourExpression()
-            {
-                Type = EfeuExpressionType.Literal,
-                Value = literal
-            };
-        }
-
-        public static EfeuBehaviourExpression Script(string script)
-        {
-            return new EfeuBehaviourExpression()
-            {
-                Type = EfeuExpressionType.Script,
-                Code = script,
-            };
-        }
-
         public EfeuValue Evaluate(EfeuRuntimeScope context)
         {
             return Type switch
             {
-                EfeuExpressionType.Literal => Value,
+                EfeuExpressionType.Nil => Value,
+                EfeuExpressionType.Boolean => Value,
+                EfeuExpressionType.String => Value,
+                EfeuExpressionType.Decimal => Value,
+                EfeuExpressionType.Float => Value,
+                EfeuExpressionType.Integer => Value,
                 EfeuExpressionType.Eval => Func(context),
                 EfeuExpressionType.Script => EfeuScript.Run(Code, new EfeuScriptScope(context)),
                 EfeuExpressionType.Struct => new EfeuHash(Fields.Select(i =>

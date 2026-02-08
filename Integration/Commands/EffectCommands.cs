@@ -42,10 +42,9 @@ namespace Efeu.Integration.Commands
                     Id = message.Id,
                     Type = message.Type,
                     Tag = message.Tag,
-                    Input = message.Data,
+                    Input = message.Payload,
                     CorrelationId = message.CorrelationId,
                     CreationTime = message.Timestamp,
-                    Data = message.Data,
                     Matter = message.Matter,
                 });
         }
@@ -60,7 +59,7 @@ namespace Efeu.Integration.Commands
                 Id = message.Id,
                 CreationTime = timestamp,
                 Type = message.Type,
-                Input = message.Data,
+                Input = message.Payload,
                 State = EffectState.Running,
                 Matter = message.Matter,
                 Tag = effectProvider.TryGetEffect(message.Type) == null ?
@@ -134,7 +133,7 @@ namespace Efeu.Integration.Commands
                     Tag = EfeuMessageTag.Effect,
                     CreationTime = timestamp,
                     CorrelationId = message.CorrelationId,
-                    Data = message.Data,
+                    Input = message.Payload,
                 });
             }
             else

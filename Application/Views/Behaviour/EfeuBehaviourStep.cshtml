@@ -1,15 +1,17 @@
 ﻿@using Efeu.Runtime
 @model EfeuBehaviourStep;
 
-<div>
+<div class="behaviourStep">
     <span>@(Model.Kind.ToString().ToLower())</span> <span>@Model.Name</span>
+    <partial name="EfeuBehaviourExpression" model="@Model.Input" />
+
     @if (Model.Do.Length > 0)
     {
         <span>do</span>
         <div style="margin-left: 1rem">
             @foreach (EfeuBehaviourStep step in Model.Do)
             {
-                <partial name="BehaviourDefinitionStep" model="@step" />
+                <partial name="EfeuBehaviourStep" model="@step" />
             }
         </div>
     }
@@ -19,7 +21,7 @@
         <div style="margin-left: 1rem">
             @foreach (EfeuBehaviourStep step in Model.Else)
             {
-                <partial name="BehaviourDefinitionStep" model="@step" />
+                <partial name="EfeuBehaviourStep" model="@step" />
             }
         </div>
     }

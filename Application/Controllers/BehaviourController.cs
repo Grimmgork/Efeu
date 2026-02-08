@@ -17,13 +17,11 @@ namespace Efeu.Application.Controllers
     {
         private readonly IBehaviourCommands behaviourCommands;
         private readonly IBehaviourQueries behaviourQueries;
-        private readonly IEfeuUnitOfWork unitOfWork;
 
         public BehaviourController(IBehaviourCommands behaviourCommands, IBehaviourQueries behaviourQueries, IEfeuUnitOfWork unitOfWork)
         {
             this.behaviourCommands = behaviourCommands;
             this.behaviourQueries = behaviourQueries;
-            this.unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -84,7 +82,7 @@ namespace Efeu.Application.Controllers
             options.Converters.Add(new EfeuValueJsonConverter());
             options.Converters.Add(new JsonStringEnumConverter());
 
-            EfeuBehaviourStep[] steps = JsonSerializer.Deserialize<EfeuBehaviourStep[]>(file.OpenReadStream(), options);
+            EfeuBehaviourStep[] steps = JsonSerializer.Deserialize<EfeuBehaviourStep[]>(file.OpenReadStream(), options) ?? [];
 
             await behaviourCommands.PublishVersionAsync(id, steps);
 

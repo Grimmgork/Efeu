@@ -47,7 +47,7 @@ namespace Efeu.Application.Controllers
                 Tag = tag,
                 CorrelationId = Guid.NewGuid(),
                 Matter = Guid.Empty,
-                Data = JsonSerializer.Deserialize<EfeuValue>(string.IsNullOrWhiteSpace(json) ? "null" : json, jsonOptions.JsonSerializerOptions)
+                Payload = JsonSerializer.Deserialize<EfeuValue>(string.IsNullOrWhiteSpace(json) ? "null" : json, jsonOptions.JsonSerializerOptions)
             });
             Response.Headers["HX-Refresh"] = "true";
             return Ok();

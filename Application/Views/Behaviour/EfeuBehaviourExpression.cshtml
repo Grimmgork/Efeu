@@ -1,0 +1,56 @@
+﻿@using Efeu.Runtime
+@model EfeuBehaviourExpression;
+
+@if (Model.Type == EfeuExpressionType.String)
+{
+    <span class="stringLiteral">@(Model.Value.ToString())</span>
+}
+@if (Model.Type == EfeuExpressionType.Float)
+{
+    <span class="floatLiteral">@(Model.Value.ToString())</span>
+}
+@if (Model.Type == EfeuExpressionType.Decimal)
+{
+    <span class="decimalLiteral">@(Model.Value.ToString())</span>
+}
+@if (Model.Type == EfeuExpressionType.Integer)
+{
+    <span class="integerLiteral">@(Model.Value.ToString())</span>
+}
+@if (Model.Type == EfeuExpressionType.Boolean)
+{
+    <span class="booleanLiteral">@(Model.Value.ToString())</span>
+}
+@if (Model.Type == EfeuExpressionType.Nil)
+{
+    <span class="nilLiteral">@(Model.Value.ToString())</span>
+}
+@if (Model.Type == EfeuExpressionType.Struct)
+{
+    <span>{</span>
+    <div>
+        @foreach (KeyValuePair<string, EfeuBehaviourExpression> field in Model.Fields)
+        {
+           <div style="margin-left: 1rem">
+               <span>@(field.Key):</span>
+               <partial name="EfeuBehaviourExpression" model="@field.Value" />
+           </div>
+        }
+    </div>
+    <span>}</span>
+}
+@if (Model.Type == EfeuExpressionType.Array)
+{
+    <span>[</span>
+    <div>
+        @foreach (EfeuBehaviourExpression item in Model.Items)
+        {
+            <div style="margin-left: 1rem">
+                <partial name="EfeuBehaviourExpression" model="@item" />
+            </div>
+        }
+    </div>
+    <span>]</span>
+}
+@{
+}
