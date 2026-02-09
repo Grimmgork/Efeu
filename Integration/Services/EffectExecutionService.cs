@@ -93,11 +93,10 @@ namespace Efeu.Integration.Services
         {
             await using var scope = scopeFactory.CreateAsyncScope();
 
-            IServiceProvider services = scope.ServiceProvider;
-            IEffectQueries effectQueries = services.GetRequiredService<IEffectQueries>();
-            IEffectCommands effectCommands = services.GetRequiredService<IEffectCommands>();
-            IEfeuUnitOfWork unitOfWork = services.GetRequiredService<IEfeuUnitOfWork>();
-            IEfeuEffectProvider effectProvider = services.GetRequiredService<IEfeuEffectProvider>();
+            IEffectQueries effectQueries = scope.ServiceProvider.GetRequiredService<IEffectQueries>();
+            IEffectCommands effectCommands = scope.ServiceProvider.GetRequiredService<IEffectCommands>();
+            IEfeuUnitOfWork unitOfWork = scope.ServiceProvider.GetRequiredService<IEfeuUnitOfWork>();
+            IEfeuEffectProvider effectProvider = scope.ServiceProvider.GetRequiredService<IEfeuEffectProvider>();
 
             EffectEntity? effect = await FindAndLockEffect(effectQueries, workerId, token);
             if (effect is null)
