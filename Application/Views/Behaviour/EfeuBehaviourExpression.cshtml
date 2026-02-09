@@ -52,5 +52,13 @@
     </div>
     <span>]</span>
 }
+@if(Model.Type == EfeuExpressionType.Script)
+{
+    <span class="scriptValue">@("fx(..)")</span>
+}
+@if (Model.Type == EfeuExpressionType.ScriptLine)
+{
+    <span class="scriptLineValue">@(Model.Code.Split(Environment.NewLine).First().Trim())</span>
+}
 @{
 }

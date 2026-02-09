@@ -46,6 +46,7 @@ namespace Efeu.Runtime
         Float,
         Struct,
         Array,
+        ScriptLine,
         Script,
         Eval
     }

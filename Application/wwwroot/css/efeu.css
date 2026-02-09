@@ -26,3 +26,11 @@
 .nilLiteral {
     background-color: lightgray;
 }
+
+.scriptLineValue {
+    background-color: lightgreen;
+}
+
+.scriptValue {
+    background-color: lightgreen;
+}

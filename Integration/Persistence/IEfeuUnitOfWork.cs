@@ -14,6 +14,8 @@ namespace Efeu.Integration.Persistence
 
         public Task CompleteAsync();
 
+        public Task ResetAsync();
+
         public Task LockAsync(string locks);
     }
 }

@@ -23,40 +23,35 @@ namespace Efeu.Integration.Services
             this.scopeFactory = scopeFactory;
         }
 
-        //public async Task Test()
-        //{
-        //    await using var scope = scopeFactory.CreateAsyncScope();
+        public async Task Test()
+        {
+            await using var scope = scopeFactory.CreateAsyncScope();
 
-        //    IServiceProvider services = scope.ServiceProvider;
-        //    IDeduplicationKeyCommands deduplicationKeyCommands = services.GetRequiredService<IDeduplicationKeyCommands>();
-        //    IEfeuEffectCommands behaviourEffectCommands = services.GetRequiredService<IEfeuEffectCommands>();
-        //    IEfeuUnitOfWork unitOfWork = services.GetRequiredService<IEfeuUnitOfWork>();
+            IServiceProvider services = scope.ServiceProvider;
+            IDeduplicationKeyCommands deduplicationKeyCommands = services.GetRequiredService<IDeduplicationKeyCommands>();
+            IEffectCommands behaviourEffectCommands = services.GetRequiredService<IEffectCommands>();
+            IEfeuUnitOfWork unitOfWork = services.GetRequiredService<IEfeuUnitOfWork>();
 
-        //    try
-        //    {
-        //        await unitOfWork.BeginAsync();
-        //        await unitOfWork.BeginAsync();
-        //        await unitOfWork.BeginAsync();
-        //        EfeuMessage message = new EfeuMessage()
-        //        {
-        //            Id = Guid.NewGuid(),
-        //            Tag = EfeuMessageTag.Data,
-        //            CorrelationId = Guid.NewGuid(),
-        //        };
-        //        await behaviourEffectCommands.SendMessage(message, DateTime.Now);
-        //        await unitOfWork.CompleteAsync();
-        //        await unitOfWork.CompleteAsync();
-        //        await unitOfWork.CompleteAsync();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine(ex.ToString());
-        //    }
+            try
+            {
+                await unitOfWork.BeginAsync();
+                await unitOfWork.BeginAsync();
+                await unitOfWork.BeginAsync();
+                await unitOfWork.CompleteAsync();
+                await unitOfWork.CompleteAsync();
+                await unitOfWork.CompleteAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
 
-        //}
+        }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
+            // return Test();
+
             CancellationToken token = cancellationTokenSource.Token;
 
             List<Task> workers = new List<Task>();
@@ -96,10 +91,6 @@ namespace Efeu.Integration.Services
 
         private async Task<int> ExecuteEffect(Guid workerId, CancellationToken token)
         {
-            EffectEntity? effect = await FindAndLockEffect(workerId, token);
-            if (effect is null)
-                return 0;
-
             await using var scope = scopeFactory.CreateAsyncScope();
 
             IServiceProvider services = scope.ServiceProvider;
@@ -108,8 +99,12 @@ namespace Efeu.Integration.Services
             IEfeuUnitOfWork unitOfWork = services.GetRequiredService<IEfeuUnitOfWork>();
             IEfeuEffectProvider effectProvider = services.GetRequiredService<IEfeuEffectProvider>();
 
+            EffectEntity? effect = await FindAndLockEffect(effectQueries, workerId, token);
+            if (effect is null)
+                return 0;
+
             DateTimeOffset executionTime = DateTime.Now;
-            await unitOfWork.BeginAsync();
+            await unitOfWork.ResetAsync();
 
             try
             {
@@ -126,6 +121,7 @@ namespace Efeu.Integration.Services
                 }
                 else
                 {
+                    await unitOfWork.BeginAsync();
                     EfeuMessage message = new EfeuMessage()
                     {
                         Id = effect.Id,
@@ -139,29 +135,22 @@ namespace Efeu.Integration.Services
 
                     await effectCommands.SendMessageDeduplicatedAsync(message, DateTime.Now);
                     await effectQueries.DeleteCompletedEffectAsync(workerId, effect.Id);
+                    await unitOfWork.CompleteAsync();
                 }
             }
             catch (Exception ex)
             {
+                await unitOfWork.ResetAsync();
+
                 Console.WriteLine(ex.ToString());
                 await effectQueries.FaultEffectAndUnlockAsync(workerId, effect.Id, executionTime, ex.ToString());
-                
-            }
-            finally
-            {
-                await unitOfWork.CompleteAsync();
             }
             
             return 1;
         }
 
-        private async Task<EffectEntity?> FindAndLockEffect(Guid workerId, CancellationToken token)
+        private async Task<EffectEntity?> FindAndLockEffect(IEffectQueries effectQueries, Guid workerId, CancellationToken token)
         {
-            await using var scope = scopeFactory.CreateAsyncScope();
-
-            IServiceProvider services = scope.ServiceProvider;
-            IEffectQueries effectQueries = services.GetRequiredService<IEffectQueries>();
-
             Guid[] candidateIds = await effectQueries.GetRunningEffectsNotLockedAsync();
             EffectEntity? effect = null;
             foreach (Guid candidateId in candidateIds)

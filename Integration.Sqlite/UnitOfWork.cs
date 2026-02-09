@@ -91,5 +91,13 @@ namespace Efeu.Integration.Sqlite
             scope?.Dispose();
             return ValueTask.CompletedTask;
         }
+
+        public Task ResetAsync()
+        {
+            scope?.Dispose();
+            depth = 0;
+            locks.Clear();
+            return connection.CloseAsync();
+        }
     }
 }
