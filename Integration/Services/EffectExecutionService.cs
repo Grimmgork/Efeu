@@ -103,8 +103,6 @@ namespace Efeu.Integration.Services
                 return 0;
 
             DateTimeOffset executionTime = DateTime.Now;
-            await unitOfWork.ResetAsync();
-
             try
             {
                 if (effect.Tag == EfeuMessageTag.Effect)

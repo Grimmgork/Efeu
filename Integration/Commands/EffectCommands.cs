@@ -92,17 +92,9 @@ namespace Efeu.Integration.Commands
         public async Task RunImmediate(EfeuBehaviourStep[] steps, int definitionVersionId, DateTimeOffset timestamp)
         {
             await unitOfWork.BeginAsync();
-
+            await unitOfWork.LockAsync("Trigger");
             EfeuRuntime runtime = EfeuRuntime.Run(steps, Guid.NewGuid(), definitionVersionId);
-
-            List<EffectEntity> effects = new List<EffectEntity>();
-            foreach (EfeuMessage message in runtime.Messages)
-            {
-                effects.Add(GetEffectFromOutgoingMessage(message, timestamp));
-            }
-
-            await effectQueries.CreateBulkAsync(effects.ToArray());
-            await triggerCommands.AttachAsync(runtime.Triggers.ToArray(), timestamp);
+            await UnlockTriggers(runtime.Messages.ToArray(), runtime.Triggers.ToArray(), timestamp);
             await unitOfWork.CompleteAsync();
         }
 
@@ -138,25 +130,36 @@ namespace Efeu.Integration.Commands
             }
             else
             {
-                await UnlockTriggers(message, timestamp);
+                await UnlockTriggers([message], [], timestamp);
             }
 
             await unitOfWork.CompleteAsync();
         }
 
-        private async Task UnlockTriggers(EfeuMessage initialSignal, DateTimeOffset timestamp)
+        private async Task UnlockTriggers(EfeuMessage[] signals, EfeuTrigger[] triggers, DateTimeOffset timestamp)
         {
             TriggerMatchCache context = new TriggerMatchCache(triggerQueries, behaviourQueries, timestamp);
-            await context.MatchTriggersAsync(initialSignal);
+            foreach (EfeuMessage signal in signals)
+                context.Messages.Push(signal);
+            foreach (EfeuTrigger trigger in triggers)
+                context.Triggers.Add(trigger);
 
             int iterations = 0;
             List<EffectEntity> effects = [];
             while (context.Messages.TryPop(out EfeuMessage? message)) // handle produced messages
             {
-                EffectEntity effectEntity = GetEffectFromOutgoingMessage(message, context.Timestamp);
-                if (effectEntity.Tag == EfeuMessageTag.Effect)
+                if (message.Tag == EfeuMessageTag.Effect)
                 {
-                    effects.Add(effectEntity);
+                    effects.Add(new EffectEntity()
+                    {
+                        Id = message.Id,
+                        Type = message.Type,
+                        Tag = message.Tag,
+                        Input = message.Payload,
+                        CorrelationId = message.CorrelationId,
+                        CreationTime = message.Timestamp,
+                        Matter = message.Matter,
+                    });
                 }
                 else
                 {

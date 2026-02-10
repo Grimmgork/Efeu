@@ -11,6 +11,7 @@ namespace Efeu.Runtime
     public enum EfeuBehaviourStepKind
     {
         Emit,
+        Raise,
         Let,
         Await,
         If,

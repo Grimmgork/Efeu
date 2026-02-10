@@ -8,7 +8,7 @@
     @if (Model.Do.Length > 0)
     {
         <span>do</span>
-        <div style="margin-left: 1rem">
+        <div style="margin-left: 2ch">
             @foreach (EfeuBehaviourStep step in Model.Do)
             {
                 <partial name="EfeuBehaviourStep" model="@step" />
@@ -18,7 +18,7 @@
     @if (Model.Else.Length > 0)
     {
         <span>else</span>
-        <div style="margin-left: 1rem">
+        <div style="margin-left: 2ch">
             @foreach (EfeuBehaviourStep step in Model.Else)
             {
                 <partial name="EfeuBehaviourStep" model="@step" />

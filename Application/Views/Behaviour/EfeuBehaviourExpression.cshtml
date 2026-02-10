@@ -27,30 +27,30 @@
 }
 @if (Model.Type == EfeuExpressionType.Struct)
 {
-    <span>{</span>
+    <span class="synatxPunctuation">{</span>
     <div>
         @foreach (KeyValuePair<string, EfeuBehaviourExpression> field in Model.Fields)
         {
-           <div style="margin-left: 1rem">
-               <span>@(field.Key):</span>
+           <div style="margin-left: 2ch">
+               <span>@(field.Key)</span><span class="synatxPunctuation">:</span>
                <partial name="EfeuBehaviourExpression" model="@field.Value" />
            </div>
         }
     </div>
-    <span>}</span>
+    <span class="synatxPunctuation">}</span>
 }
 @if (Model.Type == EfeuExpressionType.Array)
 {
-    <span>[</span>
+    <span class="synatxPunctuation">[</span>
     <div>
         @foreach (EfeuBehaviourExpression item in Model.Items)
         {
-            <div style="margin-left: 1rem">
+            <div style="margin-left: 2ch">
                 <partial name="EfeuBehaviourExpression" model="@item" />
             </div>
         }
     </div>
-    <span>]</span>
+    <span class="synatxPunctuation">]</span>
 }
 @if(Model.Type == EfeuExpressionType.Script)
 {

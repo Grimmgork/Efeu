@@ -1,14 +1,15 @@
-﻿using Efeu.Runtime;
-using Efeu.Runtime.Value;
+﻿using Antlr4.Build.Tasks;
+using Efeu.Runtime;
 using Efeu.Runtime.Script;
+using Efeu.Runtime.Value;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Diagnostics.CodeAnalysis;
-using System.Collections;
 
 namespace Efeu.Runtime
 {
@@ -149,6 +150,10 @@ namespace Efeu.Runtime
             {
                 RunEmitStep(step, position, scope);
             }
+            else if (step.Kind == EfeuBehaviourStepKind.Raise)
+            {
+                RunRaiseStep(step, position, scope);
+            }
             else if (step.Kind == EfeuBehaviourStepKind.If)
             {
                 RunIfStep(step, position, scope);
@@ -198,6 +203,18 @@ namespace Efeu.Runtime
                 Type = step.Name,
                 Tag = EfeuMessageTag.Effect,
                 Matter = messageId,
+                Payload = step.Input.Evaluate(scope)
+            });
+        }
+
+        private void RunRaiseStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
+        {
+            Messages.Add(new EfeuMessage()
+            {
+                Id = Guid.NewGuid(),
+                CorrelationId = Id,
+                Type = step.Name,
+                Tag = EfeuMessageTag.Data,
                 Payload = step.Input.Evaluate(scope)
             });
         }
@@ -263,7 +280,8 @@ namespace Efeu.Runtime
                 Type = step.Name,
                 BehaviourId = trigger.BehaviourId,
                 Input = step.Input.Evaluate(scope),
-                Position = position
+                Position = position,
+                Step = step
             });
         }
     }

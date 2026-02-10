@@ -34,3 +34,7 @@
 .scriptValue {
     background-color: lightgreen;
 }
+
+.synatxPunctuation {
+    color: gray;
+}
