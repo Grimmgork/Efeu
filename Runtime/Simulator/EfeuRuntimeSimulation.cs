@@ -12,11 +12,6 @@ namespace Efeu.Runtime.Simulator
 
         public readonly List<EfeuTrigger> Triggers = new List<EfeuTrigger>();
 
-        public EfeuRuntimeSimulation(EfeuBehaviourStep[] steps)
-        {
-            this.steps = steps;
-        }
-
         public void Run(EfeuBehaviourStep[] steps)
         {
             EfeuRuntime runtime = EfeuRuntime.Run(steps, Guid.NewGuid(), 10);
@@ -25,14 +20,7 @@ namespace Efeu.Runtime.Simulator
             
             foreach (EfeuMessage message in runtime.Messages)
             {
-                if (message.Tag == EfeuMessageTag.Effect)
-                {
-
-                }
-                else
-                {
-                    SendMessage(message);
-                }
+                Messages.Add(message);
             }
         }
 
@@ -40,11 +28,29 @@ namespace Efeu.Runtime.Simulator
         {
             // find matching triggers
             // run matching triggers
-            // while 
+            // while
 
-            EfeuRuntime runtime = EfeuRuntime.Run(steps, Guid.NewGuid(), 10);
+            EfeuTrigger[] triggers = [];
+            foreach (EfeuTrigger trigger in triggers)
+            {
+                if (trigger.IsStatic)
+                {
+                    EfeuRuntime runtime = EfeuRuntime.RunTrigger(trigger, message, Guid.NewGuid());
+                }
+                else
+                {
+                    EfeuRuntime runtime = EfeuRuntime.RunStaticTrigger(trigger, message, Guid.NewGuid());
+                }
+            }
+
+            
             Messages.AddRange(runtime.Messages);
             Triggers.AddRange(runtime.Triggers);
+        }
+
+        private EfeuTrigger[] GetMatchingTriggers(EfeuMessage message)
+        {
+
         }
     }
 }
