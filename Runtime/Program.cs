@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Xml.Linq;
+using Efeu.Runtime.Simulator;
 
 namespace Efeu.Runtime
 {
@@ -15,18 +16,20 @@ namespace Efeu.Runtime
     {
         static void Main(string[] args)
         {
-            EfeuScriptScope scope = EfeuScriptScope.Empty
-                .With("time", DateTime.UtcNow)
-                .With("time", DateTime.Now);
+            //EfeuScriptScope scope = EfeuScriptScope.Empty
+            //    .With("time", DateTime.UtcNow)
+            //    .With("time", DateTime.Now);
 
-            string script = "time";
-            JsonSerializerOptions options = new JsonSerializerOptions();
-            options.Converters.Add(new EfeuValueJsonConverter());
-            options.Converters.Add(new JsonStringEnumConverter());
+            //string script = "time";
+            //JsonSerializerOptions options = new JsonSerializerOptions();
+            //options.Converters.Add(new EfeuValueJsonConverter());
+            //options.Converters.Add(new JsonStringEnumConverter());
 
-            EfeuValue value = EfeuScript.Run(script, scope);
-            Console.WriteLine(JsonSerializer.Serialize(value, options));
-            return;
+            //EfeuValue value = EfeuScript.Run(script, scope);
+            //Console.WriteLine(JsonSerializer.Serialize(value, options));
+
+
+
 
             EfeuBehaviourStep[] steps = [
                 new () {
@@ -73,16 +76,25 @@ namespace Efeu.Runtime
                 },
             ];
 
-            EfeuRuntime runtime1 = EfeuRuntime.Run(steps, Guid.NewGuid(), 10);
-            EfeuTrigger trigger = runtime1.Triggers.First();
-
-            EfeuRuntime runtime2 = EfeuRuntime.RunTrigger(trigger, new EfeuMessage()
+            EfeuRuntimeSimulation simulation = EfeuRuntimeSimulation.Run(steps);
+            simulation.SendMessage(new EfeuMessage()
             {
-                 Tag = EfeuMessageTag.Data,
-                 Type = "Event"
+                Type = "Event",
+                Tag = EfeuMessageTag.Data
             });
 
-            Console.WriteLine("done");
+            return;
+
+            //EfeuRuntime runtime1 = EfeuRuntime.Run(steps, 10);
+            //EfeuTrigger trigger = runtime1.Triggers.First();
+
+            //EfeuRuntime runtime2 = EfeuRuntime.RunTrigger(trigger, new EfeuMessage()
+            //{
+            //     Tag = EfeuMessageTag.Data,
+            //     Type = "Event"
+            //});
+
+            //Console.WriteLine("done");
         }
     }
 }

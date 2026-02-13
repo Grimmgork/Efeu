@@ -22,12 +22,10 @@ namespace Efeu.Integration.Commands
         private readonly ITriggerQueries triggerQueries;
         private readonly IBehaviourQueries behaviourQueries;
         private readonly IDeduplicationKeyCommands dedupicationKeyCommands;
-        private readonly IEfeuEffectProvider effectProvider;
 
-        public EffectCommands(IEfeuEffectProvider effectProvider, IEffectQueries effectQueries, IEfeuUnitOfWork unitOfWork, ITriggerCommands triggerCommands, ITriggerQueries triggerQueries, IBehaviourQueries behaviourQueries, IDeduplicationKeyCommands deduplicationKeyCommands)
+        public EffectCommands(IEffectQueries effectQueries, IEfeuUnitOfWork unitOfWork, ITriggerCommands triggerCommands, ITriggerQueries triggerQueries, IBehaviourQueries behaviourQueries, IDeduplicationKeyCommands deduplicationKeyCommands)
         {
             this.effectQueries = effectQueries;
-            this.effectProvider = effectProvider;
             this.unitOfWork = unitOfWork;
             this.triggerCommands = triggerCommands;
             this.triggerQueries = triggerQueries;
@@ -47,24 +45,6 @@ namespace Efeu.Integration.Commands
                     CreationTime = message.Timestamp,
                     Matter = message.Matter,
                 });
-        }
-
-        private EffectEntity GetEffectFromOutgoingMessage(EfeuMessage message, DateTimeOffset timestamp)
-        {
-            if (message.Tag != EfeuMessageTag.Effect)
-                throw new Exception("message must be outgoing.");
-
-            return new EffectEntity()
-            {
-                Id = message.Id,
-                CreationTime = timestamp,
-                Type = message.Type,
-                Input = message.Payload,
-                State = EffectState.Running,
-                Matter = message.Matter,
-                Tag = effectProvider.TryGetEffect(message.Type) == null ?
-                     EfeuMessageTag.Data : EfeuMessageTag.Effect
-            };
         }
 
         public Task NudgeEffect(Guid id)
@@ -93,7 +73,7 @@ namespace Efeu.Integration.Commands
         {
             await unitOfWork.BeginAsync();
             await unitOfWork.LockAsync("Trigger");
-            EfeuRuntime runtime = EfeuRuntime.Run(steps, Guid.NewGuid(), definitionVersionId);
+            EfeuRuntime runtime = EfeuRuntime.Run(steps, definitionVersionId);
             await UnlockTriggers(runtime.Messages.ToArray(), runtime.Triggers.ToArray(), timestamp);
             await unitOfWork.CompleteAsync();
         }

@@ -34,15 +34,7 @@ namespace Efeu.Integration.Services
             EfeuTrigger[] matchingTriggers = await GetMatchingTriggersAsync(signal.Type, signal.Tag, signal.Matter);
             foreach (EfeuTrigger trigger in matchingTriggers)
             {
-                EfeuRuntime runtime;
-                if (trigger.IsStatic)
-                {
-                    runtime = EfeuRuntime.RunStaticTrigger(trigger, signal, Guid.NewGuid());
-                }
-                else
-                {
-                    runtime = EfeuRuntime.RunTrigger(trigger, signal);
-                }
+                EfeuRuntime runtime = EfeuRuntime.RunTrigger(trigger, signal);
 
                 if (runtime.Result == EfeuRuntimeResult.Skipped)
                     continue;
