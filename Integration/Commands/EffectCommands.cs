@@ -73,26 +73,26 @@ namespace Efeu.Integration.Commands
         {
             await unitOfWork.BeginAsync();
             await unitOfWork.LockAsync("Trigger");
-            EfeuRuntime runtime = EfeuRuntime.Run(steps, definitionVersionId);
-            await UnlockTriggers(runtime.Messages.ToArray(), runtime.Triggers.ToArray(), timestamp);
+            EfeuRuntime runtime = EfeuRuntime.Run(steps, definitionVersionId, timestamp);
+            await UnlockTriggers(runtime.Messages.ToArray(), runtime.Triggers.ToArray());
             await unitOfWork.CompleteAsync();
         }
 
-        public async Task SendMessage(EfeuMessage message, DateTimeOffset timestamp)
+        public async Task SendMessage(EfeuMessage message)
         {
             await unitOfWork.BeginAsync();
             await unitOfWork.LockAsync("Trigger");
-            if (!await dedupicationKeyCommands.TryInsertAsync(message.Id, timestamp))
+            if (!await dedupicationKeyCommands.TryInsertAsync(message.Id, message.Timestamp))
             {
                 await unitOfWork.CompleteAsync();
                 return;
             }
 
-            await SendMessageDeduplicatedAsync(message, timestamp);
+            await SendMessageDeduplicatedAsync(message);
             await unitOfWork.CompleteAsync();
         }
 
-        public async Task SendMessageDeduplicatedAsync(EfeuMessage message, DateTimeOffset timestamp)
+        public async Task SendMessageDeduplicatedAsync(EfeuMessage message)
         {
             await unitOfWork.BeginAsync();
             await unitOfWork.LockAsync("Trigger");
@@ -103,22 +103,22 @@ namespace Efeu.Integration.Commands
                     Id = message.Id,
                     Type = message.Type,
                     Tag = EfeuMessageTag.Effect,
-                    CreationTime = timestamp,
+                    CreationTime = message.Timestamp,
                     CorrelationId = message.CorrelationId,
                     Input = message.Payload,
                 });
             }
             else
             {
-                await UnlockTriggers([message], [], timestamp);
+                await UnlockTriggers([message], []);
             }
 
             await unitOfWork.CompleteAsync();
         }
 
-        private async Task UnlockTriggers(EfeuMessage[] signals, EfeuTrigger[] triggers, DateTimeOffset timestamp)
+        private async Task UnlockTriggers(EfeuMessage[] signals, EfeuTrigger[] triggers)
         {
-            TriggerMatchCache context = new TriggerMatchCache(triggerQueries, behaviourQueries, timestamp);
+            TriggerMatchCache context = new TriggerMatchCache(triggerQueries, behaviourQueries);
             foreach (EfeuMessage signal in signals)
                 context.Messages.Push(signal);
             foreach (EfeuTrigger trigger in triggers)
@@ -151,7 +151,7 @@ namespace Efeu.Integration.Commands
                 }
             }
 
-            await triggerCommands.AttachAsync(context.Triggers.ToArray(), context.Timestamp);
+            await triggerCommands.AttachAsync(context.Triggers.ToArray());
             await triggerCommands.DetatchAsync(context.DeletedTriggers.ToArray());
             await triggerCommands.ResolveMattersAsync(context.ResolvedMatters.ToArray());
             await effectQueries.CreateBulkAsync(effects.ToArray());

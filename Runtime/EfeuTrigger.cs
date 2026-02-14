@@ -21,6 +21,8 @@ namespace Efeu.Runtime
 
         public Guid CorrelationId;
 
+        public DateTimeOffset CreationTime;
+
         public string Position = ""; // position of trigger row /0/Else/1
 
         public EfeuRuntimeScope Scope = new EfeuRuntimeScope(); // Scope around trigger row

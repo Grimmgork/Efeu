@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -21,8 +22,6 @@ namespace Efeu.Runtime
 
     public class EfeuRuntime
     {
-        public readonly EfeuBehaviourStep[] Steps = [];
-
         public readonly List<EfeuTrigger> Triggers = [];
         public readonly List<EfeuMessage> Messages = [];
 
@@ -36,73 +35,65 @@ namespace Efeu.Runtime
 
         private EfeuRuntimeResult result;
 
-        private readonly EfeuMessage message = new EfeuMessage();
-        private readonly EfeuTrigger trigger = new EfeuTrigger();
-
-        public EfeuRuntime(EfeuBehaviourStep[] steps, Guid correlationId, int behaviourId, DateTimeOffset now)
+        public EfeuRuntime(Guid correlationId, int behaviourId, bool isImmediate, DateTimeOffset now)
         {
-            this.Steps = steps;
             this.CorrelationId = correlationId;
-            this.IsImmediate = true;
+            this.IsImmediate = isImmediate;
             this.BehaviourId = behaviourId;
             this.Now = now;
         }
 
-        public EfeuRuntime(EfeuTrigger trigger, EfeuMessage message, Guid correlationId, DateTimeOffset now)
+        public static EfeuRuntime Run(EfeuBehaviourStep[] steps, int behaviourId, DateTimeOffset timestamp)
         {
-            this.CorrelationId = correlationId;
-            this.message = message;
-            this.trigger = trigger;
-            this.IsImmediate = false;
-            this.Now = now;
-        }
-
-        public static EfeuRuntime Run(EfeuBehaviourStep[] steps, int behaviourId)
-        {
-            EfeuRuntime runtime = new EfeuRuntime(steps, Guid.NewGuid(), behaviourId, DateTime.Now);
-            runtime.result = runtime.Execute();
+            EfeuRuntime runtime = new EfeuRuntime(Guid.NewGuid(), behaviourId, true, timestamp);
+            runtime.result = runtime.Execute(steps);
             return runtime;
         }
 
-        public static EfeuRuntime RunTrigger(EfeuTrigger trigger, EfeuMessage signal)
+        public static EfeuRuntime RunTrigger(EfeuTrigger trigger, EfeuMessage message)
         {
-            EfeuRuntime runtime = new EfeuRuntime(trigger, signal, trigger.IsStatic ? Guid.NewGuid() : trigger.CorrelationId, DateTime.Now);
-            runtime.result = runtime.Execute();
+            EfeuRuntime runtime = new EfeuRuntime(trigger.IsStatic ? Guid.NewGuid() : trigger.CorrelationId, trigger.BehaviourId, false, message.Timestamp);
+            runtime.result = runtime.ExecuteTrigger(trigger, message);
             return runtime;
         }
 
-        private EfeuRuntimeResult Execute()
+        private EfeuRuntimeResult Execute(EfeuBehaviourStep[] steps)
         {
-            if (IsImmediate)
-            {
-                EfeuRuntimeScope scope = EfeuRuntimeScope.Empty
+            if (!IsImmediate)
+                throw new InvalidOperationException();
+
+            EfeuRuntimeScope scope = EfeuRuntimeScope.Empty
                     .With("now", Now);
 
-                RunSteps(Steps, "", scope);
-            }
-            else
-            {
-                // trigger continuation
-                EfeuBehaviourStep step = trigger.Step;
-                if (!TriggerMatchesMessage(trigger, message, step))
-                {
-                    return EfeuRuntimeResult.Skipped;
-                }
-
-                EfeuRuntimeScope scope = trigger.Scope
-                    .With("now", Now)
-                    .With("input", message.Payload);
-
-                EfeuBehaviourStep[] steps = step.Do;
-                RunSteps(steps, $"{trigger.Position}/Do", scope); // Assumption: all trigger continuations are done in the Do route
-            }
-
+            RunSteps(steps, "", scope);
             return EfeuRuntimeResult.Executed;
         }
 
-        private static bool TriggerMatchesMessage(EfeuTrigger trigger, EfeuMessage message, EfeuBehaviourStep step)
+        private EfeuRuntimeResult ExecuteTrigger(EfeuTrigger trigger, EfeuMessage message)
         {
-            return message.Tag == trigger.Tag &&
+            if (IsImmediate)
+                throw new InvalidOperationException();
+
+            // trigger continuation
+            if (!TriggerMatchesMessage(trigger, message))
+            {
+                return EfeuRuntimeResult.Skipped;
+            }
+
+            EfeuRuntimeScope scope = trigger.Scope
+                .With("now", Now)
+                .With("input", message.Payload);
+
+            EfeuBehaviourStep[] steps = trigger.Step.Do;
+            RunSteps(steps, $"{trigger.Position}/Do", scope); // Assumption: all trigger continuations are done in the Do route
+            return EfeuRuntimeResult.Executed;
+        }
+
+        private static bool TriggerMatchesMessage(EfeuTrigger trigger, EfeuMessage message)
+        {
+            Console.WriteLine(message.Timestamp >= trigger.CreationTime);
+            return message.Timestamp >= trigger.CreationTime &&
+                   message.Tag == trigger.Tag &&
                    message.Type == trigger.Type &&
                    message.Matter == trigger.Matter;
         }
@@ -168,6 +159,7 @@ namespace Efeu.Runtime
                 {
                     Id = triggerId,
                     CorrelationId = CorrelationId,
+                    CreationTime = Now,
                     Scope = scope,
                     Tag = EfeuMessageTag.Result,
                     Position = position,
@@ -181,6 +173,7 @@ namespace Efeu.Runtime
             {
                 Id = messageId,
                 CorrelationId = CorrelationId,
+                Timestamp = Now,
                 Type = step.Name,
                 Tag = EfeuMessageTag.Effect,
                 Matter = messageId,
@@ -194,6 +187,7 @@ namespace Efeu.Runtime
             {
                 Id = Guid.NewGuid(),
                 CorrelationId = CorrelationId,
+                Timestamp = Now,
                 Type = step.Name,
                 Tag = EfeuMessageTag.Data,
                 Payload = step.Input.Evaluate(scope)
@@ -238,6 +232,7 @@ namespace Efeu.Runtime
             {
                 Id = Guid.NewGuid(),
                 CorrelationId = CorrelationId,
+                CreationTime = Now,
                 Scope = scope,
                 Tag = EfeuMessageTag.Data,
                 Type = step.Name,
@@ -257,6 +252,7 @@ namespace Efeu.Runtime
             {
                 Id = Guid.NewGuid(),
                 Scope = scope,
+                CreationTime = Now,
                 Tag = EfeuMessageTag.Data,
                 Type = step.Name,
                 BehaviourId = BehaviourId,

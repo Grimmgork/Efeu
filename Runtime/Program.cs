@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Xml.Linq;
-using Efeu.Runtime.Simulator;
 
 namespace Efeu.Runtime
 {
@@ -49,7 +48,7 @@ namespace Efeu.Runtime
                     Name = "HelloWorld"
                 },
                 new () {
-                    Kind = EfeuBehaviourStepKind.Await,
+                    Kind = EfeuBehaviourStepKind.On,
                     Name = "Event",
                     Do = [
                         new () {
@@ -79,7 +78,9 @@ namespace Efeu.Runtime
             EfeuRuntimeSimulation simulation = EfeuRuntimeSimulation.Run(steps);
             simulation.SendMessage(new EfeuMessage()
             {
+                Id = Guid.NewGuid(),
                 Type = "Event",
+                Timestamp = DateTime.Now,
                 Tag = EfeuMessageTag.Data
             });
 

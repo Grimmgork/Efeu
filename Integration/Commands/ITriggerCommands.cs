@@ -9,7 +9,7 @@ namespace Efeu.Integration.Commands
 {
     public interface ITriggerCommands
     {
-        public Task AttachAsync(EfeuTrigger[] triggers, DateTimeOffset timestamp);
+        public Task AttachAsync(EfeuTrigger[] triggers);
 
         public Task DetatchStaticAsync(int behaviourVersionId);
 

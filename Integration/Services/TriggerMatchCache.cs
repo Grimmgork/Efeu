@@ -10,7 +10,6 @@ namespace Efeu.Integration.Services
 {
     public class TriggerMatchCache
     {
-        public readonly DateTimeOffset Timestamp;
         public readonly List<EfeuTrigger> Triggers = new List<EfeuTrigger>();
         public readonly Stack<EfeuMessage> Messages = new Stack<EfeuMessage>();
 
@@ -20,21 +19,20 @@ namespace Efeu.Integration.Services
         public readonly HashSet<Guid> DeletedTriggers = new();
         public readonly HashSet<Guid> ResolvedMatters = new();
 
-        public TriggerMatchCache(ITriggerQueries triggerQueries, IBehaviourQueries behaviourQueries, DateTimeOffset timestamp)
+        public TriggerMatchCache(ITriggerQueries triggerQueries, IBehaviourQueries behaviourQueries)
         {
             this.behaviourQueries = behaviourQueries;
             this.triggerQueries = triggerQueries;
-            Timestamp = timestamp;
         }
 
         private readonly Dictionary<int, BehaviourVersionEntity> behaviourVersionEntityCache = new();
 
-        public async Task MatchTriggersAsync(EfeuMessage signal)
+        public async Task MatchTriggersAsync(EfeuMessage message)
         {
-            EfeuTrigger[] matchingTriggers = await GetMatchingTriggersAsync(signal.Type, signal.Tag, signal.Matter);
+            EfeuTrigger[] matchingTriggers = await GetMatchingTriggersAsync(message);
             foreach (EfeuTrigger trigger in matchingTriggers)
             {
-                EfeuRuntime runtime = EfeuRuntime.RunTrigger(trigger, signal);
+                EfeuRuntime runtime = EfeuRuntime.RunTrigger(trigger, message);
 
                 if (runtime.Result == EfeuRuntimeResult.Skipped)
                     continue;
@@ -62,9 +60,9 @@ namespace Efeu.Integration.Services
             }
         }
 
-        private async Task<EfeuTrigger[]> GetMatchingTriggersAsync(string messageName, EfeuMessageTag messageTag, Guid messageMatter)
+        private async Task<EfeuTrigger[]> GetMatchingTriggersAsync(EfeuMessage message)
         {
-            TriggerEntity[] triggerEntities = await triggerQueries.GetMatchingAsync(messageName, messageTag, messageMatter, Timestamp);
+            TriggerEntity[] triggerEntities = await triggerQueries.GetMatchingAsync(message.Type, message.Tag, message.Matter, message.Timestamp);
 
             BehaviourVersionEntity[] behaviourVersionEntities = await behaviourQueries.GetVersionsByIdsAsync(
                 triggerEntities.Select(i => i.BehaviourVersionId)
@@ -100,9 +98,10 @@ namespace Efeu.Integration.Services
 
             result.AddRange(
                 Triggers.Where(i =>
-                    i.Type == messageName &&
-                    i.Tag == messageTag &&
-                    i.Matter == messageMatter));
+                    i.Type == message.Type &&
+                    i.Tag == message.Tag &&
+                    i.Matter == message.Matter &&
+                    i.CreationTime <= message.Timestamp));
 
             return result.ToArray();
         }

@@ -130,7 +130,7 @@ namespace Efeu.Integration.Services
                         CorrelationId = effect.CorrelationId,
                     };
 
-                    await effectCommands.SendMessageDeduplicatedAsync(message, DateTime.Now);
+                    await effectCommands.SendMessageDeduplicatedAsync(message);
                     await effectQueries.DeleteCompletedEffectAsync(workerId, effect.Id);
                     await unitOfWork.CompleteAsync();
                 }

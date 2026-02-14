@@ -23,7 +23,7 @@ namespace Efeu.Integration.Commands
             this.triggerProvider = triggerProvider;
         }
 
-        public async Task AttachAsync(EfeuTrigger[] triggers, DateTimeOffset timestamp)
+        public async Task AttachAsync(EfeuTrigger[] triggers)
         {
             await unitOfWork.BeginAsync();
 
@@ -41,7 +41,7 @@ namespace Efeu.Integration.Commands
                     Type = trigger.Type,
                     Tag = trigger.Tag,
                     Matter = trigger.Matter,
-                    CreationTime = timestamp
+                    CreationTime = trigger.CreationTime
                 });
             }
 

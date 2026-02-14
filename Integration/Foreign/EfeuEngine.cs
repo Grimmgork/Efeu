@@ -22,7 +22,7 @@ namespace Efeu.Integration.Foreign
 
         public Task SendMessageAsync(EfeuMessage message)
         {
-            return behaviourEffectCommands.SendMessage(message, DateTime.Now);
+            return behaviourEffectCommands.SendMessage(message);
         }
     }
 }
