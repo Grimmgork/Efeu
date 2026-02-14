@@ -125,13 +125,14 @@ namespace Efeu.Integration.Sqlite.Queries
                     && u.State == EffectState.Running)
                 .Set(u => u.State, EffectState.Faulted)
                 .Set(u => u.ExecutionTime, timestamp)
+                .Set(u => u.Fault, fault)
+                .Set(u => u.Times, u => u.Times + 1)
                 .Set(u => u.LockId, Guid.Empty)
                 .Set(u => u.LockedUntil, DateTimeOffset.MinValue)
-                .Set(u => u.Fault, fault)
                 .UpdateAsync();
         }
 
-        public Task CompleteEffectAndUnlockAsync(Guid lockId, Guid id, DateTimeOffset timestamp, EfeuValue output)
+        public Task CompleteEffectWithResultAndUnlockAsync(Guid lockId, Guid id, DateTimeOffset timestamp, EfeuValue output)
         {
             return connection.GetTable<EffectEntity>()
                 .Where(u => u.Id == id
@@ -140,6 +141,7 @@ namespace Efeu.Integration.Sqlite.Queries
                 .Set(u => u.Tag, EfeuMessageTag.Result)
                 .Set(u => u.Input, output)
                 .Set(u => u.Type, "")
+                .Set(u => u.Fault, "")
                 .Set(u => u.CreationTime, timestamp)
                 .Set(u => u.LockId, Guid.Empty)
                 .Set(u => u.LockedUntil, DateTimeOffset.MinValue)
@@ -154,17 +156,17 @@ namespace Efeu.Integration.Sqlite.Queries
                 .Set(u => u.State, EffectState.Running)
                 .Set(u => u.Tag, EfeuMessageTag.Result)
                 .Set(u => u.Input, output)
-                .Set(u => u.CreationTime, timestamp)
-                .Set(u => u.LockId, Guid.Empty)
-                .Set(u => u.LockedUntil, DateTimeOffset.MinValue)
+                .Set(u => u.Fault, "")
                 .UpdateAsync();
         }
 
-        public Task DeleteCompletedEffectAsync(Guid lockId, Guid id)
+        public Task CompleteEffectAndUnlockAsync(Guid lockId, Guid id, DateTimeOffset timestamp)
         {
             return connection.GetTable<EffectEntity>()
-                .DeleteAsync(u => u.Id == id
-                               && u.LockId == lockId);
+                .Where(u => u.Id == id
+                    && u.LockId == lockId
+                    && u.State == EffectState.Running)
+                .DeleteAsync();
         }
     }
 }

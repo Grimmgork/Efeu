@@ -13,28 +13,28 @@ namespace Efeu.Integration.Persistence
 
         public Task AbortEffectAsync(Guid id);
 
-        public Task DeleteCompletedEffectAsync(Guid lockId, Guid id);
-
         public Task<EffectEntity?> GetByIdAsync(Guid id);
 
         public Task<EffectEntity[]> GetByCorellationAsync(Guid correlationId);
 
         public Task<EffectEntity[]> GetAllAsync();
 
-        public Task FaultEffectAndUnlockAsync(Guid lockId, Guid id, DateTimeOffset timestamp, string fault);
-
-        public Task CompleteEffectAndUnlockAsync(Guid lockId, Guid id, DateTimeOffset timestamp, EfeuValue output);
-
-        public Task<int> SuspendEffectAsync(Guid id, DateTimeOffset timestamp);
-
-        public Task CompleteSuspendedEffectAsync(Guid id, DateTimeOffset timestamp, EfeuValue output);
+        public Task<Guid[]> GetRunningEffectsNotLockedAsync();
 
         public Task<int> NudgeEffectAsync(Guid id);
 
         public Task<bool> TryLockEffectAsync(Guid id, Guid lockId, TimeSpan lease);
 
-        public Task<Guid[]> GetRunningEffectsNotLockedAsync();
-
         public Task UnlockEffectAsync(Guid lockId);
+
+        public Task FaultEffectAndUnlockAsync(Guid lockId, Guid id, DateTimeOffset timestamp, string fault);
+
+        public Task CompleteEffectWithResultAndUnlockAsync(Guid lockId, Guid id, DateTimeOffset timestamp, EfeuValue output);
+
+        public Task CompleteEffectAndUnlockAsync(Guid lockId, Guid id, DateTimeOffset timestamp);
+
+        public Task<int> SuspendEffectAsync(Guid id, DateTimeOffset timestamp);
+
+        public Task CompleteSuspendedEffectAsync(Guid id, DateTimeOffset timestamp, EfeuValue output);
     }
 }

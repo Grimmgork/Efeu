@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Data.SQLite;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,16 +17,19 @@ namespace Efeu.Integration.Sqlite
     internal class UnitOfWork : IEfeuUnitOfWork
     {
         private readonly Guid id;
+        private readonly DataConnection connection;
+        private readonly SQLiteConnection sqliteConnection;
 
         private TransactionScope? scope;
-        private DataConnection connection;
+
 
         private HashSet<string> locks = new HashSet<string>();
         private int depth;
 
-        public UnitOfWork(DataConnection connection)
+        public UnitOfWork(DataConnection connection, SQLiteConnection sqliteConnection)
         {
             this.connection = connection;
+            this.sqliteConnection = sqliteConnection;
             this.id = Guid.NewGuid();
         }
 
@@ -97,7 +101,7 @@ namespace Efeu.Integration.Sqlite
             scope?.Dispose();
             depth = 0;
             locks.Clear();
-            return connection.CloseAsync();
+            return sqliteConnection.CloseAsync();
         }
     }
 }

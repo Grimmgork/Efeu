@@ -4,6 +4,13 @@ using System;
 
 namespace Efeu.Integration.Entities
 {
+    public enum EffectState
+    {
+        Running,
+        Suspended,
+        Faulted
+    }
+
     public class EffectEntity
     {
         public Guid Id; // guid similar to message id
@@ -30,15 +37,9 @@ namespace Efeu.Integration.Entities
 
         public Guid Matter;
 
+
         public DateTimeOffset LockedUntil;
 
         public Guid LockId;
-    }
-
-    public enum EffectState
-    {
-        Running,
-        Suspended,
-        Faulted,
     }
 }

@@ -23,35 +23,8 @@ namespace Efeu.Integration.Services
             this.scopeFactory = scopeFactory;
         }
 
-        public async Task Test()
-        {
-            await using var scope = scopeFactory.CreateAsyncScope();
-
-            IServiceProvider services = scope.ServiceProvider;
-            IDeduplicationKeyCommands deduplicationKeyCommands = services.GetRequiredService<IDeduplicationKeyCommands>();
-            IEffectCommands behaviourEffectCommands = services.GetRequiredService<IEffectCommands>();
-            IEfeuUnitOfWork unitOfWork = services.GetRequiredService<IEfeuUnitOfWork>();
-
-            try
-            {
-                await unitOfWork.BeginAsync();
-                await unitOfWork.BeginAsync();
-                await unitOfWork.BeginAsync();
-                await unitOfWork.CompleteAsync();
-                await unitOfWork.CompleteAsync();
-                await unitOfWork.CompleteAsync();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
-
-        }
-
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            // return Test();
-
             CancellationToken token = cancellationTokenSource.Token;
 
             List<Task> workers = new List<Task>();
@@ -73,7 +46,7 @@ namespace Efeu.Integration.Services
                         catch (Exception ex)
                         {
                             Console.WriteLine(ex);
-                            await Task.Delay(1000, cancellationToken);
+                            await Task.Delay(2000, cancellationToken);
                         }
                     }
                 }));
@@ -102,6 +75,8 @@ namespace Efeu.Integration.Services
             if (effect is null)
                 return 0;
 
+            await unitOfWork.ResetAsync();
+
             DateTimeOffset executionTime = DateTime.Now;
             try
             {
@@ -114,7 +89,7 @@ namespace Efeu.Integration.Services
                     EfeuEffectExecutionContext context = new EfeuEffectExecutionContext(effect.Id, effect.CorrelationId, executionTime, effect.Times, effect.Input);
 
                     await effectInstance.RunAsync(context, token);
-                    await effectQueries.CompleteEffectAndUnlockAsync(workerId, effect.Id, DateTime.Now, default);
+                    await effectQueries.CompleteEffectWithResultAndUnlockAsync(workerId, effect.Id, DateTime.Now, default);
                 }
                 else
                 {
@@ -131,7 +106,7 @@ namespace Efeu.Integration.Services
                     };
 
                     await effectCommands.SendMessageDeduplicatedAsync(message);
-                    await effectQueries.DeleteCompletedEffectAsync(workerId, effect.Id);
+                    await effectQueries.CompleteEffectAndUnlockAsync(workerId, effect.Id, executionTime);
                     await unitOfWork.CompleteAsync();
                 }
             }
