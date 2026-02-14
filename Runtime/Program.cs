@@ -27,9 +27,6 @@ namespace Efeu.Runtime
             //EfeuValue value = EfeuScript.Run(script, scope);
             //Console.WriteLine(JsonSerializer.Serialize(value, options));
 
-
-
-
             EfeuBehaviourStep[] steps = [
                 new () {
                     Kind = EfeuBehaviourStepKind.Let,
@@ -76,7 +73,7 @@ namespace Efeu.Runtime
             ];
 
             EfeuRuntimeSimulation simulation = EfeuRuntimeSimulation.Run(steps);
-            simulation.SendMessage(new EfeuMessage()
+            simulation.Send(new EfeuMessage()
             {
                 Id = Guid.NewGuid(),
                 Type = "Event",

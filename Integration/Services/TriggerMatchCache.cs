@@ -34,7 +34,7 @@ namespace Efeu.Integration.Services
             {
                 EfeuRuntime runtime = EfeuRuntime.RunTrigger(trigger, message);
 
-                if (runtime.Result == EfeuRuntimeResult.Skipped)
+                if (runtime.IsSkipped)
                     continue;
 
                 if (!trigger.IsStatic)

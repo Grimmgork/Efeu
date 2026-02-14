@@ -25,7 +25,7 @@ namespace Efeu.Runtime
             return result;
         }
 
-        public void SendMessage(EfeuMessage message)
+        public void Send(EfeuMessage message)
         {
             EfeuRuntime? runtime = null;
             List<EfeuMessage> messages = new List<EfeuMessage>();
@@ -35,7 +35,7 @@ namespace Efeu.Runtime
             foreach (EfeuTrigger trigger in this.triggers)
             {
                 runtime = EfeuRuntime.RunTrigger(trigger, message);
-                if (runtime.Result == EfeuRuntimeResult.Executed)
+                if (!runtime.IsSkipped)
                 {
                     messages.AddRange(runtime?.Messages ?? []);
                     triggers.AddRange(runtime?.Triggers ?? []);
