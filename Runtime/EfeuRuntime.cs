@@ -1,5 +1,4 @@
-﻿using Antlr4.Build.Tasks;
-using Efeu.Runtime;
+﻿using Efeu.Runtime;
 using Efeu.Runtime.Script;
 using Efeu.Runtime.Value;
 using System;
@@ -76,7 +75,7 @@ namespace Efeu.Runtime
 
             EfeuRuntimeScope scope = trigger.Scope
                 .With("now", Now)
-                .With("input", message.Payload);
+                .With("@", message.Payload);
 
             EfeuBehaviourStep[] steps = trigger.Step.Do;
             RunSteps(steps, $"{trigger.Position}/Do", scope); // Assumption: all trigger continuations are done in the Do route
@@ -84,7 +83,6 @@ namespace Efeu.Runtime
 
         private static bool TriggerMatchesMessage(EfeuTrigger trigger, EfeuMessage message)
         {
-            Console.WriteLine(message.Timestamp >= trigger.CreationTime);
             return message.Timestamp >= trigger.CreationTime &&
                    message.Tag == trigger.Tag &&
                    message.Type == trigger.Type &&
@@ -143,14 +141,13 @@ namespace Efeu.Runtime
 
         private void RunEmitStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
         {
-            Guid triggerId = Guid.Empty;
             Guid messageId = Guid.NewGuid();
+            Guid group = Guid.NewGuid();
             if (step.Do.Length > 0)
             {
-                triggerId = Guid.NewGuid();
                 Triggers.Add(new EfeuTrigger()
                 {
-                    Id = triggerId,
+                    Id = Guid.NewGuid(),
                     CorrelationId = CorrelationId,
                     CreationTime = Now,
                     Scope = scope,
@@ -158,6 +155,24 @@ namespace Efeu.Runtime
                     Position = position,
                     BehaviourId = BehaviourId,
                     Matter = messageId,
+                    Group = group,
+                    Step = step,
+                });
+            }
+
+            if (step.Error.Length > 0)
+            {
+                Triggers.Add(new EfeuTrigger()
+                {
+                    Id = Guid.NewGuid(),
+                    CorrelationId = CorrelationId,
+                    CreationTime = Now,
+                    Scope = scope,
+                    Tag = EfeuMessageTag.Fault,
+                    Position = position,
+                    BehaviourId = BehaviourId,
+                    Matter = messageId,
+                    Group = group,
                     Step = step,
                 });
             }
@@ -232,7 +247,8 @@ namespace Efeu.Runtime
                 Position = position,
                 Input = step.Input.Evaluate(scope),
                 BehaviourId = BehaviourId,
-                Step = step
+                Step = step,
+                Group = Guid.NewGuid()
             });
         }
 
@@ -249,9 +265,11 @@ namespace Efeu.Runtime
                 Tag = EfeuMessageTag.Data,
                 Type = step.Name,
                 BehaviourId = BehaviourId,
+                CorrelationId = Guid.Empty,
                 Input = step.Input.Evaluate(scope),
                 Position = position,
-                Step = step
+                Step = step,
+                Group = Guid.NewGuid()
             });
         }
     }

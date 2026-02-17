@@ -16,5 +16,7 @@ namespace Efeu.Integration.Commands
         public Task DetatchAsync(Guid[] ids);
 
         public Task ResolveMattersAsync(Guid[] matters);
+
+        public Task CompleteGroupsAsync(Guid[] groups);
     }
 }

@@ -54,21 +54,17 @@ namespace Efeu.Integration.Sqlite
             if (depth == 0)
                 throw new InvalidOperationException("No transaction is running.");
 
-            if (scope == null)
-                throw new Exception();
-
             depth--;
             if (depth == 0)
             {
                 try
                 {
                     await connection.GetTable<LockEntity>().DeleteAsync(i => i.Bundle == id);
-                    scope.Complete();
+                    scope?.Complete();
                 }
                 finally
                 {
-                    scope.Dispose();
-                    scope = null;
+                    scope?.Dispose();
                 }
             }
         }

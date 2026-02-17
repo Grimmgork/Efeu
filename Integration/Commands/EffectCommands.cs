@@ -106,6 +106,7 @@ namespace Efeu.Integration.Commands
                     CreationTime = message.Timestamp,
                     CorrelationId = message.CorrelationId,
                     Input = message.Payload,
+                    Matter = message.Matter,
                 });
             }
             else
@@ -147,13 +148,14 @@ namespace Efeu.Integration.Commands
                     if (iterations > 50)
                         throw new Exception($"infinite loop detected! ({iterations} iterations)");
 
-                    await context.MatchTriggersAsync(message);
+                    await context.RunTriggersAsync(message);
                 }
             }
 
             await triggerCommands.AttachAsync(context.Triggers.ToArray());
             await triggerCommands.DetatchAsync(context.DeletedTriggers.ToArray());
             await triggerCommands.ResolveMattersAsync(context.ResolvedMatters.ToArray());
+            await triggerCommands.CompleteGroupsAsync(context.CompletedGroups.ToArray());
             await effectQueries.CreateBulkAsync(effects.ToArray());
         }
     }

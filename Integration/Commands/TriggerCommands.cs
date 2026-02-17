@@ -67,5 +67,10 @@ namespace Efeu.Integration.Commands
         {
             return triggerQueries.DeleteByMatterBulkAsync(matters);
         }
+
+        public Task CompleteGroupsAsync(Guid[] groups)
+        {
+            return triggerQueries.DeleteByGroupBulkAsync(groups);
+        }
     }
 }

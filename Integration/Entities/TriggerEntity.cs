@@ -29,5 +29,7 @@ namespace Efeu.Integration.Entities
         public EfeuMessageTag Tag;
 
         public Guid Matter;
+
+        public Guid Group;
     }
 }

@@ -57,6 +57,12 @@ namespace Efeu.Integration.Sqlite.Queries
                 .DeleteAsync(i => matters.Contains(i.Matter));
         }
 
+        public Task DeleteByGroupBulkAsync(Guid[] groups)
+        {
+            return connection.GetTable<TriggerEntity>()
+                .DeleteAsync(i => groups.Contains(i.Group));
+        }
+
         public Task<TriggerEntity[]> GetAllAsync()
         {
              return connection.GetTable<TriggerEntity>()

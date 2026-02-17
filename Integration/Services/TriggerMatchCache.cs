@@ -18,6 +18,7 @@ namespace Efeu.Integration.Services
 
         public readonly HashSet<Guid> DeletedTriggers = new();
         public readonly HashSet<Guid> ResolvedMatters = new();
+        public readonly HashSet<Guid> CompletedGroups = new();
 
         public TriggerMatchCache(ITriggerQueries triggerQueries, IBehaviourQueries behaviourQueries)
         {
@@ -27,24 +28,31 @@ namespace Efeu.Integration.Services
 
         private readonly Dictionary<int, BehaviourVersionEntity> behaviourVersionEntityCache = new();
 
-        public async Task MatchTriggersAsync(EfeuMessage message)
+        public async Task RunTriggersAsync(EfeuMessage message)
         {
             EfeuTrigger[] matchingTriggers = await GetMatchingTriggersAsync(message);
             foreach (EfeuTrigger trigger in matchingTriggers)
             {
                 EfeuRuntime runtime = EfeuRuntime.RunTrigger(trigger, message);
 
+                if (message.Matter != Guid.Empty)
+                {
+                    Triggers.RemoveAll(i => i.Matter == message.Matter);
+                    ResolvedMatters.Add(message.Matter);
+                }
+                
                 if (runtime.IsSkipped)
                     continue;
 
                 if (!trigger.IsStatic)
                 {
-                    Triggers.RemoveAll(item => item.Id == trigger.Id);
+                    Triggers.RemoveAll(i => i.Id == trigger.Id);
                     DeletedTriggers.Add(trigger.Id);
-                    if (trigger.Matter != Guid.Empty)
+
+                    if (trigger.Group != Guid.Empty)
                     {
-                        Triggers.RemoveAll(item => item.Matter == trigger.Matter);
-                        ResolvedMatters.Add(trigger.Matter);
+                        Triggers.RemoveAll(i => i.Group == trigger.Group);
+                        CompletedGroups.Add(trigger.Group);
                     }
                 }
 
@@ -75,6 +83,9 @@ namespace Efeu.Integration.Services
             foreach (TriggerEntity triggerEntity in triggerEntities)
             {
                 if (DeletedTriggers.Contains(triggerEntity.Id))
+                    continue;
+
+                if (CompletedGroups.Contains(triggerEntity.Group))
                     continue;
 
                 if (triggerEntity.Matter != Guid.Empty)

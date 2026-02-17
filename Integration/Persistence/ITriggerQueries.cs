@@ -29,5 +29,7 @@ namespace Efeu.Integration.Persistence
         public Task DeleteBulkAsync(Guid[] ids);
 
         public Task DeleteByMatterBulkAsync(Guid[] matters);
+
+        public Task DeleteByGroupBulkAsync(Guid[] groups);
     }
 }

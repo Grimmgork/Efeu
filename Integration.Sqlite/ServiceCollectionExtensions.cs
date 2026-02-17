@@ -92,7 +92,8 @@ namespace Efeu.Integration.Sqlite
                 .Property(p => p.Tag)
                 .Property(p => p.Position)
                 .Property(p => p.Scope)
-                .Property(p => p.Matter);
+                .Property(p => p.Matter)
+                .Property(p => p.Group);
 
             builder.Entity<EffectEntity>()
                 .HasTableName("Effect")

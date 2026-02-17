@@ -15,6 +15,7 @@ namespace Efeu.Runtime
 
         public EfeuTriggerMatch[] Fields = [];
     }
+
     public class EfeuTrigger
     {
         public Guid Id;
@@ -23,13 +24,15 @@ namespace Efeu.Runtime
 
         public DateTimeOffset CreationTime;
 
-        public string Position = ""; // position of trigger row /0/Else/1
+        public string Position = ""; // position of trigger row /guid/0/Else/1
 
         public EfeuRuntimeScope Scope = new EfeuRuntimeScope(); // Scope around trigger row
 
         public string Type = "";
 
         public EfeuMessageTag Tag;
+
+        public Guid Matter;
 
         public EfeuValue Input;
 
@@ -39,7 +42,7 @@ namespace Efeu.Runtime
 
         public int BehaviourId;
 
-        public Guid Matter;
+        public Guid Group;
 
         public bool IsStatic => CorrelationId == Guid.Empty; // a trigger is static if it is not assigned to a instance
     }
