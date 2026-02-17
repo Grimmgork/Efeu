@@ -31,11 +31,8 @@ namespace Efeu.Application
                          options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                      });
 
-            builder.Services.AddScoped((services) =>
-            {
-                SQLiteConnection connection = new SQLiteConnection("Data Source=data.db");
-                return connection;
-            });
+            builder.Services.AddScoped((services) => 
+                new SQLiteConnection("Data Source=data.db"));
 
             builder.Services.AddEfeu();
             builder.Services.AddEfeuDefaultEffects();
@@ -44,6 +41,11 @@ namespace Efeu.Application
 
             var app = builder.Build();
 
+            app.UseCors((builder) =>
+            {
+                builder.AllowAnyOrigin();
+                builder.AllowAnyHeader();
+            });
             app.UseStaticFiles();
             app.UseHttpsRedirection();
             app.UseRouting();

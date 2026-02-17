@@ -80,8 +80,19 @@ namespace Efeu.Integration.Commands
 
         public async Task SendMessage(EfeuMessage message)
         {
+            if (message.Id == Guid.Empty)
+            {
+                message.Id = Guid.NewGuid();
+            }
+
+            if (message.Timestamp == DateTimeOffset.MinValue)
+            {
+                message.Timestamp = DateTime.Now;
+            }
+
             await unitOfWork.BeginAsync();
             await unitOfWork.LockAsync("Trigger");
+
             if (!await dedupicationKeyCommands.TryInsertAsync(message.Id, message.Timestamp))
             {
                 await unitOfWork.CompleteAsync();
@@ -119,7 +130,7 @@ namespace Efeu.Integration.Commands
 
         private async Task UnlockTriggers(EfeuMessage[] signals, EfeuTrigger[] triggers)
         {
-            TriggerMatchCache context = new TriggerMatchCache(triggerQueries, behaviourQueries);
+            TriggerProcessCache context = new TriggerProcessCache(triggerQueries, behaviourQueries);
             foreach (EfeuMessage signal in signals)
                 context.Messages.Push(signal);
             foreach (EfeuTrigger trigger in triggers)
@@ -148,7 +159,7 @@ namespace Efeu.Integration.Commands
                     if (iterations > 50)
                         throw new Exception($"infinite loop detected! ({iterations} iterations)");
 
-                    await context.RunTriggersAsync(message);
+                    await context.ProcessTriggersAsync(message);
                 }
             }
 

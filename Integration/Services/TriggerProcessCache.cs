@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Services
 {
-    public class TriggerMatchCache
+    public class TriggerProcessCache
     {
         public readonly List<EfeuTrigger> Triggers = new List<EfeuTrigger>();
         public readonly Stack<EfeuMessage> Messages = new Stack<EfeuMessage>();
@@ -20,7 +20,7 @@ namespace Efeu.Integration.Services
         public readonly HashSet<Guid> ResolvedMatters = new();
         public readonly HashSet<Guid> CompletedGroups = new();
 
-        public TriggerMatchCache(ITriggerQueries triggerQueries, IBehaviourQueries behaviourQueries)
+        public TriggerProcessCache(ITriggerQueries triggerQueries, IBehaviourQueries behaviourQueries)
         {
             this.behaviourQueries = behaviourQueries;
             this.triggerQueries = triggerQueries;
@@ -28,7 +28,7 @@ namespace Efeu.Integration.Services
 
         private readonly Dictionary<int, BehaviourVersionEntity> behaviourVersionEntityCache = new();
 
-        public async Task RunTriggersAsync(EfeuMessage message)
+        public async Task ProcessTriggersAsync(EfeuMessage message)
         {
             EfeuTrigger[] matchingTriggers = await GetMatchingTriggersAsync(message);
             foreach (EfeuTrigger trigger in matchingTriggers)

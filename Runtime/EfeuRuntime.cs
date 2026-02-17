@@ -81,7 +81,7 @@ namespace Efeu.Runtime
             RunSteps(steps, $"{trigger.Position}/Do", scope); // Assumption: all trigger continuations are done in the Do route
         }
 
-        private static bool TriggerMatchesMessage(EfeuTrigger trigger, EfeuMessage message)
+        public static bool TriggerMatchesMessage(EfeuTrigger trigger, EfeuMessage message)
         {
             return message.Timestamp >= trigger.CreationTime &&
                    message.Tag == trigger.Tag &&
