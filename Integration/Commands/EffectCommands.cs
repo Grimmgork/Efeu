@@ -172,7 +172,6 @@ namespace Efeu.Integration.Commands
             }
 
             await triggerCommands.CreateAsync(context.CreatedTriggers.ToArray());
-            // await triggerCommands.DeleteAsync(context.DeletedTriggers.ToArray());
             await triggerCommands.ResolveMattersAsync(context.ResolvedMatters.ToArray());
             await triggerCommands.CompleteGroupsAsync(context.CompletedGroups.ToArray());
             await effectQueries.CreateBulkAsync(createdEffects.ToArray());

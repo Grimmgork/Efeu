@@ -25,8 +25,10 @@ namespace Efeu.Integration.Services
             this.getKey = getKey;
         }
 
-        public void Inject(TValue[] items)
+        public CachedLookup(TValue[] items, Func<TKey[], Task<TValue[]>> fetch, Func<TValue, TKey> getKey)
         {
+            this.fetch = fetch;
+            this.getKey = getKey;
             foreach (TValue item in items)
             {
                 cache.Add(getKey(item), item);
@@ -74,7 +76,23 @@ namespace Efeu.Integration.Services
         public TriggerEntityCache(PartialTriggerEntity[] triggerEntityKeys, ITriggerQueries triggerQueries, IBehaviourQueries behaviourQueries, EfeuTrigger[] createdTriggers)
         {
             this.partialTriggerEntities = triggerEntityKeys.ToList();
-            this.triggerEntityCache = new CachedLookup<Guid, TriggerEntity>(triggerQueries.GetByIdsAsync, (i) => i.Id);
+
+            TriggerEntity[] createdTriggerEntities = createdTriggers.Select(i => new TriggerEntity()
+            {
+                Id = i.Id,
+                BehaviourVersionId = i.BehaviourId,
+                CorrelationId = i.CorrelationId,
+                CreationTime = i.CreationTime,
+                Group = i.Group,
+                Input = i.Input,
+                Matter = i.Matter,
+                Position = i.Position,
+                Scope = i.Scope,
+                Tag = i.Tag,
+                Type = i.Type
+            }).ToArray();
+
+            this.triggerEntityCache = new CachedLookup<Guid, TriggerEntity>(createdTriggerEntities, triggerQueries.GetByIdsAsync, (i) => i.Id);
             this.behaviourVersionEntityCache = new CachedLookup<int, BehaviourVersionEntity>(behaviourQueries.GetVersionsByIdsAsync, (i) => i.Id);
 
             foreach (EfeuTrigger trigger in createdTriggers)
@@ -89,22 +107,7 @@ namespace Efeu.Integration.Services
                     Tag = trigger.Tag,
                     Type = trigger.Type,
                 });
-                triggerEntityCache.Inject(createdTriggers.Select(i => new TriggerEntity()
-                {
-                    Id = i.Id,
-                    BehaviourVersionId = i.BehaviourId,
-                    CorrelationId = i.CorrelationId,
-                    CreationTime = i.CreationTime,
-                    Group = i.Group,
-                    Input = i.Input,
-                    Matter = i.Matter,
-                    Position = i.Position,
-                    Scope = i.Scope,
-                    Tag = i.Tag,
-                    Type = i.Type
-                }).ToArray());
             }
-                
         }
 
         public void Apply(EfeuRuntime runtime, EfeuMessage message, EfeuTrigger trigger)
