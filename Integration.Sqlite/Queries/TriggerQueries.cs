@@ -1,12 +1,13 @@
-﻿using Efeu.Integration.Persistence;
+﻿using Azure;
 using Efeu.Integration.Entities;
+using Efeu.Integration.Persistence;
+using Efeu.Runtime;
 using LinqToDB;
 using LinqToDB.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Efeu.Runtime;
 
 namespace Efeu.Integration.Sqlite.Queries
 {
@@ -83,13 +84,26 @@ namespace Efeu.Integration.Sqlite.Queries
                 .FirstAsync(i => i.Id == id);
         }
 
-        public Task<TriggerEntity[]> GetMatchingAsync(string name, EfeuMessageTag tag, Guid matter, DateTimeOffset timestamp)
+        //public Task<TriggerEntity[]> GetMatchingAsync(string name, EfeuMessageTag tag, Guid matter, DateTimeOffset timestamp)
+        //{
+        //    return connection.GetTable<TriggerEntity>()
+        //        .Where(i => i.CreationTime < timestamp
+        //                 && i.Type == name
+        //                 && i.Tag == tag
+        //                 && i.Matter == matter)
+        //        .ToArrayAsync();
+        //}
+
+        public Task<TriggerEntity[]> GetByIdsAsync(params Guid[] ids)
         {
             return connection.GetTable<TriggerEntity>()
-                .Where(i => i.CreationTime < timestamp
-                         && i.Type == name
-                         && i.Tag == tag
-                         && i.Matter == matter)
+                .Where(i => ids.Contains(i.Id))
+                .ToArrayAsync();
+        }
+
+        public Task<PartialTriggerEntity[]> GetPartialTriggersAsync()
+        {
+            return connection.GetTable<PartialTriggerEntity>()
                 .ToArrayAsync();
         }
     }

@@ -9,11 +9,11 @@ namespace Efeu.Integration.Commands
 {
     public interface ITriggerCommands
     {
-        public Task AttachAsync(EfeuTrigger[] triggers);
+        public Task CreateAsync(EfeuTrigger[] triggers);
 
         public Task DetatchStaticAsync(int behaviourVersionId);
 
-        public Task DetatchAsync(Guid[] ids);
+        public Task DeleteAsync(Guid[] ids);
 
         public Task ResolveMattersAsync(Guid[] matters);
 

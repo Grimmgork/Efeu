@@ -128,21 +128,21 @@ namespace Efeu.Integration.Commands
             await unitOfWork.CompleteAsync();
         }
 
-        private async Task UnlockTriggers(EfeuMessage[] signals, EfeuTrigger[] triggers)
+        private async Task UnlockTriggers(EfeuMessage[] messages, EfeuTrigger[] createdTriggers)
         {
-            TriggerProcessCache context = new TriggerProcessCache(triggerQueries, behaviourQueries);
-            foreach (EfeuMessage signal in signals)
-                context.Messages.Push(signal);
-            foreach (EfeuTrigger trigger in triggers)
-                context.Triggers.Add(trigger);
+            PartialTriggerEntity[] triggerEntityKeys = await triggerQueries.GetPartialTriggersAsync();
 
             int iterations = 0;
-            List<EffectEntity> effects = [];
-            while (context.Messages.TryPop(out EfeuMessage? message)) // handle produced messages
+            Stack<EfeuMessage> createdMessages = new Stack<EfeuMessage>(messages);
+            List<EffectEntity> createdEffects = [];
+
+            TriggerEntityCache context = new TriggerEntityCache(triggerEntityKeys, triggerQueries, behaviourQueries, createdTriggers);
+
+            while (createdMessages.TryPop(out EfeuMessage? message)) // handle produced messages
             {
                 if (message.Tag == EfeuMessageTag.Effect)
                 {
-                    effects.Add(new EffectEntity()
+                    createdEffects.Add(new EffectEntity()
                     {
                         Id = message.Id,
                         Type = message.Type,
@@ -159,15 +159,23 @@ namespace Efeu.Integration.Commands
                     if (iterations > 50)
                         throw new Exception($"infinite loop detected! ({iterations} iterations)");
 
-                    await context.ProcessTriggersAsync(message);
+                    EfeuTrigger[] matchingTriggers = await context.GetMatchingTriggers(message);
+                    foreach (EfeuTrigger trigger in matchingTriggers)
+                    {
+                        EfeuRuntime runtime = EfeuRuntime.RunTrigger(trigger, message);
+                        context.Apply(runtime, message, trigger);
+
+                        foreach (EfeuMessage newMessage in runtime.Messages)
+                            createdMessages.Push(newMessage);
+                    }
                 }
             }
 
-            await triggerCommands.AttachAsync(context.Triggers.ToArray());
-            await triggerCommands.DetatchAsync(context.DeletedTriggers.ToArray());
+            await triggerCommands.CreateAsync(context.CreatedTriggers.ToArray());
+            // await triggerCommands.DeleteAsync(context.DeletedTriggers.ToArray());
             await triggerCommands.ResolveMattersAsync(context.ResolvedMatters.ToArray());
             await triggerCommands.CompleteGroupsAsync(context.CompletedGroups.ToArray());
-            await effectQueries.CreateBulkAsync(effects.ToArray());
+            await effectQueries.CreateBulkAsync(createdEffects.ToArray());
         }
     }
 }

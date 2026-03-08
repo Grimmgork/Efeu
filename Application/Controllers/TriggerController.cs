@@ -30,7 +30,7 @@ namespace Efeu.Application.Controllers
         [Route("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            await triggerCommands.DetatchAsync([id]);
+            await triggerCommands.DeleteAsync([id]);
             Response.Headers["HX-Refresh"] = "true";
             return Ok();
         }

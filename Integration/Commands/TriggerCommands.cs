@@ -23,7 +23,7 @@ namespace Efeu.Integration.Commands
             this.triggerProvider = triggerProvider;
         }
 
-        public async Task AttachAsync(EfeuTrigger[] triggers)
+        public async Task CreateAsync(EfeuTrigger[] triggers)
         {
             await unitOfWork.BeginAsync();
 
@@ -58,7 +58,7 @@ namespace Efeu.Integration.Commands
             await unitOfWork.CompleteAsync();
         }
 
-        public Task DetatchAsync(Guid[] ids)
+        public Task DeleteAsync(Guid[] ids)
         {
             return triggerQueries.DeleteBulkAsync(ids);
         }

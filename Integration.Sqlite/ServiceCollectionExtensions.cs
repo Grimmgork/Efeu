@@ -131,6 +131,18 @@ namespace Efeu.Integration.Sqlite
                     .HasSkipOnInsert(false)
                 .Property(p => p.Timestamp);
 
+            builder.Entity<PartialTriggerEntity>()
+                .HasTableName("Trigger")
+                .HasSchemaName(schema)
+                .Property(p => p.Id)
+                    .IsIdentity()
+                    .IsPrimaryKey()
+                    .HasSkipOnInsert(false)
+                .Property(p => p.Type)
+                .Property(p => p.Tag)
+                .Property(p => p.Matter)
+                .Property(p => p.Group);
+
             builder.Build();
 
             return builder.MappingSchema;
