@@ -94,16 +94,7 @@ namespace Efeu.Integration.Services
                 else
                 {
                     await unitOfWork.BeginAsync();
-                    EfeuMessage message = new EfeuMessage()
-                    {
-                        Id = effect.Id,
-                        Tag = effect.Tag,
-                        Type = effect.Type,
-                        Payload = effect.Data,
-                        Timestamp = effect.CreationTime,
-                        Matter = effect.Matter,
-                        CorrelationId = effect.CorrelationId,
-                    };
+                    EfeuMessage message = effect.MapToMessage();
 
                     await effectCommands.SendMessageDeduplicatedAsync(message);
                     await effectQueries.CompleteEffectAndUnlockAsync(workerId, effect.Id, executionTime);

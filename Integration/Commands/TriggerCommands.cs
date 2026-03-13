@@ -26,27 +26,8 @@ namespace Efeu.Integration.Commands
         public async Task CreateAsync(EfeuTrigger[] triggers)
         {
             await unitOfWork.BeginAsync();
-
-            List<TriggerEntity> entites = new List<TriggerEntity>();
-            foreach (EfeuTrigger trigger in triggers)
-            {
-                entites.Add(new TriggerEntity()
-                {
-                    Id = trigger.Id,
-                    BehaviourVersionId = trigger.BehaviourId,
-                    CorrelationId = trigger.CorrelationId,
-                    Position = trigger.Position,
-                    Scope = trigger.Scope,
-                    Input = trigger.Input,
-                    Type = trigger.Type,
-                    Tag = trigger.Tag,
-                    Matter = trigger.Matter,
-                    CreationTime = trigger.CreationTime
-                });
-            }
-
-            await triggerQueries.CreateBulkAsync(entites.ToArray());
-
+            TriggerEntity[] entites = triggers.Select(i => i.MapToEntity()).ToArray();
+            await triggerQueries.CreateBulkAsync(entites);
             await unitOfWork.CompleteAsync();
         }
 

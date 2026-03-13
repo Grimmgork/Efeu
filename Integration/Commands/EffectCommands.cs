@@ -35,16 +35,7 @@ namespace Efeu.Integration.Commands
 
         public Task CreateEffect(EfeuMessage message)
         {
-            return effectQueries.CreateAsync(
-                new EffectEntity() {
-                    Id = message.Id,
-                    Type = message.Type,
-                    Tag = message.Tag,
-                    Input = message.Payload,
-                    CorrelationId = message.CorrelationId,
-                    CreationTime = message.Timestamp,
-                    Matter = message.Matter,
-                });
+            return effectQueries.CreateAsync(message.MapToEffectEntity());
         }
 
         public Task NudgeEffect(Guid id)
@@ -109,16 +100,7 @@ namespace Efeu.Integration.Commands
             await unitOfWork.LockAsync("Trigger");
             if (message.Tag == EfeuMessageTag.Effect)
             {
-                await effectQueries.CreateAsync(new EffectEntity()
-                {
-                    Id = message.Id,
-                    Type = message.Type,
-                    Tag = EfeuMessageTag.Effect,
-                    CreationTime = message.Timestamp,
-                    CorrelationId = message.CorrelationId,
-                    Input = message.Payload,
-                    Matter = message.Matter,
-                });
+                await effectQueries.CreateAsync(message.MapToEffectEntity());
             }
             else
             {
@@ -142,16 +124,7 @@ namespace Efeu.Integration.Commands
             {
                 if (message.Tag == EfeuMessageTag.Effect)
                 {
-                    createdEffects.Add(new EffectEntity()
-                    {
-                        Id = message.Id,
-                        Type = message.Type,
-                        Tag = message.Tag,
-                        Input = message.Payload,
-                        CorrelationId = message.CorrelationId,
-                        CreationTime = message.Timestamp,
-                        Matter = message.Matter,
-                    });
+                    createdEffects.Add(message.MapToEffectEntity());
                 }
                 else
                 {
