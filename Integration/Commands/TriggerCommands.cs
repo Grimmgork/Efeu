@@ -26,7 +26,7 @@ namespace Efeu.Integration.Commands
         public async Task CreateAsync(EfeuTrigger[] triggers)
         {
             await unitOfWork.BeginAsync();
-            TriggerEntity[] entites = triggers.Select(i => i.MapToEntity()).ToArray();
+            TriggerEntity[] entites = triggers.Select(i => i.MapToTriggerEntity()).ToArray();
             await triggerQueries.CreateBulkAsync(entites);
             await unitOfWork.CompleteAsync();
         }

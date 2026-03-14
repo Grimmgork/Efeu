@@ -94,7 +94,7 @@ namespace Efeu.Integration.Services
                 else
                 {
                     await unitOfWork.BeginAsync();
-                    EfeuMessage message = effect.MapToMessage();
+                    EfeuMessage message = effect.MapToEfeuMessage();
 
                     await effectCommands.SendMessageDeduplicatedAsync(message);
                     await effectQueries.CompleteEffectAndUnlockAsync(workerId, effect.Id, executionTime);

@@ -5,7 +5,7 @@
 
     public static class MappingExtensions
     {
-        public static TriggerEntity MapToEntity(this EfeuTrigger model)
+        public static TriggerEntity MapToTriggerEntity(this EfeuTrigger model)
         {
             return new TriggerEntity()
             {
@@ -23,7 +23,7 @@
             };
         }
 
-        public static EfeuTrigger MapToModel(this TriggerEntity entity, EfeuBehaviourStep step)
+        public static EfeuTrigger MapToEfeuTrigger(this TriggerEntity entity, EfeuBehaviourStep step)
         {
             return new EfeuTrigger()
             {
@@ -41,7 +41,7 @@
             };
         }
 
-        public static PartialTriggerEntity MapToPartialEntity(this EfeuTrigger model)
+        public static PartialTriggerEntity MapToPartialTriggerEntity(this EfeuTrigger model)
         {
             return new PartialTriggerEntity()
             {
@@ -54,7 +54,7 @@
             };
         }
 
-        public static EfeuMessage MapToMessage(this EffectEntity entity)
+        public static EfeuMessage MapToEfeuMessage(this EffectEntity entity)
         {
             return new EfeuMessage()
             {

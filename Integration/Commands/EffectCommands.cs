@@ -65,7 +65,7 @@ namespace Efeu.Integration.Commands
             await unitOfWork.BeginAsync();
             await unitOfWork.LockAsync("Trigger");
             EfeuRuntime runtime = EfeuRuntime.Run(steps, definitionVersionId, timestamp);
-            await UnlockTriggers(runtime.Messages.ToArray(), runtime.Triggers.ToArray());
+            await ProcessMessagesAsync(runtime.Messages.ToArray(), runtime.Triggers.ToArray());
             await unitOfWork.CompleteAsync();
         }
 
@@ -104,13 +104,13 @@ namespace Efeu.Integration.Commands
             }
             else
             {
-                await UnlockTriggers([message], []);
+                await ProcessMessagesAsync([message], []);
             }
 
             await unitOfWork.CompleteAsync();
         }
 
-        private async Task UnlockTriggers(EfeuMessage[] messages, EfeuTrigger[] createdTriggers)
+        private async Task ProcessMessagesAsync(EfeuMessage[] messages, EfeuTrigger[] createdTriggers)
         {
             PartialTriggerEntity[] triggerEntityKeys = await triggerQueries.GetPartialTriggersAsync();
 

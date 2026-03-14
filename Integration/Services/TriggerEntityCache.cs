@@ -11,7 +11,7 @@ using System.Xml.Serialization;
 namespace Efeu.Integration.Services
 {
 
-    public class CachedLookup<TKey, TValue> where TKey : notnull
+    internal class CachedLookup<TKey, TValue> where TKey : notnull
     {
         private Dictionary<TKey, TValue> cache = new Dictionary<TKey, TValue>();
 
@@ -62,7 +62,7 @@ namespace Efeu.Integration.Services
         }
     }
 
-    public class TriggerEntityCache
+    internal class TriggerEntityCache
     {
         public readonly HashSet<Guid> ResolvedMatters = [];
         public readonly HashSet<Guid> CompletedGroups = [];
@@ -77,15 +77,15 @@ namespace Efeu.Integration.Services
         {
             this.partialTriggerEntities = partialTriggerEntities.ToList();
 
-            TriggerEntity[] createdTriggerEntities = createdTriggers.Select(i => i.MapToEntity()).ToArray();
+            TriggerEntity[] createdTriggerEntities = createdTriggers.Select(i => i.MapToTriggerEntity()).ToArray();
 
-            this.triggerEntityCache = new CachedLookup<Guid, TriggerEntity>(createdTriggerEntities, triggerQueries.GetByIdsAsync, (i) => i.Id);
-            this.behaviourVersionEntityCache = new CachedLookup<int, BehaviourVersionEntity>(behaviourQueries.GetVersionsByIdsAsync, (i) => i.Id);
+            this.triggerEntityCache = new CachedLookup<Guid, TriggerEntity>(createdTriggerEntities, triggerQueries.GetByIdsAsync, i => i.Id);
+            this.behaviourVersionEntityCache = new CachedLookup<int, BehaviourVersionEntity>(behaviourQueries.GetVersionsByIdsAsync, i => i.Id);
 
             foreach (EfeuTrigger trigger in createdTriggers)
             {
                 CreatedTriggers.Add(trigger);
-                this.partialTriggerEntities.Add(trigger.MapToPartialEntity());
+                this.partialTriggerEntities.Add(trigger.MapToPartialTriggerEntity());
             }
         }
 
@@ -116,8 +116,8 @@ namespace Efeu.Integration.Services
 
             foreach (EfeuTrigger newTrigger in runtime.Triggers)
             {
-                CreatedTriggers.Add(trigger);
-                partialTriggerEntities.Add(newTrigger.MapToPartialEntity());
+                CreatedTriggers.Add(newTrigger);
+                partialTriggerEntities.Add(newTrigger.MapToPartialTriggerEntity());
             }
         }
 
@@ -133,7 +133,7 @@ namespace Efeu.Integration.Services
             TriggerEntity[] triggerEntities = await triggerEntityCache.GetAsync(matchingKeys.Select(i => i.Id).ToArray());
 
             await behaviourVersionEntityCache.GetAsync(triggerEntities.Select(i => i.BehaviourVersionId).ToArray());
-            return triggerEntities.Select(triggerEntity => triggerEntity.MapToModel(
+            return triggerEntities.Select(triggerEntity => triggerEntity.MapToEfeuTrigger(
                 behaviourVersionEntityCache.GetCached(triggerEntity.BehaviourVersionId).GetPosition(triggerEntity.Position))).ToArray();
         }
     }
