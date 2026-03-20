@@ -14,6 +14,7 @@ namespace Efeu.Runtime
         Raise,
         Let,
         Await,
+        First,
         If,
         Unless,
         For,

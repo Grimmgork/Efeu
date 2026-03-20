@@ -2,18 +2,7 @@
 @model EffectEntity[]
 
 <div>
-    <form hx-post="/Effect">
-        <input type="text" name="type"/>
-        <select type="text" name="tag" >
-            <option value="Data">Data</option>
-            <option value="Effect">Effect</option>
-            <option value="Result">Result</option>
-            <option value="Fault">Fault</option>
-        </select>
-        <input type="text" name="matter" />
-        <input type="text" name="json" />
-        <button type="submit">emit</button>
-    </form>
+    <button hx-get="/Effect/DialogForCreate" hx-dialog >emit</button>
 </div>
 
 @if (Model.Length == 0)

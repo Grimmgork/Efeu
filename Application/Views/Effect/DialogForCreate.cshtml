@@ -1,0 +1,27 @@
+﻿<dialog hx-dialog>
+    <button hx-dialog-close class="btn-close"></button>
+    <form hx-post="/Effect">
+        <div class="mb-3">
+            <label for="type" class="form-label">Type</label>
+            <input type="text" name="type" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label for="tag" class="form-label">Tag</label>
+            <select type="text" name="tag" class="form-select">
+                <option value="Data">Data</option>
+                <option value="Effect">Effect</option>
+                <option value="Result">Result</option>
+                <option value="Fault">Fault</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="matter" class="form-label">Matter</label>
+            <input type="text" name="matter" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label for="json" class="form-label">Data</label>
+            <input type="text" name="json" class="form-control" />
+        </div>
+        <button type="submit" class="btn btn-primary">emit</button>
+    </form>
+</dialog>

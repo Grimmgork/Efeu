@@ -38,3 +38,12 @@
 .synatxPunctuation {
     color: gray;
 }
+
+dialog {
+    border: none;
+    border-radius: 0.5rem;
+}
+
+    dialog::backdrop {
+        background-color: rgb(0 0 0 / 50%);
+    }

@@ -49,8 +49,16 @@ namespace Efeu.Application.Controllers
                 Matter = Guid.Empty,
                 Payload = JsonSerializer.Deserialize<EfeuValue>(string.IsNullOrWhiteSpace(json) ? "null" : json, jsonOptions.JsonSerializerOptions)
             });
+            Response.Headers["HX-Trigger"] = "close-dialog";
             Response.Headers["HX-Refresh"] = "true";
             return Ok();
+        }
+
+        [HttpGet]
+        [Route("DialogForCreate")]
+        public async Task<IActionResult> DialogForCreate()
+        {
+            return PartialView();
         }
 
         [HttpDelete]
