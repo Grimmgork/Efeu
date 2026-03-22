@@ -4,45 +4,25 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Efeu.Application</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.css" />
     <link rel="stylesheet" href="~/css/efeu.css" />
+    <link rel="stylesheet" href="~/css/efeu-script.css" />
+    <link rel="stylesheet" href="~/css/app.css" />
 </head>
-<body style="height: 100vh; display: flex; flex-direction: column;" hx-ext="dialog, dialog-close" >
+<body style="height: 100vh; display: flex; flex-direction: column;" hx-ext="dialog, dialog-close" hx-boost="true" hx-indicator="#global-loader">
     <div id="modal-root"></div>
+    <div id="global-loader" class="loader"></div>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-controller="Home" asp-action="Index">Efeu.Application</a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Behaviour" asp-action="Index">Behaviours</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Trigger" asp-action="Index">Triggers</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Effect" asp-action="Index">Effects</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Script" asp-action="Index">Script</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+        <nav class="nav">
+            <a class="nav-item @ActivePageClass("/")" asp-controller="Home" asp-action="">Home</a>
+            <a class="nav-item @ActivePageClass("/Behaviour")" asp-controller="Behaviour" asp-action="Index">Behaviours</a>
+            <a class="nav-item @ActivePageClass("/Trigger")" asp-controller="Trigger" asp-action="Index">Triggers</a>
+            <a class="nav-item @ActivePageClass("/Effect")" asp-controller="Effect" asp-action="Index">Effects</a>
+            <a class="nav-item @ActivePageClass("/Script")" asp-controller="Script" asp-action="Index">Script</a>
         </nav>
     </header>
     <main>
         @RenderBody()
     </main>
-    <script src="~/lib/bootstrap/js/bootstrap.js"></script>
     <script src="~/js/site.js"></script>
     <script src="~/lib/htmx/htmx.min.js"></script>
     <script src="~/lib/htmx/hyperscript.min.js"></script>
@@ -50,3 +30,11 @@
     <script src="~/js/dialog.js"></script>
 </body>
 </html>
+
+@functions {
+    private string ActivePageClass(string page)
+    {
+        var currentPage = ViewContext.ActionDescriptor?.DisplayName;
+        return (currentPage != null && currentPage.Contains(page, StringComparison.OrdinalIgnoreCase)) ? "active" : "";
+    }
+}

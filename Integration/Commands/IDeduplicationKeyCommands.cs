@@ -10,6 +10,12 @@ namespace Efeu.Integration.Commands
     {
         public Task<bool> TryInsertAsync(string key, DateTimeOffset timestamp);
 
-        public Task<bool> TryInsertAsync(Guid key, DateTimeOffset timestamp);
+        public Task<bool> TryInsertAsync(Guid key, DateTimeOffset timestamp)
+        {
+            if (key == Guid.Empty)
+                return Task.FromResult(true);
+
+            return TryInsertAsync(key.ToString(), timestamp);
+        }
     }
 }

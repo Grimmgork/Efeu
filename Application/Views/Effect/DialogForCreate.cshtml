@@ -1,26 +1,26 @@
 ﻿<dialog hx-dialog>
-    <button hx-dialog-close class="btn-close"></button>
-    <form hx-post="/Effect">
-        <div class="mb-3">
-            <label for="type" class="form-label">Type</label>
-            <input type="text" name="type" class="form-control" />
+    <button hx-dialog-close class="btn btn-primary">x</button>
+    <form hx-post="/Effect" autocomplete="off">
+        <div>
+            <label for="type">Type</label>
+            <input type="text" name="type" autofocus />
         </div>
-        <div class="mb-3">
-            <label for="tag" class="form-label">Tag</label>
-            <select type="text" name="tag" class="form-select">
+        <div>
+            <label for="tag" >Tag</label>
+            <select type="text" name="tag">
                 <option value="Data">Data</option>
                 <option value="Effect">Effect</option>
                 <option value="Result">Result</option>
                 <option value="Fault">Fault</option>
             </select>
         </div>
-        <div class="mb-3">
-            <label for="matter" class="form-label">Matter</label>
-            <input type="text" name="matter" class="form-control" />
+        <div>
+            <label for="matter">Matter</label>
+            <input type="text" name="matter" />
         </div>
-        <div class="mb-3">
-            <label for="json" class="form-label">Data</label>
-            <input type="text" name="json" class="form-control" />
+        <div>
+            <label for="json">Data</label>
+            <input type="text" name="json" />
         </div>
         <button type="submit" class="btn btn-primary">emit</button>
     </form>

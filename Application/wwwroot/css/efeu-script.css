@@ -1,0 +1,40 @@
+﻿
+.behaviourStep {
+    font-family: Consolas;
+}
+
+.stringLiteral {
+    background-color: orange;
+}
+
+.decimalLiteral {
+    background-color: aquamarine;
+}
+
+.floatLiteral {
+    background-color: aquamarine;
+}
+
+.integerLiteral {
+    background-color: aquamarine;
+}
+
+.booleanLiteral {
+    background-color: rgb(255, 255, 0);
+}
+
+.nilLiteral {
+    background-color: rgb(92, 92, 92);
+}
+
+.scriptLineValue {
+    background-color: lightgreen;
+}
+
+.scriptValue {
+    background-color: lightgreen;
+}
+
+.synatxPunctuation {
+    color: gray;
+}

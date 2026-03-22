@@ -23,7 +23,7 @@ namespace Efeu.Integration.Commands
 
         public Task CreateEffect(EfeuMessage message);
 
-        public Task SendMessage(EfeuMessage message);
+        public Task SendMessageAsync(EfeuMessage message);
 
         public Task SendMessageDeduplicatedAsync(EfeuMessage message);
 

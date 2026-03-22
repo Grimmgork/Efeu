@@ -53,11 +53,9 @@ namespace Efeu.Integration.Commands
             return effectQueries.CompleteSuspendedEffectAsync(id, timestamp, output);
         }
 
-        public async Task AbortEffect(Guid id)
+        public Task AbortEffect(Guid id)
         {
-            await unitOfWork.BeginAsync();
-            await effectQueries.AbortEffectAsync(id);
-            await unitOfWork.CompleteAsync();
+            return effectQueries.AbortEffectAsync(id);
         }
 
         public async Task RunImmediate(EfeuBehaviourStep[] steps, int definitionVersionId, DateTimeOffset timestamp)
@@ -69,7 +67,7 @@ namespace Efeu.Integration.Commands
             await unitOfWork.CompleteAsync();
         }
 
-        public async Task SendMessage(EfeuMessage message)
+        public async Task SendMessageAsync(EfeuMessage message)
         {
             if (message.Id == Guid.Empty)
             {

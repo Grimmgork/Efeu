@@ -84,16 +84,6 @@ namespace Efeu.Integration.Sqlite.Queries
                 .FirstAsync(i => i.Id == id);
         }
 
-        //public Task<TriggerEntity[]> GetMatchingAsync(string name, EfeuMessageTag tag, Guid matter, DateTimeOffset timestamp)
-        //{
-        //    return connection.GetTable<TriggerEntity>()
-        //        .Where(i => i.CreationTime < timestamp
-        //                 && i.Type == name
-        //                 && i.Tag == tag
-        //                 && i.Matter == matter)
-        //        .ToArrayAsync();
-        //}
-
         public Task<TriggerEntity[]> GetByIdsAsync(params Guid[] ids)
         {
             return connection.GetTable<TriggerEntity>()

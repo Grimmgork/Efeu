@@ -16,6 +16,7 @@ namespace Efeu.Integration.Services
     {
         private readonly IServiceScopeFactory scopeFactory;
         private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+
         private Task work = Task.CompletedTask;
 
         public EffectExecutionService(IServiceScopeFactory scopeFactory)
@@ -126,7 +127,6 @@ namespace Efeu.Integration.Services
                         break;
                 }
             }
-
             return effect;
         }
     }

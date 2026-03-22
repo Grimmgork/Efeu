@@ -5,12 +5,13 @@ use HTTP::Tiny;
 my $ua = HTTP::Tiny->new( 'verify_SSL' => '0' );
 my $data = to_json({
 	Type => "A",
-	Tag => "Data"
+	Tag => "Data",
+	Payload => "42"
 });
 
-foreach (1..100)
+foreach (1..1000)
 {
-	make_request()
+	make_request($_)
 }
 
 sub make_request {
@@ -22,5 +23,6 @@ sub make_request {
         },
         content => $data
     });
-	print "request\n";
+	my $n = shift;
+	print "request $n\n";
 }

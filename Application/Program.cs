@@ -6,9 +6,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System.Data.SQLite;
+using SharpCompress.Common;
 using System;
 using System.Collections.Generic;
+using System.Data.SQLite;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -31,8 +32,19 @@ namespace Efeu.Application
                          options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                      });
 
-            builder.Services.AddScoped((services) => 
-                new SQLiteConnection("Data Source=data.db"));
+
+            SQLiteConnectionStringBuilder connBuilder = new SQLiteConnectionStringBuilder();
+            connBuilder.DataSource = "data.db";
+            connBuilder.Version = 3;
+            connBuilder.PageSize = 4096;
+            connBuilder.CacheSize = 10000;
+            connBuilder.JournalMode = SQLiteJournalModeEnum.Wal;
+            connBuilder.Pooling = true;
+            connBuilder.LegacyFormat = false;
+            connBuilder.DefaultTimeout = 800;
+
+            builder.Services.AddScoped((services) =>
+                new SQLiteConnection(connBuilder.ToString()));
 
             builder.Services.AddEfeu();
             builder.Services.AddEfeuDefaultEffects();
