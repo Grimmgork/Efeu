@@ -4,3 +4,5 @@
 appsettings*.json
 *.csproj.user
 *.db
+*.db-shm
+*.db-wal
