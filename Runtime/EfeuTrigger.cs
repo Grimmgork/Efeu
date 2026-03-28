@@ -26,7 +26,7 @@ namespace Efeu.Runtime
 
         public string Position = ""; // position of trigger row /guid/0/Else/1
 
-        public EfeuRuntimeScope Scope = new EfeuRuntimeScope(); // Scope around trigger row
+        public EfeuRuntimeScope Scope = EfeuRuntimeScope.Empty; // Scope around trigger row
 
         public string Type = "";
 

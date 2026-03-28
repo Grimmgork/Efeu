@@ -36,7 +36,7 @@ namespace Efeu.Integration.Sqlite
             return new DataParameter(null, json, DataType.Text);
         }
 
-        private static MappingSchema ConfigureMapping(IServiceProvider services, string schema)
+        private static MappingSchema ConfigureMapping(string schema)
         {
             JsonSerializerOptions jsonOptions = new JsonSerializerOptions();
             jsonOptions.IncludeFields = true;
@@ -44,7 +44,7 @@ namespace Efeu.Integration.Sqlite
             jsonOptions.Converters.Add(new JsonStringEnumConverter());
             jsonOptions.Converters.Add(new EfeuRuntimeScopeJsonConverter());
 
-            var builder = new FluentMappingBuilder();
+            FluentMappingBuilder builder = new FluentMappingBuilder();
             builder.MappingSchema.SetConverter<EfeuValue, DataParameter>(c => ConvertToJson(c, jsonOptions));
             builder.MappingSchema.SetConverter<IDictionary<int, EfeuValue>, DataParameter>(c => ConvertToJson(c, jsonOptions));
             builder.MappingSchema.SetConverter<Stack<int>, DataParameter>(c => ConvertToJson(c, jsonOptions));
@@ -150,10 +150,11 @@ namespace Efeu.Integration.Sqlite
 
         public static void AddEfeuSqlite(this IServiceCollection services, string schema, string connectionString)
         {
+            MappingSchema mappingSchema = ConfigureMapping(schema);
             services.AddScoped((serviceProvider) => {
                 var options = new DataOptions()
                     .UseSQLite(connectionString)
-                    .UseMappingSchema(ConfigureMapping(serviceProvider, schema));
+                    .UseMappingSchema(mappingSchema);
                 return new DataConnection(options);
             });
 
@@ -162,11 +163,12 @@ namespace Efeu.Integration.Sqlite
 
         public static void AddEfeuSqlite(this IServiceCollection services, string schema)
         {
+            MappingSchema mappingSchema = ConfigureMapping(schema);
             services.AddScoped((serviceProvider) => {
                 var options = new DataOptions()
                     .UseDataProvider(SQLiteTools.GetDataProvider(ProviderName.SQLite))
                     .UseConnection(serviceProvider.GetRequiredService<SQLiteConnection>())
-                    .UseMappingSchema(ConfigureMapping(serviceProvider, schema));
+                    .UseMappingSchema(mappingSchema);
                 return new DataConnection(options);
             });
 
