@@ -38,7 +38,8 @@ namespace Efeu.Integration.Services
                     {
                         try
                         {
-                            int execution = await ExecuteEffect(workerId, token);
+                            using var scope = scopeFactory.CreateScope();
+                            int execution = await ExecuteEffect(scope.ServiceProvider, workerId, token);
                             if (execution == 0)
                             {
                                 await Task.Delay(1000, cancellationToken);
@@ -63,14 +64,12 @@ namespace Efeu.Integration.Services
             return work;
         }
 
-        private async Task<int> ExecuteEffect(Guid workerId, CancellationToken token)
+        private async Task<int> ExecuteEffect(IServiceProvider services, Guid workerId, CancellationToken token)
         {
-            await using var scope = scopeFactory.CreateAsyncScope();
-
-            IEffectQueries effectQueries = scope.ServiceProvider.GetRequiredService<IEffectQueries>();
-            IEffectCommands effectCommands = scope.ServiceProvider.GetRequiredService<IEffectCommands>();
-            IEfeuUnitOfWork unitOfWork = scope.ServiceProvider.GetRequiredService<IEfeuUnitOfWork>();
-            IEfeuEffectProvider effectProvider = scope.ServiceProvider.GetRequiredService<IEfeuEffectProvider>();
+            IEffectQueries effectQueries = services.GetRequiredService<IEffectQueries>();
+            IEffectCommands effectCommands = services.GetRequiredService<IEffectCommands>();
+            IEfeuUnitOfWork unitOfWork = services.GetRequiredService<IEfeuUnitOfWork>();
+            IEfeuEffectProvider effectProvider = services.GetRequiredService<IEfeuEffectProvider>();
 
             EffectEntity? effect = await FindAndLockEffect(effectQueries, workerId, token);
             if (effect is null)
@@ -120,7 +119,7 @@ namespace Efeu.Integration.Services
             foreach (Guid candidateId in candidateIds)
             {
                 DateTimeOffset timestamp = DateTime.Now;
-                if (await effectQueries.TryLockEffectAsync(candidateId, workerId, TimeSpan.FromSeconds(30)))
+                if (await effectQueries.LockEffectAsync(candidateId, workerId, TimeSpan.FromSeconds(30)) > 0)
                 {
                     effect = await effectQueries.GetByIdAsync(candidateId);
                     if (effect is not null)

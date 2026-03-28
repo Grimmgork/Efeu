@@ -37,15 +37,20 @@ namespace Efeu.Integration.Commands
             return behaviourQueries.CreateAsync(behaviourEntity);
         }
 
-        public Task DeleteAsync(int id)
+        public async Task DeleteAsync(int behaviourId)
         {
-            return behaviourQueries.DeleteAsync(id);
+            await unitOfWork.BeginAsync();
+            await unitOfWork.LockAsync($"Behaviour:{behaviourId}");
+            BehaviourVersionEntity? behaviourVersionEntity = await behaviourQueries.GetLatestVersionAsync(behaviourId);
+            await behaviourQueries.DeleteAsync(behaviourId);
+            await triggerCommands.DetatchStaticAsync(behaviourVersionEntity?.Id ?? 0);
+            await unitOfWork.CompleteAsync();
         }
 
         public async Task<int> PublishVersionAsync(int behaviourId, EfeuBehaviourStep[] steps)
         {
             await unitOfWork.BeginAsync();
-            await unitOfWork.LockAsync($"Definition:{behaviourId}");
+            await unitOfWork.LockAsync($"Behaviour:{behaviourId}");
             BehaviourVersionEntity? behaviourVersionEntity = await behaviourQueries.GetLatestVersionAsync(behaviourId);
             if (behaviourVersionEntity != null)
             {

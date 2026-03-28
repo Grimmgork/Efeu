@@ -14,7 +14,7 @@ using System.Transactions;
 
 namespace Efeu.Integration.Sqlite
 {
-    internal class UnitOfWork : IEfeuUnitOfWork
+    internal class UnitOfWork : IEfeuUnitOfWork, IDisposable
     {
         private readonly Guid id;
         private readonly DataConnection connection;
@@ -86,18 +86,17 @@ namespace Efeu.Integration.Sqlite
             locks.Add(key);
         }
 
-        public ValueTask DisposeAsync()
-        {
-            scope?.Dispose();
-            return ValueTask.CompletedTask;
-        }
-
         public Task ResetAsync()
         {
             scope?.Dispose();
             depth = 0;
             locks.Clear();
             return sqliteConnection.CloseAsync();
+        }
+
+        public void Dispose()
+        {
+            scope?.Dispose();
         }
     }
 }

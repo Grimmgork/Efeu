@@ -21,6 +21,7 @@ namespace Efeu.Integration
             services.AddScoped<IEfeuEffectProvider, DefaultEfeuEffectProvider>();
             services.AddScoped<IEfeuTriggerProvider, DefaultEfeuTriggerProvider>();
             services.AddScoped<IEfeuEngine, EfeuEngine>();
+            services.AddHostedService<DeduplicationKeyCleanupService>();
             services.AddHostedService<EffectExecutionService>();
         }
 

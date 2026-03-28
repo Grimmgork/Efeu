@@ -1,27 +1,35 @@
 ﻿<dialog hx-dialog>
-    <button hx-dialog-close class="btn btn-primary">x</button>
+    <div>
+        Create Effect
+    </div>
+    <button hx-dialog-close class="button button-primary">x</button>
+    <div class="spacer-lg-v"></div>
     <form hx-post="/Effect" autocomplete="off">
-        <div>
-            <label for="type">Type</label>
-            <input type="text" name="type" autofocus />
+        <div class="input-field">
+            <label for="type" class="input-field-label">Type</label>
+            <input type="text" name="type" autofocus class="input" style="width: 100%" />
         </div>
-        <div>
-            <label for="tag" >Tag</label>
-            <select type="text" name="tag">
+        <div class="spacer-md-v"></div>
+        <div class="input-field">
+            <label for="tag" class="input-field-label">Tag</label>
+            <select type="text" name="tag" class="input" style="width: 100%">
                 <option value="Data">Data</option>
                 <option value="Effect">Effect</option>
                 <option value="Result">Result</option>
                 <option value="Fault">Fault</option>
             </select>
         </div>
-        <div>
-            <label for="matter">Matter</label>
-            <input type="text" name="matter" />
+        <div class="spacer-md-v"></div>
+        <div class="input-field">
+            <label for="matter" class="input-field-label">Matter</label>
+            <input type="text" name="matter" class="input" style="width: 100%"/>
         </div>
-        <div>
-            <label for="json">Data</label>
-            <input type="text" name="json" />
+        <div class="spacer-md-v"></div>
+        <div class="input-field">
+            <label for="json" class="input-field-label">Data</label>
+            <textarea placeholder="{ ... }" type="text" name="json" class="input" style="width: 100%; resize: vertical; height: 4rem;"></textarea>
         </div>
-        <button type="submit" class="btn btn-primary">emit</button>
+        <div class="spacer-lg-v"></div>
+        <button hx-dialog-close class="button" type="button">cancel</button><button type="submit" class="button button-primary">emit</button>
     </form>
 </dialog>

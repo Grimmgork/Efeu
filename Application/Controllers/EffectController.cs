@@ -28,6 +28,15 @@ namespace Efeu.Application.Controllers
             this.jsonOptions = jsonOptions.Value;
         }
 
+
+        [HttpGet]
+        [Route("gccollect")]
+        public void GcCollect()
+        {
+            GC.Collect();
+        }
+
+
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -39,13 +48,11 @@ namespace Efeu.Application.Controllers
         [Route("")]
         public async Task<IActionResult> Create(string type, EfeuMessageTag tag, Guid matter, string json)
         {
-            await effectCommands.CreateEffect(new EfeuMessage()
+            await effectCommands.SendMessageDeduplicatedAsync(new EfeuMessage()
             {
-                Id = Guid.NewGuid(),
                 Timestamp = DateTime.Now,
                 Type = type,
                 Tag = tag,
-                CorrelationId = Guid.NewGuid(),
                 Matter = Guid.Empty,
                 Payload = JsonSerializer.Deserialize<EfeuValue>(string.IsNullOrWhiteSpace(json) ? "null" : json, jsonOptions.JsonSerializerOptions)
             });

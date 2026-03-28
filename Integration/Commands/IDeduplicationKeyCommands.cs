@@ -8,6 +8,8 @@ namespace Efeu.Integration.Commands
 {
     public interface IDeduplicationKeyCommands
     {
+        public Task CleanupAsync(DateTimeOffset timestamp);
+
         public Task<bool> TryInsertAsync(string key, DateTimeOffset timestamp);
 
         public Task<bool> TryInsertAsync(Guid key, DateTimeOffset timestamp)

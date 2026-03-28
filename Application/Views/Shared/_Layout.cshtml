@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Efeu.Application</title>
+    <title>Efeu</title>
     <link rel="stylesheet" href="~/css/efeu.css" />
     <link rel="stylesheet" href="~/css/efeu-script.css" />
     <link rel="stylesheet" href="~/css/app.css" />
@@ -13,11 +13,11 @@
     <div id="global-loader" class="loader"></div>
     <header>
         <nav class="nav">
-            <a class="nav-item @ActivePageClass("/")" asp-controller="Home" asp-action="">Home</a>
-            <a class="nav-item @ActivePageClass("/Behaviour")" asp-controller="Behaviour" asp-action="Index">Behaviours</a>
-            <a class="nav-item @ActivePageClass("/Trigger")" asp-controller="Trigger" asp-action="Index">Triggers</a>
-            <a class="nav-item @ActivePageClass("/Effect")" asp-controller="Effect" asp-action="Index">Effects</a>
-            <a class="nav-item @ActivePageClass("/Script")" asp-controller="Script" asp-action="Index">Script</a>
+            <a class="nav-item" active="@IsNavItemActive("Home")" asp-controller="Home" asp-action="">Home</a>
+            <a class="nav-item" active="@IsNavItemActive("Behaviour")" asp-controller="Behaviour" asp-action="Index">Behaviours</a>
+            <a class="nav-item" active="@IsNavItemActive("Trigger")" asp-controller="Trigger" asp-action="Index">Triggers</a>
+            <a class="nav-item" active="@IsNavItemActive("Effect")"  asp-controller="Effect" asp-action="Index">Effects</a>
+            <a class="nav-item" active="@IsNavItemActive("Script")" asp-controller="Script" asp-action="Index">Script</a>
         </nav>
     </header>
     <main>
@@ -32,9 +32,9 @@
 </html>
 
 @functions {
-    private string ActivePageClass(string page)
+    private bool IsNavItemActive(string controller)
     {
-        var currentPage = ViewContext.ActionDescriptor?.DisplayName;
-        return (currentPage != null && currentPage.Contains(page, StringComparison.OrdinalIgnoreCase)) ? "active" : "";
+        string currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+        return currentController == controller;
     }
 }

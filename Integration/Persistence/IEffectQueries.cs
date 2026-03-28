@@ -23,7 +23,7 @@ namespace Efeu.Integration.Persistence
 
         public Task<int> NudgeEffectAsync(Guid id);
 
-        public Task<bool> TryLockEffectAsync(Guid id, Guid lockId, TimeSpan lease);
+        public Task<int> LockEffectAsync(Guid id, Guid lockId, TimeSpan lease);
 
         public Task UnlockEffectAsync(Guid lockId);
 

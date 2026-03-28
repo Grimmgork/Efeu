@@ -71,12 +71,17 @@ namespace Efeu.Integration.Commands
         {
             if (message.Id == Guid.Empty)
             {
-                message.Id = Guid.NewGuid();
+                throw new Exception("message id is empty.");
             }
 
             if (message.Timestamp == DateTimeOffset.MinValue)
             {
                 message.Timestamp = DateTime.Now;
+            }
+
+            if (message.CorrelationId == Guid.Empty)
+            {
+                message.CorrelationId = Guid.NewGuid();
             }
 
             await unitOfWork.BeginAsync();
@@ -94,6 +99,21 @@ namespace Efeu.Integration.Commands
 
         public async Task SendMessageDeduplicatedAsync(EfeuMessage message)
         {
+            if (message.Id == Guid.Empty)
+            {
+                message.Id = Guid.NewGuid();
+            }
+
+            if (message.Timestamp == DateTimeOffset.MinValue)
+            {
+                message.Timestamp = DateTime.Now;
+            }
+
+            if (message.CorrelationId == Guid.Empty)
+            {
+                message.CorrelationId = Guid.NewGuid();
+            }
+
             await unitOfWork.BeginAsync();
             await unitOfWork.LockAsync("Trigger");
             if (message.Tag == EfeuMessageTag.Effect)

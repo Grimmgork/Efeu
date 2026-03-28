@@ -2,43 +2,67 @@
     position: fixed;
     width: 100%;
     background-color: var(--color-primary);
-    height: 4px;
+    height: 2px;
     opacity: 0;
-    transition: all .2s ease-in-out;
+	pointer-events: none;
+    transition: opacity 1s;
 }
 
     .loader.htmx-request {
-        opacity: 1;
+        opacity: 0.5;
     }
 
 
 header {
     background-color: var(--color-bg-light);
-    height: 3rem;
     display: flex;
     flex-direction: row;
     align-items: center;
+    box-shadow: 0px -10px 15px black;
+	flex-shrink: 0;
+	padding-bottom: 0.5rem;
+	padding-top: 0.75rem;
+	width: 100%;
 }
 
 .nav {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	padding-left: 1rem;
-	padding-right: 1rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 1rem;
+    padding-right: 1rem;
+	flex-shrink: 0;
+	width: 100%;
+	flex-wrap: wrap;
 }
 
 .nav-item {
-    color: var(--color-text);
+    color: var(--color-text-muted);
     text-decoration: none;
-    padding-left: 0.5rem;
+    height: 1.75rem;
     padding-right: 0.5rem;
-    padding-top: 0.2rem;
-    padding-bottom: 0.2rem;
+    padding-left: 0.5rem;
+    text-align: center;
+    line-height: 1.75rem;
     display: block;
+    border-radius: 0.3rem;
+    transition: background-color 80ms ease-out;
 }
 
-    .nav-item:hover {
+    .nav-item[active] {
         color: var(--white);
+        background-color: var(--color-bg-light-active);
+    }
+
+    .nav-item:hover {
+        color: var(--color-text);
+        background-color: var(--color-bg-light-hover);
+    }
+
+    .nav-item[active]:hover {
+        background-color: var(--color-bg-light-active-hover);
+    }
+
+	 .nav-item[active]:active {
         background-color: var(--color-bg-light-hover);
     }

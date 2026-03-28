@@ -34,6 +34,7 @@ namespace Efeu.Integration.Commands
         public async Task DetatchStaticAsync(int definitionVersionId)
         {
             await unitOfWork.BeginAsync();
+            await unitOfWork.LockAsync("Trigger");
             // TriggerEntity[] triggers = await behaviourTriggerRepository.GetStaticAsync(definitionVersionId);
             await triggerQueries.DeleteStaticAsync(definitionVersionId);
             await unitOfWork.CompleteAsync();

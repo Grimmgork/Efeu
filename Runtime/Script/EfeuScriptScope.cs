@@ -11,16 +11,11 @@ using System.Threading.Tasks;
 
 namespace Efeu.Runtime.Script
 {
-    public class EfeuScriptScope
+    public struct EfeuScriptScope
     {
-        public readonly ImmutableDictionary<string, EfeuValue> Constants;
+        public readonly ImmutableDictionary<string, EfeuValue> Constants = ImmutableDictionary<string, EfeuValue>.Empty;
 
-        public static EfeuScriptScope Empty { get; } = new EfeuScriptScope();
-
-        public EfeuScriptScope()
-        {
-            Constants = ImmutableDictionary<string, EfeuValue>.Empty;
-        }
+        public static readonly EfeuScriptScope Empty = new EfeuScriptScope();
 
         public EfeuScriptScope(ImmutableDictionary<string, EfeuValue> scope)
         {

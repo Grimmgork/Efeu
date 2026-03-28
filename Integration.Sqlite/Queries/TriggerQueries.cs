@@ -1,11 +1,8 @@
-﻿using Azure;
-using Efeu.Integration.Entities;
+﻿using Efeu.Integration.Entities;
 using Efeu.Integration.Persistence;
-using Efeu.Runtime;
 using LinqToDB;
 using LinqToDB.Data;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -41,6 +38,9 @@ namespace Efeu.Integration.Sqlite.Queries
 
         public Task DeleteBulkAsync(Guid[] ids)
         {
+            if (ids.Length == 0)
+                return Task.CompletedTask;
+
             return connection.GetTable<TriggerEntity>()
                 .DeleteAsync(i => ids.Contains(i.Id));
         }
@@ -54,12 +54,18 @@ namespace Efeu.Integration.Sqlite.Queries
 
         public Task DeleteByMatterBulkAsync(Guid[] matters)
         {
+            if (matters.Length == 0)
+                return Task.CompletedTask;
+
             return connection.GetTable<TriggerEntity>()
                 .DeleteAsync(i => matters.Contains(i.Matter));
         }
 
         public Task DeleteByGroupBulkAsync(Guid[] groups)
         {
+            if (groups.Length == 0)
+                return Task.CompletedTask;
+
             return connection.GetTable<TriggerEntity>()
                 .DeleteAsync(i => groups.Contains(i.Group));
         }
@@ -86,6 +92,9 @@ namespace Efeu.Integration.Sqlite.Queries
 
         public Task<TriggerEntity[]> GetByIdsAsync(params Guid[] ids)
         {
+            if (ids.Length == 0)
+                return Task.FromResult<TriggerEntity[]>([]);
+
             return connection.GetTable<TriggerEntity>()
                 .Where(i => ids.Contains(i.Id))
                 .ToArrayAsync();

@@ -14,12 +14,12 @@ namespace Efeu.Runtime.Json.Converters
 {
     public class EfeuRuntimeScopeJsonConverter : JsonConverter<EfeuRuntimeScope>
     {
-        public override EfeuRuntimeScope? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override EfeuRuntimeScope Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             ImmutableDictionary<string, EfeuValue>? constants = JsonSerializer.Deserialize<ImmutableDictionary<string, EfeuValue>>(ref reader, options);
             if (constants == null)
             {
-                return null;
+                return EfeuRuntimeScope.Empty;
             }
             else
             {

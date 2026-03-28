@@ -2,7 +2,8 @@
 @model EffectEntity[]
 
 <div>
-    <button class="btn" hx-get="/Effect/DialogForCreate" hx-dialog >emit</button>
+    <button class="button" hx-get="/Effect/DialogForCreate" hx-dialog >emit</button>
+    <div class="spacer-md-v"></div>
 </div>
 
 @if (Model.Length == 0)

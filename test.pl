@@ -9,7 +9,7 @@ my $data = to_json({
 	Payload => "42"
 });
 
-foreach (1..1000)
+foreach (1..100000)
 {
 	make_request($_)
 }

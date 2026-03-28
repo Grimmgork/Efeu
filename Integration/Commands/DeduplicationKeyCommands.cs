@@ -16,12 +16,16 @@ namespace Efeu.Integration.Commands
             this.deduplicationKeyQueries = deduplicationKeyQueries;
         }
 
+        public Task CleanupAsync(DateTimeOffset timestamp)
+        {
+            return deduplicationKeyQueries.ClearBeforeAsync(timestamp.Subtract(TimeSpan.FromHours(12)));
+        }
+
         public async Task<bool> TryInsertAsync(string key, DateTimeOffset timestamp)
         {
             if (string.IsNullOrWhiteSpace(key))
                 return true;
 
-            await deduplicationKeyQueries.ClearBeforeAsync(timestamp.Subtract(TimeSpan.FromDays(1)));
             int result = await deduplicationKeyQueries.TryInsertAsync(key, timestamp);
             return result != 0;
         }

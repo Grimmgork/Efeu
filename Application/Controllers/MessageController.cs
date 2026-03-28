@@ -22,7 +22,7 @@ namespace Efeu.Application.Controllers
         [Route("")]
         public async Task<IActionResult> Create([FromBody]EfeuMessage message)
         {
-            await effectCommands.SendMessageAsync(message);
+            await effectCommands.SendMessageDeduplicatedAsync(message);
             return Ok();
         }
     }

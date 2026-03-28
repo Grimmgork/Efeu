@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Efeu.Integration.Persistence
 {
-    public interface IEfeuUnitOfWork : IAsyncDisposable
+    public interface IEfeuUnitOfWork
     {
         public Task BeginAsync();
 

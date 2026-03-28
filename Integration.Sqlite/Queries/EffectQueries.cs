@@ -76,24 +76,24 @@ namespace Efeu.Integration.Sqlite.Queries
             return connection.GetTable<EffectEntity>()
                 .Where(u => u.Id == id
                     && u.State == EffectState.Running
-                    && (u.LockedUntil < timestamp))
+                    && u.LockedUntil < timestamp)
                 .Set(u => u.LockId, Guid.Empty)
                 .Set(u => u.LockedUntil, DateTimeOffset.MinValue)
                 .Set(u => u.State, EffectState.Suspended)
                 .UpdateAsync();
         }
 
-        public async Task<bool> TryLockEffectAsync(Guid id, Guid lockId, TimeSpan lease)
+        public Task<int> LockEffectAsync(Guid id, Guid lockId, TimeSpan lease)
         {
             DateTimeOffset time = DateTimeOffset.Now;
-            int result = await connection.GetTable<EffectEntity>()
+            DateTimeOffset until = time + lease;
+            return connection.GetTable<EffectEntity>()
                 .Where(u => u.Id == id
                     && u.State == EffectState.Running
                     && (u.LockedUntil < time || u.LockId == lockId))
                 .Set(u => u.LockId, lockId)
-                .Set(u => u.LockedUntil, time + lease)
+                .Set(u => u.LockedUntil, until)
                 .UpdateAsync();
-            return result > 0;
         }
 
         public Task UnlockEffectAsync(Guid lockId)
@@ -110,7 +110,6 @@ namespace Efeu.Integration.Sqlite.Queries
             DateTimeOffset time = DateTimeOffset.Now;
             return connection.GetTable<EffectEntity>()
                 .Where(u => u.State == EffectState.Running
-                    && u.State == EffectState.Running
                     && u.LockedUntil < time)
                 .OrderBy(u => u.CreationTime)
                 .Select(p => p.Id)

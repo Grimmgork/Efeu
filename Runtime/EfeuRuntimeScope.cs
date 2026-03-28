@@ -8,16 +8,11 @@ using System.Threading.Tasks;
 
 namespace Efeu.Runtime
 {
-    public class EfeuRuntimeScope
+    public struct EfeuRuntimeScope
     {
-        public readonly ImmutableDictionary<string, EfeuValue> Constants;
+        public readonly ImmutableDictionary<string, EfeuValue> Constants = ImmutableDictionary<string, EfeuValue>.Empty;
 
-        public static EfeuRuntimeScope Empty { get; } = new EfeuRuntimeScope();
-
-        public EfeuRuntimeScope()
-        {
-            Constants = ImmutableDictionary<string, EfeuValue>.Empty;
-        }
+        public static readonly EfeuRuntimeScope Empty = new EfeuRuntimeScope();
 
         public EfeuRuntimeScope(ImmutableDictionary<string, EfeuValue> constants)
         {

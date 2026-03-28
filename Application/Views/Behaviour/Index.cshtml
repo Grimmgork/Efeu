@@ -3,18 +3,30 @@
 
 <div>
     <form hx-post="/Behaviour" hx-encoding="multipart/form-data">
-        <input type="text" name="name" accept="application/json" />
-        <button type="submit">create</button>
+        <input type="text" name="name" accept="application/json" class="input" placeholder="Name" />
+        <button class="button" type="submit">create</button>
     </form>
 </div>
 
-@foreach (BehaviourEntity entity in Model)
-{
-    <div>
-        <a href="/Behaviour/@entity.Id" )">@($"{entity.Name} - v{entity.Version}")</a>
-        <button hx-delete="/Behaviour/@entity.Id">delete</button>
-    </div>
-}
+<div class="spacer-md-v"></div>
+
+<table>
+    <tr>
+        <th>Behaviour</th>
+        <th>Version</th>
+        <th>Action</th>
+    </tr>
+    @foreach (BehaviourEntity entity in Model)
+    {
+        <tr>
+            <td><a href="/Behaviour/@entity.Id">@($"{entity.Name} - v{entity.Version}")</a></td>
+            <td>@entity.Version</td>
+            <td><button hx-delete="/Behaviour/@entity.Id" class="button">delete</button></td>
+        </tr>
+    }
+</table>
+
+
 
 @{
 
