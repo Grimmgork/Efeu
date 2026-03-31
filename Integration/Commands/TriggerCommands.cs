@@ -14,24 +14,22 @@ namespace Efeu.Integration.Commands
     {
         private readonly IEfeuUnitOfWork unitOfWork;
         private readonly ITriggerQueries triggerQueries;
-        private readonly IEfeuTriggerProvider triggerProvider;
 
         public TriggerCommands(IEfeuUnitOfWork unitOfWork, ITriggerQueries triggerQueries, IEfeuTriggerProvider triggerProvider)
         {
             this.unitOfWork = unitOfWork;
             this.triggerQueries = triggerQueries;
-            this.triggerProvider = triggerProvider;
         }
 
-        public async Task CreateAsync(EfeuTrigger[] triggers)
+        public async Task CreateBulkAsync(EfeuTrigger[] triggers)
         {
             await unitOfWork.BeginAsync();
-            TriggerEntity[] entites = triggers.Select(i => i.MapToTriggerEntity()).ToArray();
-            await triggerQueries.CreateBulkAsync(entites);
+            TriggerEntity[] triggerEntities = triggers.Select(i => i.MapToTriggerEntity()).ToArray();
+            await triggerQueries.CreateBulkAsync(triggerEntities);
             await unitOfWork.CompleteAsync();
         }
 
-        public async Task DetatchStaticAsync(int definitionVersionId)
+        public async Task DeleteStaticAsync(int definitionVersionId)
         {
             await unitOfWork.BeginAsync();
             await unitOfWork.LockAsync("Trigger");

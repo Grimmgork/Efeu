@@ -2,7 +2,6 @@
 using Efeu.Integration.Entities;
 using Efeu.Integration.Foreign;
 using Efeu.Integration.Persistence;
-using Efeu.Integration.Services;
 using Efeu.Runtime;
 using Efeu.Runtime.Value;
 using System;
@@ -22,8 +21,10 @@ namespace Efeu.Integration.Commands
         private readonly ITriggerQueries triggerQueries;
         private readonly IBehaviourQueries behaviourQueries;
         private readonly IDeduplicationKeyCommands dedupicationKeyCommands;
+        private readonly IBehaviourScopeQueries behaviourScopeQueries;
+        private readonly IBehaviourScopeCommands behaviourScopeCommands;
 
-        public EffectCommands(IEffectQueries effectQueries, IEfeuUnitOfWork unitOfWork, ITriggerCommands triggerCommands, ITriggerQueries triggerQueries, IBehaviourQueries behaviourQueries, IDeduplicationKeyCommands deduplicationKeyCommands)
+        public EffectCommands(IEffectQueries effectQueries, IEfeuUnitOfWork unitOfWork, ITriggerCommands triggerCommands, ITriggerQueries triggerQueries, IBehaviourQueries behaviourQueries, IDeduplicationKeyCommands deduplicationKeyCommands, IBehaviourScopeQueries behaviourScopeQueries, IBehaviourScopeCommands behaviourScopeCommands)
         {
             this.effectQueries = effectQueries;
             this.unitOfWork = unitOfWork;
@@ -31,6 +32,8 @@ namespace Efeu.Integration.Commands
             this.triggerQueries = triggerQueries;
             this.behaviourQueries = behaviourQueries;
             this.dedupicationKeyCommands = deduplicationKeyCommands;
+            this.behaviourScopeQueries = behaviourScopeQueries;
+            this.behaviourScopeCommands = behaviourScopeCommands;
         }
 
         public Task CreateEffect(EfeuMessage message)
@@ -128,17 +131,16 @@ namespace Efeu.Integration.Commands
             await unitOfWork.CompleteAsync();
         }
 
-        private async Task ProcessMessagesAsync(EfeuMessage[] messages, EfeuTrigger[] createdTriggers)
+        private async Task ProcessMessagesAsync(EfeuMessage[] messages, EfeuTrigger[] additionalTriggers)
         {
-            PartialTriggerEntity[] triggerEntityKeys = await triggerQueries.GetPartialTriggersAsync();
+            TriggerEntity[] allTriggerEntities = await triggerQueries.GetAllAsync();
+            TriggerProcessingContext context = new TriggerProcessingContext(allTriggerEntities, behaviourQueries, behaviourScopeQueries, additionalTriggers);
 
             int iterations = 0;
-            Stack<EfeuMessage> createdMessages = new Stack<EfeuMessage>(messages);
-            List<EffectEntity> createdEffects = [];
+            Stack<EfeuMessage> messageStack = new Stack<EfeuMessage>(messages);
+            List<EffectEntity> createdEffects = new List<EffectEntity>();
 
-            TriggerEntityCache context = new TriggerEntityCache(triggerEntityKeys, triggerQueries, behaviourQueries, createdTriggers);
-
-            while (createdMessages.TryPop(out EfeuMessage? message)) // handle produced messages
+            while (messageStack.TryPop(out EfeuMessage? message))
             {
                 if (message.Tag == EfeuMessageTag.Effect)
                 {
@@ -150,22 +152,25 @@ namespace Efeu.Integration.Commands
                     if (iterations > 50)
                         throw new Exception($"infinite loop detected! ({iterations} iterations)");
 
-                    EfeuTrigger[] matchingTriggers = await context.GetMatchingTriggers(message);
+                    EfeuTrigger[] matchingTriggers = await context.GetMatchingTriggersAsync(message);
                     foreach (EfeuTrigger trigger in matchingTriggers)
                     {
                         EfeuRuntime runtime = EfeuRuntime.RunTrigger(trigger, message);
-                        context.Apply(runtime, message, trigger);
+                        context.Apply(runtime);
 
                         foreach (EfeuMessage newMessage in runtime.Messages)
-                            createdMessages.Push(newMessage);
+                            messageStack.Push(newMessage);
                     }
                 }
             }
 
-            await triggerCommands.CreateAsync(context.CreatedTriggers.ToArray());
+            BehaviourScopeEntity[] createdScopeEntities = context.CreatedTriggers.MapToBehaviourScopeEntities();
+
             await triggerCommands.ResolveMattersAsync(context.ResolvedMatters.ToArray());
             await triggerCommands.CompleteGroupsAsync(context.CompletedGroups.ToArray());
+            await triggerCommands.CreateBulkAsync(context.CreatedTriggers.ToArray());
             await effectQueries.CreateBulkAsync(createdEffects.ToArray());
+            await behaviourScopeCommands.CreateBulkAsync(createdScopeEntities.ToArray());
         }
     }
 }

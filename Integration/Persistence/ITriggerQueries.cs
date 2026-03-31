@@ -10,11 +10,9 @@ namespace Efeu.Integration.Persistence
 {
     public interface ITriggerQueries
     {
-        public Task<TriggerEntity> GetByIdAsync(Guid id);
+        public Task<TriggerEntity?> GetByIdAsync(Guid id);
 
         public Task<TriggerEntity[]> GetAllAsync();
-
-        // public Task<TriggerEntity[]> GetMatchingAsync(string name, EfeuMessageTag tag, Guid matter, DateTimeOffset timestamp);
 
         public Task<int> CreateAsync(TriggerEntity trigger);
 

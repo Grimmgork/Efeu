@@ -43,7 +43,7 @@ namespace Efeu.Integration.Commands
             await unitOfWork.LockAsync($"Behaviour:{behaviourId}");
             BehaviourVersionEntity? behaviourVersionEntity = await behaviourQueries.GetLatestVersionAsync(behaviourId);
             await behaviourQueries.DeleteAsync(behaviourId);
-            await triggerCommands.DetatchStaticAsync(behaviourVersionEntity?.Id ?? 0);
+            await triggerCommands.DeleteStaticAsync(behaviourVersionEntity?.Id ?? 0);
             await unitOfWork.CompleteAsync();
         }
 
@@ -55,7 +55,7 @@ namespace Efeu.Integration.Commands
             if (behaviourVersionEntity != null)
             {
                 // clear all static triggers for old definition
-                await triggerCommands.DetatchStaticAsync(behaviourVersionEntity.Id);
+                await triggerCommands.DeleteStaticAsync(behaviourVersionEntity.Id);
             }
 
             int newBehaviourVersionId = await CreateVersionAsync(behaviourId, steps);

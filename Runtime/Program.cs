@@ -15,68 +15,59 @@ namespace Efeu.Runtime
     {
         static void Main(string[] args)
         {
-            //EfeuScriptScope scope = EfeuScriptScope.Empty
+            //EfeuRuntimeScope scope = EfeuRuntimeScope.Empty
             //    .With("time", DateTime.UtcNow)
             //    .With("time", DateTime.Now);
 
-            //string script = "time";
+            //// string script = "time";
             //JsonSerializerOptions options = new JsonSerializerOptions();
             //options.Converters.Add(new EfeuValueJsonConverter());
+            //options.Converters.Add(new EfeuRuntimeScopeJsonConverter());
             //options.Converters.Add(new JsonStringEnumConverter());
 
-            //EfeuValue value = EfeuScript.Run(script, scope);
-            //Console.WriteLine(JsonSerializer.Serialize(value, options));
+            //string serialized = JsonSerializer.Serialize(scope, options);
+
+            //scope = JsonSerializer.Deserialize<EfeuRuntimeScope>(serialized, options);
+
+            //// EfeuValue value = EfeuScript.Run(script, scope);
+            //Console.WriteLine();
+
+            //return;
 
             EfeuBehaviourStep[] steps = [
                 new () {
                     Kind = EfeuBehaviourStepKind.Let,
-                    Name = "Value",
+                    Name = "var",
                     Input = new () {
-                        Type = EfeuExpressionType.Struct,
-                        Fields = {
-                            ["a"] = new () { Type = EfeuExpressionType.Boolean, Value = true },
-                            ["b"] = new () { Type = EfeuExpressionType.Boolean, Value = true },
-                            ["c"] = new () { Type = EfeuExpressionType.Boolean, Value = true },
-                        }
+                        Type = EfeuExpressionType.String,
+                        Value = "Hello World!"
                     },
                 },
                 new () {
-                    Kind = EfeuBehaviourStepKind.Emit,
-                    Name = "HelloWorld"
+                    Kind = EfeuBehaviourStepKind.Raise,
+                    Name = "A"
                 },
                 new () {
                     Kind = EfeuBehaviourStepKind.On,
-                    Name = "Event",
+                    Name = "A",
                     Do = [
                         new () {
-                            Kind = EfeuBehaviourStepKind.If,
-                            Input = new () { Type = EfeuExpressionType.Boolean, Value = true },
-                            Do = [
-                                new () {
-                                    Kind = EfeuBehaviourStepKind.Emit,
-                                    Name = "HelloWorld1"
-                                }
-                            ],
-                            Else = [
-                                new () {
-                                    Kind = EfeuBehaviourStepKind.Emit,
-                                    Name = "HelloWorld2"
-                                }
-                            ]
+                            Kind = EfeuBehaviourStepKind.Emit,
+                            Name = "WriteConsole",
+                            Input = new () {
+                                Type = EfeuExpressionType.Script,
+                                Code = "var"
+                            }
                         },
                     ]
-                },
-                new () {
-                    Kind = EfeuBehaviourStepKind.Emit,
-                    Name = "HelloWorld"
-                },
+                }
             ];
 
             EfeuRuntimeSimulation simulation = EfeuRuntimeSimulation.Run(steps);
             simulation.Send(new EfeuMessage()
             {
                 Id = Guid.NewGuid(),
-                Type = "Event",
+                Type = "A",
                 Timestamp = DateTime.Now,
                 Tag = EfeuMessageTag.Data
             });

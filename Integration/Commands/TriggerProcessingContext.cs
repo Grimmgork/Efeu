@@ -6,11 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 
-namespace Efeu.Integration.Services
+namespace Efeu.Integration.Commands
 {
-
     internal class CachedLookup<TKey, TValue> where TKey : notnull
     {
         private Dictionary<TKey, TValue> cache = new Dictionary<TKey, TValue>();
@@ -60,81 +58,82 @@ namespace Efeu.Integration.Services
         {
             return cache[key];
         }
+
+        public void Inject(TKey key, TValue value)
+        {
+            cache[key] = value;
+        }
     }
 
-    internal class TriggerEntityCache
+    internal class TriggerProcessingContext
     {
         public readonly HashSet<Guid> ResolvedMatters = [];
         public readonly HashSet<Guid> CompletedGroups = [];
-        public readonly List<EfeuTrigger> CreatedTriggers = [];
+        public readonly HashSet<EfeuTrigger> CreatedTriggers = [];
 
-        private readonly List<PartialTriggerEntity> partialTriggerEntities = [];
+        private readonly List<TriggerEntity> triggerEntities = [];
 
-        private readonly CachedLookup<Guid, TriggerEntity> triggerEntityCache;
         private readonly CachedLookup<int, BehaviourVersionEntity> behaviourVersionEntityCache;
+        private readonly CachedLookup<Guid, BehaviourScopeEntity> behaviourScopeEntityCache;
 
-        public TriggerEntityCache(PartialTriggerEntity[] partialTriggerEntities, ITriggerQueries triggerQueries, IBehaviourQueries behaviourQueries, EfeuTrigger[] createdTriggers)
+        public TriggerProcessingContext(TriggerEntity[] triggerEntities, IBehaviourQueries behaviourQueries, IBehaviourScopeQueries behaviourScopeQueries, EfeuTrigger[] createdTriggers)
         {
-            this.partialTriggerEntities = partialTriggerEntities.ToList();
+            this.triggerEntities = triggerEntities.ToList();
 
             TriggerEntity[] createdTriggerEntities = createdTriggers.Select(i => i.MapToTriggerEntity()).ToArray();
+            BehaviourScopeEntity[] createdBehaviourScopeEntities = createdTriggers.Select(i => i.Scope.MapToBehaviourScopeEntity(0)).ToArray();
 
-            this.triggerEntityCache = new CachedLookup<Guid, TriggerEntity>(createdTriggerEntities, triggerQueries.GetByIdsAsync, i => i.Id);
             this.behaviourVersionEntityCache = new CachedLookup<int, BehaviourVersionEntity>(behaviourQueries.GetVersionsByIdsAsync, i => i.Id);
+            this.behaviourScopeEntityCache = new CachedLookup<Guid, BehaviourScopeEntity>(createdBehaviourScopeEntities, behaviourScopeQueries.GetByIdsAsync, i => i.Id);
 
             foreach (EfeuTrigger trigger in createdTriggers)
             {
                 CreatedTriggers.Add(trigger);
-                this.partialTriggerEntities.Add(trigger.MapToPartialTriggerEntity());
+                this.triggerEntities.Add(trigger.MapToTriggerEntity());
             }
         }
 
-        public void Apply(EfeuRuntime runtime, EfeuMessage message, EfeuTrigger trigger)
+        public void Apply(EfeuRuntime runtime)
         {
-            if (message.Matter != Guid.Empty)
+            if (runtime.Matter != Guid.Empty)
             {
-                partialTriggerEntities.RemoveAll(i => i.Matter == message.Matter);
-                CreatedTriggers.RemoveAll(i => i.Matter == message.Matter);
-                ResolvedMatters.Add(message.Matter);
+                triggerEntities.RemoveAll(i => i.Matter == runtime.Matter);
+                CreatedTriggers.RemoveAll(i => i.Matter == runtime.Matter);
+                ResolvedMatters.Add(runtime.Matter);
             }
 
-            if (runtime.IsSkipped)
+            if (runtime.Skipped)
                 return;
 
-            if (!trigger.IsStatic)
+            if (runtime.Group != Guid.Empty)
             {
-                CreatedTriggers.RemoveAll(i => i.Id == trigger.Id);
-                partialTriggerEntities.RemoveAll(i => i.Id == trigger.Id);
-
-                if (trigger.Group != Guid.Empty)
-                {
-                    CreatedTriggers.RemoveAll(i => i.Group == trigger.Group);
-                    partialTriggerEntities.RemoveAll(i => i.Group == trigger.Group);
-                    CompletedGroups.Add(trigger.Group);
-                }
+                CreatedTriggers.RemoveAll(i => i.Group == runtime.Group);
+                triggerEntities.RemoveAll(i => i.Group == runtime.Group);
+                CompletedGroups.Add(runtime.Group);
             }
 
-            foreach (EfeuTrigger newTrigger in runtime.Triggers)
+            foreach (EfeuTrigger trigger in runtime.Triggers)
             {
-                CreatedTriggers.Add(newTrigger);
-                partialTriggerEntities.Add(newTrigger.MapToPartialTriggerEntity());
+                CreatedTriggers.Add(trigger);
+                triggerEntities.Add(trigger.MapToTriggerEntity());
+                behaviourScopeEntityCache.Inject(trigger.Id, trigger.Scope.MapToBehaviourScopeEntity(0));
             }
         }
 
-        public async Task<EfeuTrigger[]> GetMatchingTriggers(EfeuMessage message)
+        public async Task<EfeuTrigger[]> GetMatchingTriggersAsync(EfeuMessage message)
         {
-            PartialTriggerEntity[] matchingKeys = partialTriggerEntities.Where(i =>
+            TriggerEntity[] matchingTriggerEntities = triggerEntities.Where(i =>
                     i.Type == message.Type &&
                     i.Tag == message.Tag &&
                     i.Matter == message.Matter &&
                     i.CreationTime <= message.Timestamp)
                     .ToArray();
 
-            TriggerEntity[] triggerEntities = await triggerEntityCache.GetAsync(matchingKeys.Select(i => i.Id).ToArray());
-
+            await behaviourScopeEntityCache.GetAsync(triggerEntities.Select(i => i.ScopeId).ToArray());
             await behaviourVersionEntityCache.GetAsync(triggerEntities.Select(i => i.BehaviourVersionId).ToArray());
-            return triggerEntities.Select(triggerEntity => triggerEntity.MapToEfeuTrigger(
-                behaviourVersionEntityCache.GetCached(triggerEntity.BehaviourVersionId).GetPosition(triggerEntity.Position))).ToArray();
+            return matchingTriggerEntities.Select(triggerEntity => triggerEntity.MapToEfeuTrigger(
+                behaviourVersionEntityCache.GetCached(triggerEntity.BehaviourVersionId).GetPosition(triggerEntity.Position),
+                behaviourScopeEntityCache.GetCached(triggerEntity.ScopeId).MapToEfeuRuntimeScope())).ToArray();
         }
     }
 }

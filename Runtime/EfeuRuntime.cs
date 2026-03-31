@@ -24,28 +24,50 @@ namespace Efeu.Runtime
         public int BehaviourId;
         public Guid CorrelationId;
         public Guid CausationId;
+        public bool IsStatic;
 
-        public bool IsSkipped;
+        public Guid Matter;
+        public Guid Group;
 
-        public EfeuRuntime(Guid correlationId, Guid causationId, int behaviourId, bool isImmediate, DateTimeOffset now)
+        public bool Skipped;
+
+        public EfeuRuntime(Guid correlationId, Guid causationId, int behaviourId, bool isImmediate, Guid matter, bool isStatic, DateTimeOffset now)
         {
             this.CorrelationId = correlationId;
             this.IsImmediate = isImmediate;
             this.BehaviourId = behaviourId;
             this.CausationId = causationId;
+            this.Matter = matter;
             this.Now = now;
         }
 
         public static EfeuRuntime Run(EfeuBehaviourStep[] steps, int behaviourId, DateTimeOffset timestamp)
         {
-            EfeuRuntime runtime = new EfeuRuntime(Guid.NewGuid(), Guid.NewGuid(), behaviourId, true, timestamp);
+            EfeuRuntime runtime = new EfeuRuntime(
+                correlationId: Guid.NewGuid(), 
+                causationId: Guid.NewGuid(), 
+                behaviourId: behaviourId, 
+                isImmediate: true, 
+                matter: Guid.Empty, 
+                isStatic: false,
+                now: timestamp
+            );
             runtime.Execute(steps);
             return runtime;
         }
 
         public static EfeuRuntime RunTrigger(EfeuTrigger trigger, EfeuMessage message)
         {
-            EfeuRuntime runtime = new EfeuRuntime(trigger.IsStatic ? Guid.NewGuid() : trigger.CorrelationId, message.Id, trigger.BehaviourId, false, message.Timestamp);
+            Guid correlationId = trigger.IsStatic ? Guid.NewGuid() : trigger.CorrelationId;
+            EfeuRuntime runtime = new EfeuRuntime(
+                correlationId: correlationId,
+                causationId: message.Id, 
+                behaviourId: trigger.BehaviourId,
+                isImmediate: false,
+                matter: message.Matter,
+                isStatic: trigger.IsStatic,
+                message.Timestamp
+            );
             runtime.ExecuteTrigger(trigger, message);
             return runtime;
         }
@@ -69,9 +91,12 @@ namespace Efeu.Runtime
             // trigger continuation
             if (!TriggerMatchesMessage(trigger, message))
             {
-                IsSkipped = true;
+                Skipped = true;
                 return;
             }
+
+            if (!trigger.IsStatic)
+                Group = trigger.Group;
 
             EfeuRuntimeScope scope = trigger.Scope
                 .With("now", Now)

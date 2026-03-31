@@ -7,18 +7,14 @@ using LinqToDB.Mapping;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using Efeu.Integration.Sqlite.Queries;
 using Efeu.Runtime;
 using Efeu.Runtime.Json.Converters;
-using System.Data.SqlClient;
-using System.Data.Common;
 using LinqToDB.DataProvider.SQLite;
 using System.Data.SQLite;
+using System.Collections.Immutable;
 
 namespace Efeu.Integration.Sqlite
 {
@@ -36,7 +32,7 @@ namespace Efeu.Integration.Sqlite
             return new DataParameter(null, json, DataType.Text);
         }
 
-        private static MappingSchema ConfigureMapping(string schema)
+        private static MappingSchema ConfigureMappingSchema(string schema)
         {
             JsonSerializerOptions jsonOptions = new JsonSerializerOptions();
             jsonOptions.IncludeFields = true;
@@ -50,6 +46,7 @@ namespace Efeu.Integration.Sqlite
             builder.MappingSchema.SetConverter<Stack<int>, DataParameter>(c => ConvertToJson(c, jsonOptions));
             builder.MappingSchema.SetConverter<EfeuBehaviourStep[], DataParameter>(c => ConvertToJson(c, jsonOptions));
             builder.MappingSchema.SetConverter<EfeuRuntimeScope, DataParameter>(c => ConvertToJson(c, jsonOptions));
+            builder.MappingSchema.SetConverter<ImmutableDictionary<string, EfeuValue>, DataParameter>(c => ConvertToJson(c, jsonOptions));
             builder.MappingSchema.SetConverter<DateTimeOffset, DataParameter>(c => new DataParameter(null, c.ToUnixTimeMilliseconds(), DataType.Long));
 
             builder.MappingSchema.SetConverter<string, EfeuValue>(i => ConvertFromJson<EfeuValue>(i, jsonOptions));
@@ -57,6 +54,7 @@ namespace Efeu.Integration.Sqlite
             builder.MappingSchema.SetConverter<string, IDictionary<int, EfeuValue>>(i => ConvertFromJson<IDictionary<int, EfeuValue>>(i, jsonOptions));
             builder.MappingSchema.SetConverter<string, EfeuBehaviourStep[]>(i => ConvertFromJson<EfeuBehaviourStep[]>(i, jsonOptions));
             builder.MappingSchema.SetConverter<string, EfeuRuntimeScope>(i => ConvertFromJson<EfeuRuntimeScope>(i, jsonOptions));
+            builder.MappingSchema.SetConverter<string, ImmutableDictionary<string, EfeuValue>>(i => ConvertFromJson<ImmutableDictionary<string, EfeuValue>>(i, jsonOptions));
             builder.MappingSchema.SetConverter<long, DateTimeOffset>(DateTimeOffset.FromUnixTimeMilliseconds);
 
             builder.MappingSchema.SetDataType(typeof(DateTimeOffset), DataType.Int64);
@@ -91,7 +89,7 @@ namespace Efeu.Integration.Sqlite
                 .Property(p => p.Type)
                 .Property(p => p.Tag)
                 .Property(p => p.Position)
-                .Property(p => p.Scope)
+                .Property(p => p.ScopeId)
                 .Property(p => p.Matter)
                 .Property(p => p.Group);
 
@@ -143,6 +141,16 @@ namespace Efeu.Integration.Sqlite
                 .Property(p => p.Matter)
                 .Property(p => p.Group);
 
+            builder.Entity<BehaviourScopeEntity>()
+                .HasTableName("BehaviourScope")
+                .HasSchemaName(schema)
+                .Property(p => p.Id)
+                    .IsIdentity()
+                    .IsPrimaryKey()
+                    .HasSkipOnInsert(false)
+                .Property(p => p.ReferenceCount)
+                .Property(p => p.Constants);
+
             builder.Build();
 
             return builder.MappingSchema;
@@ -150,7 +158,7 @@ namespace Efeu.Integration.Sqlite
 
         public static void AddEfeuSqlite(this IServiceCollection services, string schema, string connectionString)
         {
-            MappingSchema mappingSchema = ConfigureMapping(schema);
+            MappingSchema mappingSchema = ConfigureMappingSchema(schema);
             services.AddScoped((serviceProvider) => {
                 var options = new DataOptions()
                     .UseSQLite(connectionString)
@@ -163,7 +171,7 @@ namespace Efeu.Integration.Sqlite
 
         public static void AddEfeuSqlite(this IServiceCollection services, string schema)
         {
-            MappingSchema mappingSchema = ConfigureMapping(schema);
+            MappingSchema mappingSchema = ConfigureMappingSchema(schema);
             services.AddScoped((serviceProvider) => {
                 var options = new DataOptions()
                     .UseDataProvider(SQLiteTools.GetDataProvider(ProviderName.SQLite))
@@ -184,6 +192,7 @@ namespace Efeu.Integration.Sqlite
             services.AddScoped<IEffectQueries, EffectQueries>();
             services.AddScoped<IEfeuMigrationRunner, MigrationRunner>();
             services.AddScoped<IDeduplicationKeyQueries, DeduplicationKeyQueries>();
+            services.AddScoped<IBehaviourScopeQueries, BehaviourScopeQueries>();
         }
     }
 }

@@ -84,20 +84,36 @@ namespace Efeu.Integration.Sqlite.Queries
                 .ToArrayAsync();
         }
 
-        public Task<TriggerEntity> GetByIdAsync(Guid id)
+        public Task<TriggerEntity?> GetByIdAsync(Guid id)
         {
             return connection.GetTable<TriggerEntity>()
-                .FirstAsync(i => i.Id == id);
+                .FirstOrDefaultAsync(i => i.Id == id);
         }
 
-        public Task<TriggerEntity[]> GetByIdsAsync(params Guid[] ids)
+        public async Task<TriggerEntity[]> GetByIdsAsync(params Guid[] ids)
         {
             if (ids.Length == 0)
-                return Task.FromResult<TriggerEntity[]>([]);
-
-            return connection.GetTable<TriggerEntity>()
-                .Where(i => ids.Contains(i.Id))
-                .ToArrayAsync();
+            {
+                return [];
+            }
+            else if (ids.Length == 1)
+            {
+                TriggerEntity? entity = await GetByIdAsync(ids.First());
+                if (entity == null)
+                {
+                    return [];
+                }
+                else
+                {
+                    return [entity];
+                }
+            }
+            else
+            {
+                return await connection.GetTable<TriggerEntity>()
+                    .Where(i => ids.Contains(i.Id))
+                    .ToArrayAsync();
+            }
         }
 
         public Task<PartialTriggerEntity[]> GetPartialTriggersAsync()

@@ -1,23 +1,26 @@
 ﻿using Efeu.Runtime.Value;
+using SharpCompress.Common;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace Efeu.Runtime
 {
     public class EfeuRuntimeScope
     {
-        public readonly ImmutableDictionary<string, EfeuValue> Constants = ImmutableDictionary<string, EfeuValue>.Empty;
+        public readonly Guid Id;
 
-        public static readonly EfeuRuntimeScope Empty = new EfeuRuntimeScope();
+        public readonly ImmutableDictionary<string, EfeuValue> Constants;
 
-        private EfeuRuntimeScope() { }
+        public static readonly EfeuRuntimeScope Empty = new EfeuRuntimeScope(Guid.Empty, ImmutableDictionary<string, EfeuValue>.Empty);
 
-        public EfeuRuntimeScope(ImmutableDictionary<string, EfeuValue> constants)
+        public EfeuRuntimeScope(Guid id, ImmutableDictionary<string, EfeuValue> constants)
         {
+            this.Id = id;
             this.Constants = constants;
         }
 
@@ -28,7 +31,7 @@ namespace Efeu.Runtime
 
         public EfeuRuntimeScope With(string name, EfeuValue value)
         {
-            return new EfeuRuntimeScope(Constants.SetItem(name, value));
+            return new EfeuRuntimeScope(Guid.NewGuid(), Constants.SetItem(name, value));
         }
     }
 }

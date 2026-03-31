@@ -8,50 +8,64 @@ namespace Efeu.Runtime
 {
     public class EfeuRuntimeSimulation
     {
-        public IReadOnlyCollection<EfeuMessage> Messages => messages;
-        public IReadOnlyCollection<EfeuTrigger> Triggers => triggers;
-
-        private List<EfeuMessage> messages = [];
-        private List<EfeuTrigger> triggers = [];
+        public List<EfeuMessage> Messages = new List<EfeuMessage>();
+        public List<EfeuTrigger> Triggers = new List<EfeuTrigger>();
 
         private EfeuRuntimeSimulation() { }
 
         public static EfeuRuntimeSimulation Run(EfeuBehaviourStep[] steps, int definitionId = 0)
         {
-            EfeuRuntimeSimulation result = new EfeuRuntimeSimulation();
+            EfeuRuntimeSimulation simulation = new EfeuRuntimeSimulation();
             EfeuRuntime runtime = EfeuRuntime.Run(steps, definitionId, DateTime.Now);
-            result.messages.AddRange(runtime.Messages);
-            result.triggers.AddRange(runtime.Triggers);
-            return result;
+
+            simulation.Messages.AddRange(runtime.Messages);
+            simulation.Triggers.AddRange(runtime.Triggers);
+
+            foreach (EfeuMessage message in runtime.Messages)
+            {
+                if (message.Tag != EfeuMessageTag.Effect)
+                {
+                    simulation.Send(message);
+                }
+            }
+
+            return simulation;
         }
 
         public void Send(EfeuMessage message)
         {
-            EfeuRuntime? runtime = null;
-            List<EfeuMessage> messages = new List<EfeuMessage>();
-            List<EfeuTrigger> triggers = new List<EfeuTrigger>();
-            List<EfeuTrigger> removedTriggers = new List<EfeuTrigger>();
-
-            foreach (EfeuTrigger trigger in this.triggers)
+            EfeuTrigger[] matchingTriggers = GetMatchingTriggers(message);
+            foreach (EfeuTrigger trigger in matchingTriggers)
             {
-                runtime = EfeuRuntime.RunTrigger(trigger, message);
-                if (!runtime.IsSkipped)
-                {
-                    messages.AddRange(runtime?.Messages ?? []);
-                    triggers.AddRange(runtime?.Triggers ?? []);
-                    if (!trigger.IsStatic)
-                    {
-                        removedTriggers.Add(trigger);
-                    }
-                }
+                EfeuRuntime runtime = EfeuRuntime.RunTrigger(trigger, message);
+                Apply(runtime);
+            }
+        }
+
+        private void Apply(EfeuRuntime runtime)
+        {
+            if (runtime.Matter != Guid.Empty)
+            {
+                Triggers.RemoveAll(i => i.Matter == runtime.Matter);
             }
 
-            // apply changes
-            this.messages.AddRange(messages);
-            this.triggers.AddRange(triggers);
+            if (runtime.Skipped)
+                return;
 
-            foreach (EfeuTrigger removedTrigger in removedTriggers)
-                this.triggers.Remove(removedTrigger);
+            if (runtime.Group != Guid.Empty)
+            {
+                Triggers.RemoveAll(i => i.Group == runtime.Group);
+            }
+
+            Messages.AddRange(runtime.Messages);
+            foreach (EfeuMessage message in runtime.Messages)
+                if (message.Tag != EfeuMessageTag.Effect)
+                    Send(message);
+        }
+
+        private EfeuTrigger[] GetMatchingTriggers(EfeuMessage message)
+        {
+            return Triggers.ToArray();
         }
     }
 }

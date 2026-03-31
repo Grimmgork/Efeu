@@ -22,7 +22,7 @@ namespace Efeu.Integration.Entities
 
         public string Position = ""; // position of trigger row 0/Else/1
 
-        public EfeuRuntimeScope Scope = EfeuRuntimeScope.Empty; // Scope around trigger row
+        // public EfeuRuntimeScope Scope = EfeuRuntimeScope.Empty; // Scope around trigger row
 
         public string Type = "";
 
@@ -31,5 +31,9 @@ namespace Efeu.Integration.Entities
         public Guid Matter;
 
         public Guid Group;
+
+        public Guid ScopeId;
+
+        public bool IsCompleted;
     }
 }
