@@ -116,6 +116,13 @@ namespace Efeu.Runtime
 
         private void RunSteps(EfeuBehaviourStep[] steps, string position, EfeuRuntimeScope parentScope)
         {
+            // TODO optimize this
+            Dictionary<EfeuBehaviourStep, int> lookup = new Dictionary<EfeuBehaviourStep, int>();
+            for (int i = 0; i < steps.Length; i++)
+            {
+                lookup.Add(steps[i], i);
+            }
+
             var (lets, remaining) = steps.Partition((item) => item.Kind == EfeuBehaviourStepKind.Let);
 
             EfeuRuntimeScope scope = parentScope;
@@ -124,11 +131,10 @@ namespace Efeu.Runtime
                 scope = scope.With(step.Name, step.Input.Evaluate(scope));
             }
 
-            int i = 0;
             foreach (EfeuBehaviourStep step in remaining)
             {
-                RunStep(step, $"{position}/{i}", scope);
-                i++;
+                int index = lookup[step];
+                RunStep(step, $"{position}/{index}", scope);
             }
         }
 

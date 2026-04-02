@@ -131,9 +131,16 @@ namespace Efeu.Integration.Commands
 
             await behaviourScopeEntityCache.GetAsync(triggerEntities.Select(i => i.ScopeId).ToArray());
             await behaviourVersionEntityCache.GetAsync(triggerEntities.Select(i => i.BehaviourVersionId).ToArray());
-            return matchingTriggerEntities.Select(triggerEntity => triggerEntity.MapToEfeuTrigger(
-                behaviourVersionEntityCache.GetCached(triggerEntity.BehaviourVersionId).GetPosition(triggerEntity.Position),
-                behaviourScopeEntityCache.GetCached(triggerEntity.ScopeId).MapToEfeuRuntimeScope())).ToArray();
+
+            List<EfeuTrigger> result = new List<EfeuTrigger>(); 
+            foreach (TriggerEntity triggerEntity in matchingTriggerEntities)
+            {
+                BehaviourVersionEntity behaviourVersionEntity = behaviourVersionEntityCache.GetCached(triggerEntity.BehaviourVersionId);
+                EfeuBehaviourStep behaviourStep = behaviourVersionEntity.GetPosition(triggerEntity.Position);
+                EfeuRuntimeScope runtimeScope = behaviourScopeEntityCache.GetCached(triggerEntity.ScopeId).MapToEfeuRuntimeScope();
+                result.Add(triggerEntity.MapToEfeuTrigger(behaviourStep, runtimeScope));
+            }
+            return result.ToArray();
         }
     }
 }
