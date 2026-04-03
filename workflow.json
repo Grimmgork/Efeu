@@ -1,0 +1,28 @@
+[
+	{
+		"Kind": "Let",
+		"Name": "var",
+		"Input": {
+			"Type": "String",
+			"Value": "Hello World!"
+		}
+	},
+	{
+		"Kind": "Raise",
+		"Name": "A"
+	},
+	{
+		"Kind": "On",
+		"Name": "A",
+		"Do": [
+			{
+				"Kind": "Emit",
+				"Name": "WriteConsole",
+				"Input": {
+					"Type": "Script",
+					"Code": "var"
+				}
+			}
+		]
+	}
+]
