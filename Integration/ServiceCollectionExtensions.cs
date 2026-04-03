@@ -24,6 +24,7 @@ namespace Efeu.Integration
             services.AddScoped<IBehaviourScopeCommands, BehaviourScopeCommands>();
             services.AddHostedService<DeduplicationKeyCleanupService>();
             services.AddHostedService<EffectExecutionService>();
+            services.AddHostedService<TriggerCleanupService>();
         }
 
         public static void AddEfeuDefaultEffects(this IServiceCollection services)

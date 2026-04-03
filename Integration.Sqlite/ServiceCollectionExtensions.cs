@@ -91,7 +91,8 @@ namespace Efeu.Integration.Sqlite
                 .Property(p => p.Position)
                 .Property(p => p.ScopeId)
                 .Property(p => p.Matter)
-                .Property(p => p.Group);
+                .Property(p => p.Group)
+                .Property(p => p.IsCompleted);
 
             builder.Entity<EffectEntity>()
                 .HasTableName("Effect")
@@ -128,18 +129,6 @@ namespace Efeu.Integration.Sqlite
                     .IsPrimaryKey()
                     .HasSkipOnInsert(false)
                 .Property(p => p.Timestamp);
-
-            builder.Entity<PartialTriggerEntity>()
-                .HasTableName("Trigger")
-                .HasSchemaName(schema)
-                .Property(p => p.Id)
-                    .IsIdentity()
-                    .IsPrimaryKey()
-                    .HasSkipOnInsert(false)
-                .Property(p => p.Type)
-                .Property(p => p.Tag)
-                .Property(p => p.Matter)
-                .Property(p => p.Group);
 
             builder.Entity<BehaviourScopeEntity>()
                 .HasTableName("BehaviourScope")

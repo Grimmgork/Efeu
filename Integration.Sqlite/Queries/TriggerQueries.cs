@@ -33,7 +33,9 @@ namespace Efeu.Integration.Sqlite.Queries
         public Task DeleteAsync(Guid id)
         {
             return connection.GetTable<TriggerEntity>()
-                .DeleteAsync(i => i.Id == id);
+                .Where(i => i.Id == id)
+                .Set(u => u.IsCompleted, true)
+                .UpdateAsync();
         }
 
         public Task DeleteBulkAsync(Guid[] ids)
@@ -42,14 +44,18 @@ namespace Efeu.Integration.Sqlite.Queries
                 return Task.CompletedTask;
 
             return connection.GetTable<TriggerEntity>()
-                .DeleteAsync(i => ids.Contains(i.Id));
+                .Where(i => ids.Contains(i.Id))
+                .Set(u => u.IsCompleted, true)
+                .UpdateAsync();
         }
 
         public Task DeleteStaticAsync(int definitionVersionId)
         {
             return connection.GetTable<TriggerEntity>()
-                .DeleteAsync(i => i.BehaviourVersionId == definitionVersionId 
-                               && i.CorrelationId == Guid.Empty);
+                .Where(i => i.BehaviourVersionId == definitionVersionId
+                               && i.CorrelationId == Guid.Empty)
+                .Set(u => u.IsCompleted, true)
+                .UpdateAsync();
         }
 
         public Task DeleteByMatterBulkAsync(Guid[] matters)
@@ -58,7 +64,9 @@ namespace Efeu.Integration.Sqlite.Queries
                 return Task.CompletedTask;
 
             return connection.GetTable<TriggerEntity>()
-                .DeleteAsync(i => matters.Contains(i.Matter));
+                .Where(i => matters.Contains(i.Matter))
+                .Set(u => u.IsCompleted, true)
+                .UpdateAsync();
         }
 
         public Task DeleteByGroupBulkAsync(Guid[] groups)
@@ -67,7 +75,9 @@ namespace Efeu.Integration.Sqlite.Queries
                 return Task.CompletedTask;
 
             return connection.GetTable<TriggerEntity>()
-                .DeleteAsync(i => groups.Contains(i.Group));
+                .Where(i => groups.Contains(i.Group))
+                .Set(u => u.IsCompleted, true)
+                .UpdateAsync();
         }
 
         public Task<TriggerEntity[]> GetAllAsync()
@@ -114,12 +124,6 @@ namespace Efeu.Integration.Sqlite.Queries
                     .Where(i => ids.Contains(i.Id))
                     .ToArrayAsync();
             }
-        }
-
-        public Task<PartialTriggerEntity[]> GetPartialTriggersAsync()
-        {
-            return connection.GetTable<PartialTriggerEntity>()
-                .ToArrayAsync();
         }
     }
 }

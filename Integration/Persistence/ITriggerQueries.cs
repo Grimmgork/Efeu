@@ -30,8 +30,10 @@ namespace Efeu.Integration.Persistence
 
         public Task DeleteByGroupBulkAsync(Guid[] groups);
 
-        public Task<PartialTriggerEntity[]> GetPartialTriggersAsync();
-
         public Task<TriggerEntity[]> GetByIdsAsync(params Guid[] ids);
+
+        public Task<TriggerEntity[]> GetDeletedAsync(uint limit);
+
+        public Task CleanupAsync(params Guid[] ids);
     }
 }
