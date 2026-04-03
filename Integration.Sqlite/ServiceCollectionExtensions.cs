@@ -92,7 +92,7 @@ namespace Efeu.Integration.Sqlite
                 .Property(p => p.ScopeId)
                 .Property(p => p.Matter)
                 .Property(p => p.Group)
-                .Property(p => p.IsCompleted);
+                .Property(p => p.IsDetatched);
 
             builder.Entity<EffectEntity>()
                 .HasTableName("Effect")

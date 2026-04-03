@@ -1,6 +1,7 @@
 ﻿using Efeu.Integration.Commands;
 using Efeu.Integration.Entities;
 using Efeu.Integration.Persistence;
+using Efeu.Runtime;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -23,9 +24,6 @@ namespace Efeu.Integration.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            // load all marked Triggers
-            // decrement reference count of BehaviourScope
-            // delete trigger
             while (!stoppingToken.IsCancellationRequested)
             {
                 using var scope = scopeFactory.CreateScope();
@@ -35,20 +33,35 @@ namespace Efeu.Integration.Services
 
                 try
                 {
-                    TriggerEntity[] triggerEntityIds = await triggerQueries.GetDeletedAsync(25);
+                    TriggerEntity[] triggerEntities = await triggerQueries.GetDetatchedAsync(25);
+                    Guid[] triggerIds = triggerEntities.Select(i => i.Id).ToArray();
+                    Dictionary<Guid, uint> decrements = new Dictionary<Guid, uint>();
+                    foreach (TriggerEntity triggerEntity in triggerEntities)
+                    {
+                        if (decrements.ContainsKey(triggerEntity.ScopeId))
+                        {
+                            decrements[triggerEntity.ScopeId]++;
+                        }
+                        else
+                        {
+                            decrements[triggerEntity.ScopeId] = 1;
+                        }
+                    }
 
                     await efeuUnitOfWork.BeginAsync();
-                    foreach (TriggerEntity triggerEntity in triggerEntityIds)
-                    {
-                        await behaviourScopeQueries.DecrementReferenceCountAsync(triggerEntity.ScopeId);
-                        await triggerQueries.CleanupAsync(triggerEntity.Id);
-                    }
-                    await behaviourScopeQueries.DeleteUnreferencedAsync();
+                    await behaviourScopeQueries.DecrementReferenceCountAsync(decrements);
+                    await triggerQueries.DeleteAsync(triggerIds);
                     await efeuUnitOfWork.CompleteAsync();
 
-                    if (!triggerEntityIds.Any())
+                    await behaviourScopeQueries.CleanupAsync();
+
+                    if (triggerEntities.Any())
                     {
-                        await Task.Delay(TimeSpan.FromMinutes(10));
+                        await Task.Delay(TimeSpan.FromSeconds(1));
+                    }
+                    else
+                    {
+                        await Task.Delay(TimeSpan.FromMinutes(1));
                     }
                 }
                 catch (Exception ex)

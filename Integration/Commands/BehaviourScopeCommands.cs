@@ -21,15 +21,5 @@ namespace Efeu.Integration.Commands
         {
             return behaviourScopeQueries.CreateBulkAsync(entities);
         }
-
-        public Task DecrementReferenceCountAsync(Guid id)
-        {
-            return behaviourScopeQueries.DecrementReferenceCountAsync(id);
-        }
-
-        public Task DeleteUnreferencedAsync()
-        {
-            return behaviourScopeQueries.DeleteUnreferencedAsync();
-        }
     }
 }

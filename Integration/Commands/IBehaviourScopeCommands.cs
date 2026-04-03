@@ -10,9 +10,5 @@ namespace Efeu.Integration.Commands
     public interface IBehaviourScopeCommands
     {
         public Task CreateBulkAsync(BehaviourScopeEntity[] entities);
-
-        public Task DecrementReferenceCountAsync(Guid id);
-
-        public Task DeleteUnreferencedAsync();
     }
 }

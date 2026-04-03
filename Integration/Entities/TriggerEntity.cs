@@ -34,6 +34,6 @@ namespace Efeu.Integration.Entities
 
         public Guid ScopeId;
 
-        public bool IsCompleted;
+        public bool IsDetatched;
     }
 }

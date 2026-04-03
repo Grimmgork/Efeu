@@ -34,23 +34,23 @@ namespace Efeu.Integration.Commands
             await unitOfWork.BeginAsync();
             await unitOfWork.LockAsync("Trigger");
             // TriggerEntity[] triggers = await behaviourTriggerRepository.GetStaticAsync(definitionVersionId);
-            await triggerQueries.DeleteStaticAsync(definitionVersionId);
+            await triggerQueries.DetatchStaticAsync(definitionVersionId);
             await unitOfWork.CompleteAsync();
         }
 
         public Task DeleteAsync(Guid[] ids)
         {
-            return triggerQueries.DeleteBulkAsync(ids);
+            return triggerQueries.DetatchAsync(ids);
         }
 
         public Task ResolveMattersAsync(Guid[] matters)
         {
-            return triggerQueries.DeleteByMatterBulkAsync(matters);
+            return triggerQueries.DetatchByMatterBulkAsync(matters);
         }
 
         public Task CompleteGroupsAsync(Guid[] groups)
         {
-            return triggerQueries.DeleteByGroupBulkAsync(groups);
+            return triggerQueries.DetatchByGroupBulkAsync(groups);
         }
     }
 }

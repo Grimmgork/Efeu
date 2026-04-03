@@ -59,16 +59,21 @@ namespace Efeu.Integration.Sqlite.Queries
             }, entities);
         }
 
-        public Task DecrementReferenceCountAsync(Guid id)
+        public Task DecrementReferenceCountAsync(Dictionary<Guid, uint> decrements)
         {
+            using var temp = connection.CreateTempTable(decrements.Select(i => new
+            {
+                Id = i.Key,
+                Delta = i.Value
+            }));
+
             return connection.GetTable<BehaviourScopeEntity>()
-                .Where(u => u.Id == id
-                    && u.ReferenceCount > 0)
-                .Set(u => u.ReferenceCount, (c) => c.ReferenceCount - 1)
-                .UpdateAsync();
+              .Join(temp, i => i.Id, t => t.Id, (i, t) => new { i, t })
+              .Set(x => x.i.ReferenceCount, x => x.i.ReferenceCount - x.t.Delta)
+              .UpdateAsync();
         }
 
-        public Task DeleteUnreferencedAsync()
+        public Task CleanupAsync()
         {
             return connection.GetTable<BehaviourScopeEntity>()
                 .Where(u => u.ReferenceCount == 0)

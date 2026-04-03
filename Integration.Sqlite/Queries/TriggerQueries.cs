@@ -30,59 +30,52 @@ namespace Efeu.Integration.Sqlite.Queries
             }, triggers);
         }
 
-        public Task DeleteAsync(Guid id)
-        {
-            return connection.GetTable<TriggerEntity>()
-                .Where(i => i.Id == id)
-                .Set(u => u.IsCompleted, true)
-                .UpdateAsync();
-        }
-
-        public Task DeleteBulkAsync(Guid[] ids)
+        public Task DetatchAsync(Guid[] ids)
         {
             if (ids.Length == 0)
                 return Task.CompletedTask;
 
             return connection.GetTable<TriggerEntity>()
-                .Where(i => ids.Contains(i.Id))
-                .Set(u => u.IsCompleted, true)
+                .Where(i => ids.Contains(i.Id) && !i.IsDetatched)
+                .Set(u => u.IsDetatched, true)
                 .UpdateAsync();
         }
 
-        public Task DeleteStaticAsync(int definitionVersionId)
+        public Task DetatchStaticAsync(int definitionVersionId)
         {
             return connection.GetTable<TriggerEntity>()
                 .Where(i => i.BehaviourVersionId == definitionVersionId
-                               && i.CorrelationId == Guid.Empty)
-                .Set(u => u.IsCompleted, true)
+                               && i.CorrelationId == Guid.Empty && !i.IsDetatched)
+                .Set(u => u.IsDetatched, true)
                 .UpdateAsync();
         }
 
-        public Task DeleteByMatterBulkAsync(Guid[] matters)
+        public Task DetatchByMatterBulkAsync(Guid[] matters)
         {
             if (matters.Length == 0)
                 return Task.CompletedTask;
 
             return connection.GetTable<TriggerEntity>()
-                .Where(i => matters.Contains(i.Matter))
-                .Set(u => u.IsCompleted, true)
+                .Where(i => matters.Contains(i.Matter) && !i.IsDetatched)
+                .Set(u => u.IsDetatched, true)
                 .UpdateAsync();
         }
 
-        public Task DeleteByGroupBulkAsync(Guid[] groups)
+        public Task DetatchByGroupBulkAsync(Guid[] groups)
         {
             if (groups.Length == 0)
                 return Task.CompletedTask;
 
             return connection.GetTable<TriggerEntity>()
-                .Where(i => groups.Contains(i.Group))
-                .Set(u => u.IsCompleted, true)
+                .Where(i => groups.Contains(i.Group) && !i.IsDetatched)
+                .Set(u => u.IsDetatched, true)
                 .UpdateAsync();
         }
 
         public Task<TriggerEntity[]> GetAllAsync()
         {
              return connection.GetTable<TriggerEntity>()
+                .Where(i => !i.IsDetatched)
                 .ToArrayAsync();
         }
 
@@ -90,14 +83,15 @@ namespace Efeu.Integration.Sqlite.Queries
         {
             return connection.GetTable<TriggerEntity>()
                 .Where(i => i.BehaviourVersionId == definitionVersionId
-                         && i.CorrelationId == Guid.Empty)
+                         && i.CorrelationId == Guid.Empty
+                         && !i.IsDetatched)
                 .ToArrayAsync();
         }
 
         public Task<TriggerEntity?> GetByIdAsync(Guid id)
         {
             return connection.GetTable<TriggerEntity>()
-                .FirstOrDefaultAsync(i => i.Id == id);
+                .FirstOrDefaultAsync(i => i.Id == id && !i.IsDetatched);
         }
 
         public async Task<TriggerEntity[]> GetByIdsAsync(params Guid[] ids)
@@ -121,9 +115,23 @@ namespace Efeu.Integration.Sqlite.Queries
             else
             {
                 return await connection.GetTable<TriggerEntity>()
-                    .Where(i => ids.Contains(i.Id))
+                    .Where(i => ids.Contains(i.Id) && !i.IsDetatched)
                     .ToArrayAsync();
             }
+        }
+
+        public Task<TriggerEntity[]> GetDetatchedAsync(int limit)
+        {
+            return connection.GetTable<TriggerEntity>()
+                    .Where(i => i.IsDetatched)
+                    .Take(limit)
+                    .ToArrayAsync();
+        }
+
+        public Task DeleteAsync(Guid[] ids)
+        {
+            return connection.GetTable<TriggerEntity>()
+                    .DeleteAsync(i => ids.Contains(i.Id) && i.IsDetatched);
         }
     }
 }

@@ -20,20 +20,18 @@ namespace Efeu.Integration.Persistence
 
         public Task<TriggerEntity[]> GetStaticAsync(int definitionVersionId);
 
-        public Task DeleteStaticAsync(int DefinitionVersionId);
+        public Task DetatchStaticAsync(int DefinitionVersionId);
 
-        public Task DeleteAsync(Guid id);
+        public Task DetatchAsync(Guid[] ids);
 
-        public Task DeleteBulkAsync(Guid[] ids);
+        public Task DetatchByMatterBulkAsync(Guid[] matters);
 
-        public Task DeleteByMatterBulkAsync(Guid[] matters);
-
-        public Task DeleteByGroupBulkAsync(Guid[] groups);
+        public Task DetatchByGroupBulkAsync(Guid[] groups);
 
         public Task<TriggerEntity[]> GetByIdsAsync(params Guid[] ids);
 
-        public Task<TriggerEntity[]> GetDeletedAsync(uint limit);
+        public Task<TriggerEntity[]> GetDetatchedAsync(int limit);
 
-        public Task CleanupAsync(params Guid[] ids);
+        public Task DeleteAsync(Guid[] ids);
     }
 }

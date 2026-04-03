@@ -15,8 +15,8 @@ namespace Efeu.Integration.Persistence
 
         public Task CreateBulkAsync(BehaviourScopeEntity[] entities);
 
-        public Task DecrementReferenceCountAsync(Guid id);
+        public Task DecrementReferenceCountAsync(Dictionary<Guid, uint> decrements);
 
-        public Task DeleteUnreferencedAsync();
+        public Task CleanupAsync();
     }
 }

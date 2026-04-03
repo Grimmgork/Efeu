@@ -43,19 +43,6 @@
             };
         }
 
-        public static PartialTriggerEntity MapToPartialTriggerEntity(this EfeuTrigger model)
-        {
-            return new PartialTriggerEntity()
-            {
-                Id = model.Id,
-                CreationTime = model.CreationTime,
-                Group = model.Group,
-                Matter = model.Matter,
-                Tag = model.Tag,
-                Type = model.Type,
-            };
-        }
-
         public static EfeuMessage MapToEfeuMessage(this EffectEntity entity)
         {
             return new EfeuMessage()
