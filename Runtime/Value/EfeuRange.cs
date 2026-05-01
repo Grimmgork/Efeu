@@ -25,6 +25,23 @@ namespace Efeu.Runtime.Value
                 .GetEnumerator();
         }
 
+        public override bool AsBoolean()
+        {
+            return this.Any();
+        }
+
+        public override bool Equals(EfeuValue value)
+        {
+            if (value.AsObject() is EfeuRange range)
+            {
+                return range.Start == this.Start && range.End == this.End;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();

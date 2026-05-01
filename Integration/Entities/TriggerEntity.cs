@@ -22,8 +22,6 @@ namespace Efeu.Integration.Entities
 
         public string Position = ""; // position of trigger row 0/Else/1
 
-        // public EfeuRuntimeScope Scope = EfeuRuntimeScope.Empty; // Scope around trigger row
-
         public string Type = "";
 
         public EfeuMessageTag Tag;
@@ -33,6 +31,8 @@ namespace Efeu.Integration.Entities
         public Guid Group;
 
         public Guid ScopeId;
+
+        public Guid LoopbackScopeId;
 
         public bool IsDetatched;
     }

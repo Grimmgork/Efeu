@@ -31,6 +31,8 @@ namespace Efeu.Runtime
 
         public bool Skipped;
 
+        private Dictionary<EfeuBehaviourStep, string> positionLookup = new Dictionary<EfeuBehaviourStep, string>();
+
         public EfeuRuntime(Guid correlationId, Guid causationId, int behaviourId, bool isImmediate, Guid matter, bool isStatic, DateTimeOffset now)
         {
             this.CorrelationId = correlationId;
@@ -100,7 +102,7 @@ namespace Efeu.Runtime
 
             EfeuRuntimeScope scope = trigger.Scope
                 .With("now", Now)
-                .With("@", message.Payload);
+                .With(trigger.Step.ArgumentName, message.Payload);
 
             EfeuBehaviourStep[] steps = trigger.Step.Do;
             RunSteps(steps, $"{trigger.Position}/Do", scope); // Assumption: all trigger continuations are done in the Do route
@@ -168,6 +170,14 @@ namespace Efeu.Runtime
             {
                 RunOnStep(step, position, scope);
             }
+            else if (step.Kind == EfeuBehaviourStepKind.Loop)
+            {
+                RunLoopStep(step, position, scope);
+            }
+            else if (step.Kind == EfeuBehaviourStepKind.Next)
+            {
+                RunNextStep(step, position, scope);
+            }
         }
 
         private void RunEmitStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
@@ -233,6 +243,20 @@ namespace Efeu.Runtime
             });
         }
 
+        private void RunLoopStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
+        {
+            RunSteps(step.Do, $"{position}/Do", scope.PushLoopback(step, position, scope));
+        }
+
+        private void RunNextStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
+        {
+            if (scope.Loopback != null)
+            {
+                EfeuValue item = step.Input.Evaluate(scope);
+                RunSteps(scope.Loopback.Step.Do, $"{scope.Loopback.Position}/Do", scope.PushLoopbackIteration(item));
+            }
+        }
+
         private void RunIfStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
         {
             if (step.Input.Evaluate(scope))
@@ -261,7 +285,7 @@ namespace Efeu.Runtime
         {
             foreach (EfeuValue item in step.Input.Evaluate(scope).Each())
             {
-                RunSteps(step.Do, $"{position}/Do", scope);
+                RunSteps(step.Do, $"{position}/Do", scope.With(step.ArgumentName, item));
             }
         }
 
@@ -279,7 +303,7 @@ namespace Efeu.Runtime
                 Input = step.Input.Evaluate(scope),
                 BehaviourId = BehaviourId,
                 Step = step,
-                Group = Guid.NewGuid()
+                Group = Guid.NewGuid(),
             });
         }
 

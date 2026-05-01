@@ -13,12 +13,14 @@ namespace Efeu.Runtime
         Emit,
         Raise,
         Let,
-        Await,
-        First,
+        Await, // (also await all)
+        First, // (also await the first one)
         If,
         Unless,
         For,
-        On
+        Loop,
+        Next,
+        On // also await any
     }
 
     public class EfeuBehaviourStep
@@ -31,12 +33,24 @@ namespace Efeu.Runtime
 
         public EfeuBehaviourExpression Input = EfeuBehaviourExpression.Empty;
 
+        public string ArgumentName = "@";
+
         public EfeuBehaviourStep[] Do = [];
 
         public EfeuBehaviourStep[] Else = [];
 
         public EfeuBehaviourStep[] Error = [];
     }
+
+    public class EfeuBehaviourMatch
+    {
+        public string Name = "";
+
+        public EfeuBehaviourExpression Input = EfeuBehaviourExpression.Empty;
+
+        public EfeuBehaviourStep[] Do = [];
+    }
+
 
     public enum EfeuExpressionType
     {

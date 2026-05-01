@@ -14,7 +14,7 @@ namespace Efeu.Runtime.Value
 
         public int Count => Items.Count;
 
-        public static EfeuArray Empty = new EfeuArray();
+        public static readonly EfeuArray Empty = new EfeuArray();
 
         public static EfeuArray From(params EfeuValue[] items) => new EfeuArray(items);
 
@@ -71,6 +71,11 @@ namespace Efeu.Runtime.Value
         public EfeuValue Last()
         {
             return Items.Last();
+        }
+
+        public override bool AsBoolean()
+        {
+            return Items.Any();
         }
 
         public IEnumerator<EfeuValue> GetEnumerator()

@@ -20,9 +20,19 @@ namespace Efeu.Runtime.Value
             return Text;
         }
 
-        public override int GetHashCode()
+        public override bool AsBoolean()
         {
-            return Text.GetHashCode();
+            return string.IsNullOrEmpty(Text);
+        }
+
+        public override bool Equals(EfeuValue value)
+        {
+            return value.ToString() == Text;
+        }
+
+        public override void WriteReference(IEfeuReferenceHasher hasher)
+        {
+            hasher.WriteString(Text);
         }
     }
 }

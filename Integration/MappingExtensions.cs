@@ -2,6 +2,8 @@
 {
     using Efeu.Integration.Entities;
     using Efeu.Runtime;
+    using Efeu.Runtime.Value;
+    using System;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -77,8 +79,16 @@
             {
                 Id = scope.Id,
                 Constants = scope.Constants,
-                ReferenceCount = referenceCount
+                ReferenceCount = referenceCount,
+                LoopbackPosition = scope.Loopback?.Position ?? "",
+                LoopbackScopeId = scope.Loopback?.Scope.Id ?? Guid.Empty,
             };
+        }
+
+        public static EfeuRuntimeScope MapToEfeuRuntimeScope(this BehaviourScopeEntity scopeEntity, EfeuBehaviourStep loopbackStep, EfeuRuntimeScope loopbackScope)
+        {
+            EfeuRuntimeLoopback loopback = new EfeuRuntimeLoopback(scopeEntity.LoopbackPosition, loopbackStep, loopbackScope, scopeEntity.LoopbackIterator);
+            return new EfeuRuntimeScope(scopeEntity.Id, scopeEntity.Constants, loopback);
         }
 
         public static EfeuRuntimeScope MapToEfeuRuntimeScope(this BehaviourScopeEntity scopeEntity)
@@ -89,21 +99,36 @@
 
         public static BehaviourScopeEntity[] MapToBehaviourScopeEntities(this IEnumerable<EfeuTrigger> triggers)
         {
-            HashSet<EfeuRuntimeScope> triggerScopes = new HashSet<EfeuRuntimeScope>();
-            Dictionary<EfeuRuntimeScope, uint> triggerScopeReferenceCounts = new Dictionary<EfeuRuntimeScope, uint>();
+            HashSet<EfeuRuntimeScope> scopes = new HashSet<EfeuRuntimeScope>();
+            Dictionary<EfeuRuntimeScope, uint> scopeReferenceCount = new Dictionary<EfeuRuntimeScope, uint>();
             foreach (EfeuTrigger trigger in triggers)
             {
-                if (triggerScopes.Add(trigger.Scope))
+                if (scopes.Add(trigger.Scope))
                 {
-                    triggerScopeReferenceCounts.Add(trigger.Scope, 1);
+                    scopeReferenceCount.Add(trigger.Scope, 1);
                 }
                 else
                 {
-                    triggerScopeReferenceCounts[trigger.Scope]++;
+                    scopeReferenceCount[trigger.Scope]++;
+                }
+
+                if (trigger.Scope.Loopback != null)
+                {
+                    if (trigger.Scope.Loopback.Scope != trigger.Scope)
+                    {
+                        if (scopes.Add(trigger.Scope.Loopback.Scope))
+                        {
+                            scopeReferenceCount.Add(trigger.Scope.Loopback.Scope, 1);
+                        }
+                        else
+                        {
+                            scopeReferenceCount[trigger.Scope.Loopback.Scope]++;
+                        }
+                    }
                 }
             }
 
-            return triggerScopes.Select(i => i.MapToBehaviourScopeEntity(triggerScopeReferenceCounts[i])).ToArray();
+            return scopes.Select(i => i.MapToBehaviourScopeEntity(scopeReferenceCount[i])).ToArray();
         }
     }
 }

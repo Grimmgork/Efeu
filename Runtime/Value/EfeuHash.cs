@@ -51,5 +51,14 @@ namespace Efeu.Runtime.Value
         {
             return GetEnumerator();
         }
+
+        public override void WriteReference(IEfeuReferenceHasher context)
+        {
+            foreach (KeyValuePair<string, EfeuValue> keys in Hash)
+            {
+                context.WriteString(keys.Key + ":");
+                context.WriteReference(keys.Value);
+            }
+        }
     }
 }

@@ -20,6 +20,31 @@ namespace Efeu.Runtime.Value
             return Value.ToString();
         }
 
+        public override bool AsBoolean()
+        {
+            return Value > 0f;
+        }
+
+        public override decimal AsDecimal()
+        {
+            return (decimal)Value;
+        }
+
+        public override long AsLong()
+        {
+            return (long)Value;
+        }
+
+        public override double AsDouble()
+        {
+            return Value;
+        }
+
+        public override bool Equals(EfeuValue value)
+        {
+            return value.AsDouble() == Value;
+        }
+
         public override int GetHashCode()
         {
             return Value.GetHashCode();

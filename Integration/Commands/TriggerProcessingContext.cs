@@ -2,6 +2,7 @@
 using Efeu.Integration.Entities;
 using Efeu.Integration.Persistence;
 using Efeu.Runtime;
+using Efeu.Runtime.Value;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -132,15 +133,31 @@ namespace Efeu.Integration.Commands
             await behaviourScopeEntityCache.GetAsync(triggerEntities.Select(i => i.ScopeId).ToArray());
             await behaviourVersionEntityCache.GetAsync(triggerEntities.Select(i => i.BehaviourVersionId).ToArray());
 
-            List<EfeuTrigger> result = new List<EfeuTrigger>(); 
+            List<EfeuTrigger> result = new List<EfeuTrigger>();
             foreach (TriggerEntity triggerEntity in matchingTriggerEntities)
             {
                 BehaviourVersionEntity behaviourVersionEntity = behaviourVersionEntityCache.GetCached(triggerEntity.BehaviourVersionId);
                 EfeuBehaviourStep behaviourStep = behaviourVersionEntity.GetPosition(triggerEntity.Position);
-                EfeuRuntimeScope runtimeScope = behaviourScopeEntityCache.GetCached(triggerEntity.ScopeId).MapToEfeuRuntimeScope();
+
+                EfeuRuntimeScope runtimeScope = GetScopeFromCache(triggerEntity.ScopeId, behaviourVersionEntity);
                 result.Add(triggerEntity.MapToEfeuTrigger(behaviourStep, runtimeScope));
             }
             return result.ToArray();
+        }
+
+        private EfeuRuntimeScope GetScopeFromCache(Guid scopeId, BehaviourVersionEntity behaviourVersionEntity)
+        {
+            BehaviourScopeEntity scopeEntity = behaviourScopeEntityCache.GetCached(scopeId);
+            if (scopeEntity.LoopbackScopeId == Guid.Empty)
+            {
+                return scopeEntity.MapToEfeuRuntimeScope();
+            }
+            else
+            {
+                EfeuRuntimeScope loopbackScope = GetScopeFromCache(scopeEntity.LoopbackScopeId, behaviourVersionEntity);
+                EfeuBehaviourStep loopbackStep = behaviourVersionEntity.GetPosition(scopeEntity.LoopbackPosition);
+                return scopeEntity.MapToEfeuRuntimeScope(loopbackStep, loopbackScope);
+            }
         }
     }
 }

@@ -36,5 +36,32 @@ namespace Efeu.Runtime.Value
         {
             return Value.ToLocalTime().ToString();
         }
+
+        public override long AsLong()
+        {
+            return Value.ToUnixTimeMilliseconds();
+        }
+
+        public override bool AsBoolean()
+        {
+            return Value != DateTimeOffset.MinValue;
+        }
+
+        public override bool Equals(EfeuValue value)
+        {
+            if (value.AsObject() is EfeuTime time)
+            {
+                return this.Value == time.Value;
+            }
+            else
+            {
+                return value.AsLong() == Value.ToUnixTimeMilliseconds();
+            }
+        }
+
+        public override void WriteReference(IEfeuReferenceHasher hasher)
+        {
+            hasher.WriteInt64(Value.ToUnixTimeMilliseconds());
+        }
     }
 }

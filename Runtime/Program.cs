@@ -1,13 +1,16 @@
 ﻿using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
-using Efeu.Runtime.Value;
 using Efeu.Runtime.Json.Converters;
 using Efeu.Runtime.Script;
+using Efeu.Runtime.Value;
 using System;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Xml.Linq;
+using static System.Formats.Asn1.AsnWriter;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Efeu.Runtime
 {
@@ -34,6 +37,15 @@ namespace Efeu.Runtime
 
             //return;
 
+            EfeuValue value = EfeuHash.Empty
+                .With("name", 42);
+
+            Sha256EfeuReferenceHasher hasher = new Sha256EfeuReferenceHasher();
+            EfeuReference reference = hasher.HashReference(value);
+
+            Console.WriteLine(Convert.ToBase64String(reference.Bytes));
+            return;
+
             EfeuBehaviourStep[] steps = [
                 new () {
                     Kind = EfeuBehaviourStepKind.Let,
@@ -52,25 +64,46 @@ namespace Efeu.Runtime
                     Name = "A",
                     Do = [
                         new () {
-                            Kind = EfeuBehaviourStepKind.Emit,
-                            Name = "WriteConsole",
-                            Input = new () {
-                                Type = EfeuExpressionType.Script,
-                                Code = "var"
-                            }
+                            Kind = EfeuBehaviourStepKind.Loop,
+                            Do = [
+                                new () {
+                                    Kind = EfeuBehaviourStepKind.If,
+                                    Input = new () {
+                                        Type = EfeuExpressionType.Eval,
+                                        Func = (scope) => scope.Get("@").AsArray().Count < 5
+                                    },
+                                    Do = [
+                                        new () {
+                                            Kind = EfeuBehaviourStepKind.Emit,
+                                            Name = "B",
+                                            Input = new () {
+                                                Type = EfeuExpressionType.Eval,
+                                                Func = (scope) => scope.Get("@").AsArray().Count
+                                            }
+                                        },
+                                        new () {
+                                            Kind = EfeuBehaviourStepKind.Next,
+                                            Input = new () {
+                                                Type = EfeuExpressionType.Integer,
+                                                Value = 42
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
                         },
                     ]
                 }
             ];
 
             EfeuRuntimeSimulation simulation = EfeuRuntimeSimulation.Run(steps);
-            simulation.Send(new EfeuMessage()
-            {
-                Id = Guid.NewGuid(),
-                Type = "A",
-                Timestamp = DateTime.Now,
-                Tag = EfeuMessageTag.Data
-            });
+            // simulation.Send(new EfeuMessage()
+            // {
+            //    Id = Guid.NewGuid(),
+            //    Type = "A",
+            //    Timestamp = DateTime.Now,
+            //    Tag = EfeuMessageTag.Data
+            //});
 
             return;
 

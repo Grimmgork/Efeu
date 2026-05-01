@@ -15,6 +15,12 @@ namespace Efeu.Integration.Entities
 
         public uint ReferenceCount { get; set; }
 
+        public Guid LoopbackScopeId { get; set; }
+
+        public string LoopbackPosition { get; set; } = "";
+
+        public EfeuArray LoopbackIterator { get; set; } = EfeuArray.Empty;
+
         public ImmutableDictionary<string, EfeuValue> Constants { get; set; } = ImmutableDictionary<string, EfeuValue>.Empty;
     }
 }

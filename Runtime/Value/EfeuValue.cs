@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharpCompress.Common;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -143,7 +144,7 @@ namespace Efeu.Runtime.Value
                 }
                 if (obj is EfeuTime efeuTime)
                 {
-                    return efeuTime.Value.ToUnixTimeSeconds();
+                    return efeuTime.Value.ToUnixTimeMilliseconds();
                 }
             }
 
@@ -199,30 +200,7 @@ namespace Efeu.Runtime.Value
             }
             else if (Tag == EfeuValueTag.Object)
             {
-                if (obj is EfeuString efeuString)
-                {
-                    return string.IsNullOrEmpty(efeuString.ToString());
-                }
-
-                if (obj is EfeuDecimal efeuDecimal)
-                {
-                    return efeuDecimal.Value != 0;
-                }
-
-                if (obj is EfeuFloat efeuFloat)
-                {
-                    return efeuFloat.Value != 0;
-                }
-
-                if (obj is EfeuArray efeuArray)
-                {
-                    return efeuArray.Count != 0;
-                }
-
-                if (obj is EfeuRange efeuRange)
-                {
-                    return efeuRange.Any();
-                }
+                return obj!.AsBoolean();
             }
 
             throw new InvalidCastException("Value is not a bool.");
@@ -248,15 +226,7 @@ namespace Efeu.Runtime.Value
             }
             else if (Tag == EfeuValueTag.Object)
             {
-                if (obj is EfeuDecimal efeuDecimal)
-                {
-                    return efeuDecimal.Value;
-                }
-
-                if (obj is EfeuFloat efeuFloat)
-                {
-                    return (decimal)efeuFloat.Value;
-                }
+                return obj!.AsDecimal();
             }
 
             throw new InvalidCastException("Value is not a decimal.");
@@ -363,7 +333,7 @@ namespace Efeu.Runtime.Value
 
             if (this.Tag == EfeuValueTag.Object)
             {
-                return this.obj!.Equals(value.AsObject());
+                return this.obj!.Equals(value);
             }
 
             return base.Equals(obj);
