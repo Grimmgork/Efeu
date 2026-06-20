@@ -87,7 +87,7 @@
 
         public static EfeuRuntimeScope MapToEfeuRuntimeScope(this BehaviourScopeEntity scopeEntity, EfeuBehaviourStep loopbackStep, EfeuRuntimeScope loopbackScope)
         {
-            EfeuRuntimeLoopback loopback = new EfeuRuntimeLoopback(scopeEntity.LoopbackPosition, loopbackStep, loopbackScope, scopeEntity.LoopbackIterator);
+            EfeuRuntimeLoopback loopback = new EfeuRuntimeLoopback(scopeEntity.LoopbackPosition, loopbackStep, loopbackScope);
             return new EfeuRuntimeScope(scopeEntity.Id, scopeEntity.Constants, loopback);
         }
 
@@ -95,7 +95,6 @@
         {
             return new EfeuRuntimeScope(scopeEntity.Id, scopeEntity.Constants);
         }
-
 
         public static BehaviourScopeEntity[] MapToBehaviourScopeEntities(this IEnumerable<EfeuTrigger> triggers)
         {

@@ -115,10 +115,11 @@ namespace Efeu.Runtime
                 EfeuExpressionType.Integer => Value,
                 EfeuExpressionType.Eval => Func(context),
                 EfeuExpressionType.Script => EfeuScript.Run(Code, new EfeuScriptScope(context)),
+                EfeuExpressionType.ScriptLine => EfeuScript.Run(Code, new EfeuScriptScope(context)),
                 EfeuExpressionType.Struct => new EfeuHash(Fields.Select(i =>
                     new KeyValuePair<string, EfeuValue>(i.Key, i.Value.Evaluate(context)))),
                 EfeuExpressionType.Array => new EfeuArray(Items.Select(i => i.Evaluate(context))),
-                _ => throw new Exception()
+                _ => throw new NotImplementedException()
             };
         }
     }

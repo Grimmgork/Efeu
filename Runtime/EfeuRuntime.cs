@@ -118,24 +118,26 @@ namespace Efeu.Runtime
 
         private void RunSteps(EfeuBehaviourStep[] steps, string position, EfeuRuntimeScope parentScope)
         {
-            // TODO optimize this
-            Dictionary<EfeuBehaviourStep, int> lookup = new Dictionary<EfeuBehaviourStep, int>();
+            Dictionary<EfeuBehaviourStep, int> indexLookup = new Dictionary<EfeuBehaviourStep, int>();
+            List<EfeuBehaviourStep> executableSteps = [];
+            EfeuRuntimeScope scope = parentScope;
             for (int i = 0; i < steps.Length; i++)
             {
-                lookup.Add(steps[i], i);
+                EfeuBehaviourStep step = steps[i];
+                if (step.Kind == EfeuBehaviourStepKind.Let)
+                {
+                    scope = scope.With(step.Name, step.Input.Evaluate(scope));
+                }
+                else
+                {
+                    indexLookup.Add(step, i);
+                    executableSteps.Add(step);
+                }
             }
 
-            var (lets, remaining) = steps.Partition((item) => item.Kind == EfeuBehaviourStepKind.Let);
-
-            EfeuRuntimeScope scope = parentScope;
-            foreach (EfeuBehaviourStep step in lets)
+            foreach (EfeuBehaviourStep step in executableSteps)
             {
-                scope = scope.With(step.Name, step.Input.Evaluate(scope));
-            }
-
-            foreach (EfeuBehaviourStep step in remaining)
-            {
-                int index = lookup[step];
+                int index = indexLookup[step];
                 RunStep(step, $"{position}/{index}", scope);
             }
         }

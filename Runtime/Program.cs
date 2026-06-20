@@ -37,14 +37,14 @@ namespace Efeu.Runtime
 
             //return;
 
-            EfeuValue value = EfeuHash.Empty
-                .With("name", 42);
+            //EfeuValue value = EfeuHash.Empty
+            //    .With("name", 42);
 
-            Sha256EfeuReferenceHasher hasher = new Sha256EfeuReferenceHasher();
-            EfeuReference reference = hasher.HashReference(value);
+            //Sha256EfeuReferenceHasher hasher = new Sha256EfeuReferenceHasher();
+            //EfeuReference reference = hasher.HashReference(value);
 
-            Console.WriteLine(Convert.ToBase64String(reference.Bytes));
-            return;
+            //Console.WriteLine(Convert.ToBase64String(reference.Bytes));
+            //return;
 
             EfeuBehaviourStep[] steps = [
                 new () {
@@ -53,7 +53,7 @@ namespace Efeu.Runtime
                     Input = new () {
                         Type = EfeuExpressionType.String,
                         Value = "Hello World!"
-                    },
+                    }
                 },
                 new () {
                     Kind = EfeuBehaviourStepKind.Raise,
@@ -70,7 +70,7 @@ namespace Efeu.Runtime
                                     Kind = EfeuBehaviourStepKind.If,
                                     Input = new () {
                                         Type = EfeuExpressionType.Eval,
-                                        Func = (scope) => scope.Get("@").AsArray().Count < 5
+                                        Func = (scope) => scope.Get("@").AsArray().Count < 100
                                     },
                                     Do = [
                                         new () {
@@ -91,12 +91,13 @@ namespace Efeu.Runtime
                                     ]
                                 }
                             ]
-                        },
+                        }
                     ]
                 }
             ];
 
             EfeuRuntimeSimulation simulation = EfeuRuntimeSimulation.Run(steps);
+
             // simulation.Send(new EfeuMessage()
             // {
             //    Id = Guid.NewGuid(),

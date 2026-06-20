@@ -16,15 +16,12 @@ namespace Efeu.Runtime
 
         public readonly EfeuBehaviourStep Step = new EfeuBehaviourStep();
 
-        // public readonly EfeuArray Iterator = EfeuArray.Empty;
-
         public readonly EfeuRuntimeScope Scope = EfeuRuntimeScope.Empty;
 
         public EfeuRuntimeLoopback(string position, EfeuBehaviourStep step, EfeuRuntimeScope scope)
         {
             this.Position = position;
             this.Step = step;
-            // this.Iterator = iterator;
             this.Scope = scope;
         }
     }
@@ -69,7 +66,6 @@ namespace Efeu.Runtime
 
         public EfeuRuntimeScope PushLoopback(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
         {
-            EfeuArray iterator = EfeuArray.Empty;
             EfeuRuntimeLoopback loopback = new EfeuRuntimeLoopback(position, step, scope);
             return new EfeuRuntimeScope(Guid.NewGuid(), Constants.SetItem(step.ArgumentName, EfeuArray.Empty), loopback);
         }
@@ -80,7 +76,8 @@ namespace Efeu.Runtime
                 throw new InvalidOperationException();
 
             EfeuRuntimeLoopback loopback = new EfeuRuntimeLoopback(Loopback.Position, Loopback.Step, Loopback.Scope);
-            return new EfeuRuntimeScope(Guid.NewGuid(), Loopback.Scope.Constants.SetItem(Loopback.Step.ArgumentName, Loopback.Scope.Constants[Loopback.Step.ArgumentName].AsArray().Push(value)), loopback);
+            EfeuValue iterator = Constants[Loopback.Step.ArgumentName];
+            return new EfeuRuntimeScope(Guid.NewGuid(), Loopback.Scope.Constants.SetItem(Loopback.Step.ArgumentName, iterator.AsArray().Push(value)), loopback);
         }
     }
 }

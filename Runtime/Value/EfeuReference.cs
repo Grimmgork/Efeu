@@ -20,6 +20,70 @@ namespace Efeu.Runtime.Value
         }
     }
 
+
+    public interface IEfeuReferenceCache
+    {
+        public Task LoadAsync(Guid bundle);
+
+        public EfeuValue Get(EfeuReference reference);
+
+        public EfeuReference Add(EfeuValue value);
+
+        public Task PushAsync(Guid bundle);
+    }
+
+    public class EfeuReferenceCache : IEfeuReferenceCache
+    {
+        private Dictionary<EfeuReference, EfeuValue> lookup = new Dictionary<EfeuReference, EfeuValue>();
+
+        private Dictionary<EfeuReference, EfeuValue> unpushedBundle = new Dictionary<EfeuReference, EfeuValue>();
+
+        private readonly IEfeuReferenceHasher hasher;
+
+        public EfeuReferenceCache(IEfeuReferenceHasher hasher)
+        {
+            this.hasher = hasher;
+        }
+
+        public EfeuValue Get(EfeuReference reference)
+        {
+            return lookup[reference];
+        }
+
+        public Task LoadAsync(Guid bundle)
+        {
+            // load all rows for bundle
+            // 
+            return Task.CompletedTask;
+        }
+
+        public Task PushAsync(Guid bundle)
+        {
+            // deduplicate and deconstruct
+            // insert all unpushed rows for a bundle
+            // add all to cache
+            foreach (var item in unpushedBundle)
+            {
+                lookup.TryAdd(item.Key, item.Value);
+            }
+
+            this.unpushedBundle.Clear();
+            return Task.CompletedTask;
+        }
+
+        public void Reset()
+        {
+            unpushedBundle.Clear();
+        }
+
+        public EfeuReference Add(EfeuValue value)
+        {
+            EfeuReference reference = hasher.HashReference(value);
+            unpushedBundle.TryAdd(reference, value);
+            return reference;
+        }
+    }
+
     public interface IEfeuReferenceHasher
     {
         public EfeuReference HashReference(EfeuValue value);
@@ -68,15 +132,15 @@ namespace Efeu.Runtime.Value
     public sealed class Sha256EfeuReferenceHasher : IEfeuReferenceHasher, IDisposable
     {
         private readonly Stack<IncrementalHash> stack = new Stack<IncrementalHash>();
-        private Dictionary<EfeuObject, EfeuReference> Cache = new Dictionary<EfeuObject, EfeuReference>();
-        private Dictionary<EfeuReference, EfeuValue> Lookup = new Dictionary<EfeuReference, EfeuValue>();
+        private Dictionary<EfeuObject, EfeuReference> cache = new Dictionary<EfeuObject, EfeuReference>();
+        private Dictionary<EfeuReference, EfeuValue> lookup = new Dictionary<EfeuReference, EfeuValue>();
 
         public EfeuReference HashReference(EfeuValue value)
         {
             if (value.Tag == EfeuValueTag.Object)
             {
                 EfeuObject obj = value.AsObject();
-                if (Cache.TryGetValue(obj, out var entry))
+                if (cache.TryGetValue(obj, out var entry))
                 {
                     return entry;
                 }
@@ -85,8 +149,8 @@ namespace Efeu.Runtime.Value
                     Push();
                     value.AsObject().WriteReference(this);
                     EfeuReference result = Pop();
-                    Cache.Add(obj, result);
-                    Lookup.Add(result, value);
+                    cache.Add(obj, result);
+                    lookup.Add(result, value);
                     return result;
                 }
             }
@@ -100,7 +164,7 @@ namespace Efeu.Runtime.Value
             }
 
             EfeuReference res = Pop();
-            Lookup.Add(res, value);
+            lookup.Add(res, value);
             return Pop();
         }
 

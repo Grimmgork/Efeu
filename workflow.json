@@ -19,7 +19,7 @@
 				"Kind": "Emit",
 				"Name": "WriteConsole",
 				"Input": {
-					"Type": "Script",
+					"Type": "ScriptLine",
 					"Code": "var"
 				}
 			}

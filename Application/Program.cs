@@ -32,7 +32,6 @@ namespace Efeu.Application
                          options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                      });
 
-
             SQLiteConnectionStringBuilder connBuilder = new SQLiteConnectionStringBuilder();
             connBuilder.DataSource = "data.db";
             connBuilder.Version = 3;
