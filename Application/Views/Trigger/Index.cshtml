@@ -10,6 +10,7 @@ else
 {
     <table>
         <tr>
+            <th>Id</th>
             <th>Timestamp</th>
             <th>Type</th>
             <th>Tag</th>
@@ -19,6 +20,7 @@ else
         @foreach (TriggerEntity trigger in Model)
         {
             <tr>
+                <td><a href="@($"/Trigger/{trigger.Id}")">@trigger.Id</a></td>
                 <td>@trigger.CreationTime</td>
                 <td>@trigger.Type</td>
                 <td>@trigger.Tag</td>

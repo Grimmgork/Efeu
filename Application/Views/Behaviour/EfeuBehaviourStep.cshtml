@@ -2,31 +2,39 @@
 @model EfeuBehaviourStep;
 
 <div class="behaviourStep">
-    <span>@(Model.Kind.ToString().ToLower())</span> <span>@Model.Name</span>
-    <partial name="EfeuBehaviourExpression" model="@Model.Input" />
-
+    @if (Model.Kind == EfeuBehaviourStepKind.Let)
+    {
+        <span>@(Model.Kind.ToString().ToLower())</span> <span>@Model.Name</span> <span class="syntaxPunctuation">be</span>
+        <partial name="EfeuBehaviourExpression" model="@Model.Input"/>
+    }
+    else
+    {
+        <span>@(Model.Kind.ToString().ToLower())</span> <span>@Model.Name</span>
+        <partial name="EfeuBehaviourExpression" model="@Model.Input"/>
+    }
+    
     @if (Model.Do.Length > 0)
     {
-        <span>do</span>
+        <span class="syntaxPunctuation">do</span>
         <div style="margin-left: 2ch">
             @foreach (EfeuBehaviourStep step in Model.Do)
             {
-                <partial name="EfeuBehaviourStep" model="@step" />
+                <partial name="EfeuBehaviourStep" model="@step"/>
             }
         </div>
     }
     @if (Model.Else.Length > 0)
     {
-        <span>else</span>
+        <span class="syntaxPunctuation">else</span>
         <div style="margin-left: 2ch">
             @foreach (EfeuBehaviourStep step in Model.Else)
             {
-                <partial name="EfeuBehaviourStep" model="@step" />
+                <partial name="EfeuBehaviourStep" model="@step"/>
             }
         </div>
     }
     @if (Model.Do.Length > 0)
     {
-        <span>end</span>
+        <span class="syntaxPunctuation">end</span>
     }
 </div>

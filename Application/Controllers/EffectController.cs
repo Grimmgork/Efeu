@@ -28,15 +28,6 @@ namespace Efeu.Application.Controllers
             this.jsonOptions = jsonOptions.Value;
         }
 
-
-        [HttpGet]
-        [Route("gccollect")]
-        public void GcCollect()
-        {
-            GC.Collect();
-        }
-
-
         [HttpGet]
         public async Task<IActionResult> Index()
         {

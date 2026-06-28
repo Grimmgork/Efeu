@@ -34,5 +34,18 @@ namespace Efeu.Application.Controllers
             Response.Headers["HX-Refresh"] = "true";
             return Ok();
         }
+
+        [HttpGet]
+        [Route("{id}")]
+        public async Task<IActionResult> Details(Guid id)
+        {
+            TriggerEntity? triggerEntity = await triggerQueries.GetByIdAsync(id);
+            if (triggerEntity == null)
+            {
+                return NotFound();
+            }
+
+            return View(triggerEntity);
+        }
     }
 }
