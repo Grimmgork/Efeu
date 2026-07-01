@@ -47,8 +47,11 @@ namespace Efeu.Integration.Services
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine(ex);
-                            await Task.Delay(2000, cancellationToken);
+                            if (ex is not OperationCanceledException)
+                            {
+                                Console.WriteLine(ex);
+                                await Task.Delay(2000, cancellationToken);
+                            }
                         }
                     }
                 }));

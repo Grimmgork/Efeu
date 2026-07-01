@@ -30,12 +30,15 @@ namespace Efeu.Integration.Services
                 {
                     DateTimeOffset timestamp = DateTimeOffset.UtcNow;
                     await deduplicationKeyCommands.CleanupAsync(timestamp);
-                    await Task.Delay(TimeSpan.FromMinutes(5));
+                    await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.ToString());
-                    await Task.Delay(TimeSpan.FromMinutes(1));
+                    if (ex is not OperationCanceledException)
+                    {
+                        Console.WriteLine(ex.ToString());
+                        await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                    }
                 }
             }
         }
