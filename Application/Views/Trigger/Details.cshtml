@@ -1,6 +1,21 @@
 @using Efeu.Integration.Entities
-@model TriggerEntity
+@using Efeu.Runtime
+@using Efeu.Runtime.Value
+@model TriggerDetailsViewModel
 
-<div>
-    Test
-</div>
+
+<split-pane direction="vertical" initial="60" >
+    <div slot="first" style="margin: 1rem;">
+        <partial name="EfeuBehaviourStep" model="@Model.Trigger.Step"/>
+    </div>
+
+    <div slot="second" style="margin: 1rem;">
+        @foreach (KeyValuePair<string, EfeuValue> constant in @Model.Trigger.Scope.Constants)
+        {
+            <div>
+                <span>@constant.Key</span><span>:</span>
+                <partial name="EfeuValueTree" model="constant.Value"/>
+            </div>
+        }
+    </div>
+</split-pane>

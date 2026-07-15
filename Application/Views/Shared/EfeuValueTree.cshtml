@@ -1,0 +1,19 @@
+@using Efeu.Runtime.Value
+@model EfeuValue
+
+@if (Model.Tag == EfeuValueTag.Nil)
+{
+    <span>@Model.ToString()</span>
+}
+else if (Model.Tag == EfeuValueTag.Integer)
+{
+    <span>@Model.ToString()</span>
+}
+else if (Model.Tag == EfeuValueTag.True || Model.Tag == EfeuValueTag.False)
+{
+    <span>@Model.ToString()</span>
+}
+else if (Model.Tag == EfeuValueTag.Object)
+{
+    <span>@Model.ToString()</span>
+}

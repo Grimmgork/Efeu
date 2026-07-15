@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
+using Efeu.Application.Models;
+using Efeu.Integration;
+using Efeu.Runtime;
 
 namespace Efeu.Application.Controllers
 {
@@ -13,11 +16,15 @@ namespace Efeu.Application.Controllers
     {
         private readonly ITriggerQueries triggerQueries;
         private readonly ITriggerCommands triggerCommands;
+        private readonly IBehaviourQueries behaviourQueries;
+        private readonly IBehaviourScopeQueries  behaviourScopeQueries;
 
-        public TriggerController(ITriggerQueries triggerQueries, ITriggerCommands triggerCommands)
+        public TriggerController(ITriggerQueries triggerQueries, ITriggerCommands triggerCommands, IBehaviourQueries behaviourQueries, IBehaviourScopeQueries behaviourScopeQueries)
         {
             this.triggerQueries = triggerQueries;
             this.triggerCommands = triggerCommands;
+            this.behaviourQueries = behaviourQueries;
+            this.behaviourScopeQueries = behaviourScopeQueries;
         }
 
         public async Task<IActionResult> Index()
@@ -44,8 +51,26 @@ namespace Efeu.Application.Controllers
             {
                 return NotFound();
             }
-
-            return View(triggerEntity);
+            
+            BehaviourVersionEntity? behaviourVersionEntity = await behaviourQueries.GetVersionByIdAsync(triggerEntity.BehaviourVersionId);
+            if (behaviourVersionEntity == null)
+            {
+                return NotFound();
+            }
+            
+            BehaviourScopeEntity? behaviourScopeEntity = await behaviourScopeQueries.GetByIdAsync(triggerEntity.ScopeId);
+            if (behaviourScopeEntity == null)
+            {
+                return NotFound();
+            }
+            
+            EfeuTrigger trigger = triggerEntity.MapToEfeuTrigger(behaviourVersionEntity.GetPosition(triggerEntity.Position), behaviourScopeEntity.MapToEfeuRuntimeScope());
+            TriggerDetailsViewModel viewModel = new TriggerDetailsViewModel()
+            {
+                Trigger = trigger,
+            };
+            
+            return View(viewModel);
         }
     }
 }

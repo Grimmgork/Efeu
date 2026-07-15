@@ -1,6 +1,7 @@
 ﻿
 .behaviourStep {
-    font-family: Consolas;
+    font-family: monospace;
+    white-space: nowrap;
 }
 
 .stringLiteral {

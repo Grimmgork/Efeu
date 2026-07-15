@@ -80,10 +80,6 @@ dialog {
 	line-height: 1.4;
 }
 
-main {
-	padding: var(--spacing-lg);
-}
-
 a {
 	color: var(--color-primary);
 }
@@ -151,22 +147,6 @@ a {
 
 .col-3 {
 	grid-column: span 3;
-}
-
-/* PANELS */
-.panel {
-	background-color: var(--color-panel);
-	border: var(--border-width) solid var(--color-border);
-	padding: var(--spacing-md);
-	border-radius: 0;
-	margin-bottom: var(--spacing-md);
-}
-
-.panel-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	cursor: pointer;
 }
 
 /* BUTTONS */
