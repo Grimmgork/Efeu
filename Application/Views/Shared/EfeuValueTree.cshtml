@@ -1,19 +1,43 @@
 @using Efeu.Runtime.Value
+@using Microsoft.IdentityModel.Tokens
 @model EfeuValue
 
 @if (Model.Tag == EfeuValueTag.Nil)
 {
-    <span>@Model.ToString()</span>
+    <span class="efeuValueNil">@Model.ToString()</span>
 }
 else if (Model.Tag == EfeuValueTag.Integer)
 {
-    <span>@Model.ToString()</span>
+    <span class="efeuValueInteger">@Model.ToString()</span>
 }
 else if (Model.Tag == EfeuValueTag.True || Model.Tag == EfeuValueTag.False)
 {
-    <span>@Model.ToString()</span>
+    <span class="efeuValueBoolean">@Model.ToString()</span>
 }
 else if (Model.Tag == EfeuValueTag.Object)
 {
-    <span>@Model.ToString()</span>
+    if (Model.AsObject() is EfeuString)
+    {
+        <span class="efeuValueString">@Model.ToString()</span>
+    }
+    else if (Model.AsObject() is EfeuHash hash)
+    {
+        if (hash.IsNullOrEmpty())
+        {
+            <span>{}</span>
+        }
+        else
+        {
+            <span>{</span>
+            @foreach (var field in hash)
+            {
+                <span>@field.Key</span><partial name="EfeuValueTree" model="@field.Value" />
+            }
+            <span>}</span>
+        }
+    }
+    else
+    {
+        <span class="test">@Model.ToString()</span>
+    }
 }

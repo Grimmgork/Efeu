@@ -1,10 +1,13 @@
 ﻿@using Efeu.Integration.Entities
 @model BehaviourEntity;
-<div>@($"{Model.Name} - v{Model.Version}") <a href="/Behaviour/@Model.Id/Latest">latest</a></div>
-<form hx-post="/Behaviour/@Model.Id/Publish" hx-encoding="multipart/form-data">
-    <input type="file" name="file" accept="application/json" />
-    <button type="submit">publish</button>
-</form>
+
+<div class="main-margin">
+    <div>@($"{Model.Name} - v{Model.Version}") <a href="/Behaviour/@Model.Id/Latest">latest</a></div>
+    <form hx-post="/Behaviour/@Model.Id/Publish" hx-encoding="multipart/form-data">
+        <input type="file" name="file" accept="application/json" />
+        <button type="submit">publish</button>
+    </form>
+</div>
 
 @{
 }

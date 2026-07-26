@@ -1,6 +1,7 @@
 ﻿@using Efeu.Integration.Entities
 @model BehaviourEntity[];
 
+<div class="main-margin">
 <div>
     <form hx-post="/Behaviour" hx-encoding="multipart/form-data">
         <input type="text" name="name" accept="application/json" class="input" placeholder="Name" />
@@ -19,14 +20,13 @@
     @foreach (BehaviourEntity entity in Model)
     {
         <tr>
-            <td><a href="/Behaviour/@entity.Id">@($"{entity.Name} - v{entity.Version}")</a></td>
+            <td><a href="/Behaviour/@entity.Id">@(entity.Name)</a></td>
             <td>@entity.Version</td>
             <td><button hx-delete="/Behaviour/@entity.Id" class="button">delete</button></td>
         </tr>
     }
 </table>
-
-
+</div>
 
 @{
 

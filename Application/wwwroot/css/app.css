@@ -40,6 +40,10 @@ main {
     min-height: 0;
 }
 
+.main-margin {
+    margin: 1rem;
+}
+
 .nav {
     display: flex;
     flex-direction: row;

@@ -1,0 +1,15 @@
+﻿@using Efeu.Integration.Entities
+@using Efeu.Runtime
+@model BehaviourVersionEntity;
+
+<div class="main-margin">
+<div>
+    <a href="/Behaviour/Version/@Model.Id/Raw" hx-boost="false" download="BehaviourVersion_@(Model.Id).json">download</a>
+</div>
+<div>
+    @foreach (EfeuBehaviourStep step in Model.Steps)
+    {
+        <partial name="EfeuBehaviourStep" model="@step" />
+    }
+</div>
+</div>

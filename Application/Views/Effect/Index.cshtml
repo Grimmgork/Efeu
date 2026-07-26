@@ -1,41 +1,44 @@
 ﻿@using Efeu.Integration.Entities
 @model EffectEntity[]
 
-<div>
-    <button class="button" hx-get="/Effect/DialogForCreate" hx-dialog >emit</button>
-    <div class="spacer-md-v"></div>
+<div class="main-margin">
+    <div>
+        <button class="button" hx-get="/Effect/DialogForCreate" hx-dialog >emit</button>
+        <div class="spacer-md-v"></div>
+    </div>
+
+    @if (Model.Length == 0)
+    {
+        <span>none</span>
+    }
+    else
+    {
+        <table>
+            <tr>
+                <th>Timestamp</th>
+                <th>Type</th>
+                <th>Tag</th>
+                <th>State</th>
+                <th>Actions</th>
+            </tr>
+            @foreach (EffectEntity effect in Model)
+            {
+                <tr>
+                    <td>@effect.CreationTime</td>
+                    <td>@effect.Type</td>
+                    <td>@effect.Tag</td>
+                    <td>@effect.State</td>
+                    <td>
+                        <button disabled="@(effect.State == EffectState.Running)" hx-post="/Effect/@effect.Id/Nudge">nudge</button>
+                        <button disabled="@(effect.State != EffectState.Running)" hx-post="/Effect/@effect.Id/Suspend">suspend</button>
+                        <button disabled="@(effect.State != EffectState.Suspended && effect.State != EffectState.Faulted)" hx-delete="/Effect/@effect.Id">delete</button>
+                    </td>
+                </tr>
+            }
+        </table>
+    }
 </div>
 
-@if (Model.Length == 0)
-{
-    <span>none</span>
-}
-else
-{
-    <table>
-        <tr>
-            <th>Timestamp</th>
-            <th>Type</th>
-            <th>Tag</th>
-            <th>State</th>
-            <th>Actions</th>
-        </tr>
-        @foreach (EffectEntity effect in Model)
-        {
-            <tr>
-                <td>@effect.CreationTime</td>
-                <td>@effect.Type</td>
-                <td>@effect.Tag</td>
-                <td>@effect.State</td>
-                <td>
-                    <button disabled="@(effect.State == EffectState.Running)" hx-post="/Effect/@effect.Id/Nudge">nudge</button>
-                    <button disabled="@(effect.State != EffectState.Running)" hx-post="/Effect/@effect.Id/Suspend">suspend</button>
-                    <button disabled="@(effect.State != EffectState.Suspended && effect.State != EffectState.Faulted)" hx-delete="/Effect/@effect.Id">delete</button>
-                </td>
-            </tr>
-        }
-    </table>
-}
 
 @{
 }

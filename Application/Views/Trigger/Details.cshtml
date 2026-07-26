@@ -3,7 +3,6 @@
 @using Efeu.Runtime.Value
 @model TriggerDetailsViewModel
 
-
 <split-pane direction="vertical" initial="60" >
     <div slot="first" style="margin: 1rem;">
         <partial name="EfeuBehaviourStep" model="@Model.Trigger.Step"/>
@@ -13,7 +12,7 @@
         @foreach (KeyValuePair<string, EfeuValue> constant in @Model.Trigger.Scope.Constants)
         {
             <div>
-                <span>@constant.Key</span><span>:</span>
+                <span>@constant.Key</span><span class="efeuValuePunctuation">:</span>
                 <partial name="EfeuValueTree" model="constant.Value"/>
             </div>
         }

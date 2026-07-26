@@ -6,7 +6,15 @@
     <title>Efeu</title>
     <link rel="stylesheet" href="~/css/efeu.css" />
     <link rel="stylesheet" href="~/css/efeu-script.css" />
+    <link rel="stylesheet" href="~/css/efeu-value.css" />
     <link rel="stylesheet" href="~/css/app.css" />
+    
+    <script src="~/js/site.js"></script>
+    <script src="~/lib/htmx/htmx.min.js"></script>
+    <script src="~/lib/htmx/hyperscript.min.js"></script>
+    <script src="~/lib/htmx/json-enc.js"></script>
+    <script src="~/js/dialog.js"></script>
+    <script src="~/js/split-pane.js"></script>
 </head>
 <body hx-ext="dialog, dialog-close" hx-boost="true" hx-indicator="#global-loader">
     <div id="modal-root"></div>
@@ -23,12 +31,6 @@
     <main>
         @RenderBody()
     </main>
-    <script src="~/js/site.js"></script>
-    <script src="~/lib/htmx/htmx.min.js"></script>
-    <script src="~/lib/htmx/hyperscript.min.js"></script>
-    <script src="~/lib/htmx/json-enc.js"></script>
-    <script src="~/js/dialog.js"></script>
-    <script src="~/js/split-pane.js"></script>
 </body>
 </html>
 

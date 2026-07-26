@@ -1,0 +1,33 @@
+
+.efeuValue {
+    font-family: monospace;
+    white-space: nowrap;
+}
+
+.efeuValueString {
+    background-color: darkorange;
+}
+
+.efeuValueDecimal {
+    background-color: aquamarine;
+}
+
+.efeuValueFloat {
+    background-color: aquamarine;
+}
+
+.efeuValueInteger {
+    background-color: aquamarine;
+}
+
+.efeuValueBoolean {
+    background-color: rgb(255, 255, 0);
+}
+
+.efeuValueNil {
+    background-color: rgb(92, 92, 92);
+}
+
+.efeuValuePunctuation {
+    color: gray;
+}

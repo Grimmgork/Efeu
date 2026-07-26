@@ -46,11 +46,32 @@ namespace Efeu.Application.Controllers
         [Route("{id}/Latest")]
         public async Task<ActionResult> Latest(int id)
         {
-            BehaviourVersionEntity? behaviour = await behaviourQueries.GetLatestVersionAsync(id);
-            if (behaviour == null)
+            BehaviourVersionEntity? behaviourVersion = await behaviourQueries.GetLatestVersionAsync(id);
+            if (behaviourVersion == null)
                 return NotFound();
 
-            return View(behaviour);
+            return Redirect($"/Behaviour/Version/{behaviourVersion.Id}");
+        }
+        
+        [HttpGet]
+        [Route("Version/{id}")]
+        public async Task<ActionResult> Version(int id)
+        {
+            BehaviourVersionEntity? behaviourVersion = await behaviourQueries.GetVersionByIdAsync(id);
+            if (behaviourVersion == null)
+                return NotFound();
+            
+            return View(behaviourVersion);
+        }
+        
+        [HttpGet]
+        [Route("Version/{id}/Raw")]
+        public async Task<ActionResult> VersionRaw(int id)
+        {
+            BehaviourVersionEntity? behaviourVersion = await behaviourQueries.GetVersionByIdAsync(id);
+            if (behaviourVersion == null)
+                return NotFound();
+            return Ok(behaviourVersion);
         }
 
         [HttpPost]
@@ -74,7 +95,7 @@ namespace Efeu.Application.Controllers
         [Route("{id}/Publish")]
         public async Task<IActionResult> PublishVersion(IFormFile file, int id)
         {
-            if (file == null || file.Length == 0)
+            if (file.Length == 0)
                 return BadRequest();
 
             JsonSerializerOptions options = new JsonSerializerOptions();

@@ -1,4 +1,6 @@
-﻿<form hx-post="/Script/Run" hx-target="#output" hx-target-5*="#output">
+﻿<div class="main-margin">
+
+<form hx-post="/Script/Run" hx-target="#output" hx-target-5*="#output">
     <textarea style="font-family: monospace; line-height: 1" name="script"></textarea>
     <button type="submit">run</button>
 </form>
@@ -6,5 +8,6 @@
 <div style="margin-top: 1rem"></div>
 <textarea id="output" name="script" readonly></textarea>
 
+</div>
 @{
 }
