@@ -74,7 +74,7 @@ namespace Efeu.Integration.Commands
 
         private readonly List<TriggerEntity> triggerEntities = [];
 
-        private readonly CachedLookup<int, BehaviourVersionEntity> behaviourVersionEntityCache;
+        private readonly CachedLookup<Guid, BehaviourVersionEntity> behaviourVersionEntityCache;
         private readonly CachedLookup<Guid, BehaviourScopeEntity> behaviourScopeEntityCache;
 
         public TriggerProcessingContext(TriggerEntity[] triggerEntities, IBehaviourQueries behaviourQueries, IBehaviourScopeQueries behaviourScopeQueries, EfeuTrigger[] createdTriggers)
@@ -84,7 +84,7 @@ namespace Efeu.Integration.Commands
             TriggerEntity[] createdTriggerEntities = createdTriggers.Select(i => i.MapToTriggerEntity()).ToArray();
             BehaviourScopeEntity[] createdBehaviourScopeEntities = createdTriggers.Select(i => i.Scope.MapToBehaviourScopeEntity(0)).ToArray();
 
-            this.behaviourVersionEntityCache = new CachedLookup<int, BehaviourVersionEntity>(behaviourQueries.GetVersionsByIdsAsync, i => i.Id);
+            this.behaviourVersionEntityCache = new CachedLookup<Guid, BehaviourVersionEntity>(behaviourQueries.GetVersionsByIdsAsync, i => i.Id);
             this.behaviourScopeEntityCache = new CachedLookup<Guid, BehaviourScopeEntity>(createdBehaviourScopeEntities, behaviourScopeQueries.GetByIdsAsync, i => i.Id);
 
             foreach (EfeuTrigger trigger in createdTriggers)

@@ -21,7 +21,7 @@ namespace Efeu.Runtime
         public DateTimeOffset Now;
 
         public bool IsImmediate;
-        public int BehaviourId;
+        public Guid BehaviourId;
         public Guid CorrelationId;
         public Guid CausationId;
         public bool IsStatic;
@@ -33,7 +33,7 @@ namespace Efeu.Runtime
 
         private Dictionary<EfeuBehaviourStep, string> positionLookup = new Dictionary<EfeuBehaviourStep, string>();
 
-        public EfeuRuntime(Guid correlationId, Guid causationId, int behaviourId, bool isImmediate, Guid matter, bool isStatic, DateTimeOffset now)
+        public EfeuRuntime(Guid correlationId, Guid causationId, Guid behaviourId, bool isImmediate, Guid matter, bool isStatic, DateTimeOffset now)
         {
             this.CorrelationId = correlationId;
             this.IsImmediate = isImmediate;
@@ -43,7 +43,7 @@ namespace Efeu.Runtime
             this.Now = now;
         }
 
-        public static EfeuRuntime Run(EfeuBehaviourStep[] steps, int behaviourId, DateTimeOffset timestamp)
+        public static EfeuRuntime Run(EfeuBehaviourStep[] steps, Guid behaviourId, DateTimeOffset timestamp)
         {
             EfeuRuntime runtime = new EfeuRuntime(
                 correlationId: Guid.NewGuid(), 

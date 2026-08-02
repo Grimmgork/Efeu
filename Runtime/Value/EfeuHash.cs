@@ -60,5 +60,10 @@ namespace Efeu.Runtime.Value
                 context.WriteReference(keys.Value);
             }
         }
+
+        public override EfeuValue Traverse(EfeuValue identifier)
+        {
+            return Hash[identifier.ToString()];
+        }
     }
 }

@@ -29,7 +29,7 @@ namespace Efeu.Integration.Commands
             await unitOfWork.CompleteAsync();
         }
 
-        public async Task DeleteStaticAsync(int definitionVersionId)
+        public async Task DeleteStaticAsync(Guid definitionVersionId)
         {
             await unitOfWork.BeginAsync();
             await unitOfWork.LockAsync("Trigger");

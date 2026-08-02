@@ -41,6 +41,11 @@ namespace Efeu.Runtime.Value
             throw new NotImplementedException();
         }
 
+        public virtual EfeuValue Traverse(EfeuValue identifier)
+        {
+            throw new NotImplementedException();
+        }
+
         public virtual bool Equals(EfeuValue value)
         {
             return this.Equals((object)value.AsObject());

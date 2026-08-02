@@ -11,15 +11,15 @@ namespace Efeu.Integration.Persistence
     {
         public Task<BehaviourEntity?> GetByIdAsync(int id);
 
-        public Task<BehaviourVersionEntity[]> GetVersionsByIdsAsync(int[] ids);
+        public Task<BehaviourVersionEntity[]> GetVersionsByIdsAsync(Guid[] ids);
 
-        public Task<BehaviourVersionEntity?> GetVersionByIdAsync(int id);
+        public Task<BehaviourVersionEntity?> GetVersionByIdAsync(Guid id);
 
         public Task<BehaviourEntity[]> GetAllAsync();
 
         public Task<int> CreateAsync(BehaviourEntity entity);
 
-        public Task<int> CreateVersionAsync(BehaviourVersionEntity behaviourVersion);
+        public Task CreateVersionAsync(BehaviourVersionEntity behaviourVersion);
 
         public Task UpdateAsync(BehaviourEntity entity);
 

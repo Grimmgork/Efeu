@@ -13,7 +13,7 @@ namespace Efeu.Runtime
 
         private EfeuRuntimeSimulation() { }
 
-        public static EfeuRuntimeSimulation Run(EfeuBehaviourStep[] steps, int definitionId = 0)
+        public static EfeuRuntimeSimulation Run(EfeuBehaviourStep[] steps, Guid definitionId = default)
         {
             EfeuRuntimeSimulation simulation = new EfeuRuntimeSimulation();
             EfeuRuntime runtime = EfeuRuntime.Run(steps, definitionId, DateTime.Now);

@@ -27,6 +27,6 @@ namespace Efeu.Integration.Commands
 
         public Task SendMessageDeduplicatedAsync(EfeuMessage message);
 
-        public Task RunImmediate(EfeuBehaviourStep[] steps, int behaviourVersionId, DateTimeOffset timestamp);
+        public Task RunImmediate(EfeuBehaviourStep[] steps, Guid behaviourVersionId, DateTimeOffset timestamp);
     }
 }

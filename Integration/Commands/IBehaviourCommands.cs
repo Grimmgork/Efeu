@@ -11,7 +11,7 @@ namespace Efeu.Integration.Commands
     {
         public Task<int> CreateAsync(string name);
 
-        public Task<int> PublishVersionAsync(int behaviourId, EfeuBehaviourStep[] steps);
+        public Task<Guid> PublishVersionAsync(int behaviourId, EfeuBehaviourStep[] steps);
 
         public Task DeleteAsync(int id);
     }

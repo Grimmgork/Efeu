@@ -55,7 +55,7 @@ namespace Efeu.Application.Controllers
         
         [HttpGet]
         [Route("Version/{id}")]
-        public async Task<ActionResult> Version(int id)
+        public async Task<ActionResult> Version(Guid id)
         {
             BehaviourVersionEntity? behaviourVersion = await behaviourQueries.GetVersionByIdAsync(id);
             if (behaviourVersion == null)
@@ -66,7 +66,7 @@ namespace Efeu.Application.Controllers
         
         [HttpGet]
         [Route("Version/{id}/Raw")]
-        public async Task<ActionResult> VersionRaw(int id)
+        public async Task<ActionResult> VersionRaw(Guid id)
         {
             BehaviourVersionEntity? behaviourVersion = await behaviourQueries.GetVersionByIdAsync(id);
             if (behaviourVersion == null)

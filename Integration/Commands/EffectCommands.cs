@@ -61,7 +61,7 @@ namespace Efeu.Integration.Commands
             return effectQueries.AbortEffectAsync(id);
         }
 
-        public async Task RunImmediate(EfeuBehaviourStep[] steps, int definitionVersionId, DateTimeOffset timestamp)
+        public async Task RunImmediate(EfeuBehaviourStep[] steps, Guid definitionVersionId, DateTimeOffset timestamp)
         {
             await unitOfWork.BeginAsync();
             await unitOfWork.LockAsync("Trigger");

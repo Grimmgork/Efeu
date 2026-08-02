@@ -85,13 +85,13 @@ assignment
     ;
 
 traversal
-    : ID traversal_tail*
+    : ID traversal_tail?
     ;
     
 traversal_tail
-    : TRAVERSAL_ID traversal_tail*
-    | TRAVERSAL_EXPR expression ')' traversal_tail*
-    | '(' expression ')' traversal_tail*
+    : TRAVERSAL_ID traversal_tail?
+    | TRAVERSAL_ID_EXPR expression ')' traversal_tail?
+    | '(' expression ')' traversal_tail?
     ;
 
 // Lexer rules (keywords first!)
@@ -125,7 +125,7 @@ ELSE  : 'else' ;
 
 CONST   : [a-zA-Z_][a-zA-Z0-9_]*':' ;
 ID      : [a-zA-Z_][a-zA-Z0-9_]* ;
-TRAVERSAL_EXPR : '.' [a-zA-Z_][a-zA-Z0-9_]* '(';
+TRAVERSAL_ID_EXPR : '.' [a-zA-Z_][a-zA-Z0-9_]* '(';
 TRAVERSAL_ID : '.' [a-zA-Z_][a-zA-Z0-9_]* ;
 LPAREN  : '(' ;
 RPAREN  : ')' ;

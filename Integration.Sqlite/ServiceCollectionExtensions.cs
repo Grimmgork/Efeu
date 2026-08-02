@@ -74,6 +74,7 @@ namespace Efeu.Integration.Sqlite
                 .Property(p => p.Id)
                     .IsIdentity()
                     .IsPrimaryKey()
+                    .HasSkipOnInsert(false)
                 .Property(p => p.Version)
                 .Property(p => p.Steps);
 

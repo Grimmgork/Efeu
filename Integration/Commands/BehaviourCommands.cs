@@ -43,11 +43,11 @@ namespace Efeu.Integration.Commands
             await unitOfWork.LockAsync($"Behaviour:{behaviourId}");
             BehaviourVersionEntity? behaviourVersionEntity = await behaviourQueries.GetLatestVersionAsync(behaviourId);
             await behaviourQueries.DeleteAsync(behaviourId);
-            await triggerCommands.DeleteStaticAsync(behaviourVersionEntity?.Id ?? 0);
+            await triggerCommands.DeleteStaticAsync(behaviourVersionEntity?.Id ?? Guid.Empty);
             await unitOfWork.CompleteAsync();
         }
 
-        public async Task<int> PublishVersionAsync(int behaviourId, EfeuBehaviourStep[] steps)
+        public async Task<Guid> PublishVersionAsync(int behaviourId, EfeuBehaviourStep[] steps)
         {
             await unitOfWork.BeginAsync();
             await unitOfWork.LockAsync($"Behaviour:{behaviourId}");
@@ -58,14 +58,14 @@ namespace Efeu.Integration.Commands
                 await triggerCommands.DeleteStaticAsync(behaviourVersionEntity.Id);
             }
 
-            int newBehaviourVersionId = await CreateVersionAsync(behaviourId, steps);
+            Guid newBehaviourVersionId = await CreateVersionAsync(behaviourId, steps);
 
             await effectCommands.RunImmediate(steps, newBehaviourVersionId, DateTime.Now);
             await unitOfWork.CompleteAsync();
             return newBehaviourVersionId;
         }
 
-        private async Task<int> CreateVersionAsync(int behaviourId, EfeuBehaviourStep[] steps)
+        private async Task<Guid> CreateVersionAsync(int behaviourId, EfeuBehaviourStep[] steps)
         {
             BehaviourEntity? behaviourEntity = await behaviourQueries.GetByIdAsync(behaviourId);
             if (behaviourEntity == null)
@@ -76,12 +76,14 @@ namespace Efeu.Integration.Commands
 
             BehaviourVersionEntity behaviourVersionEntity = new BehaviourVersionEntity()
             {
+                Id = Guid.NewGuid(),
                 BehaviourId = behaviourId,
                 Steps = steps,
                 Version = behaviourEntity.Version,
             };
 
-            return await behaviourQueries.CreateVersionAsync(behaviourVersionEntity);
+            await behaviourQueries.CreateVersionAsync(behaviourVersionEntity);
+            return behaviourVersionEntity.Id;
         }
     }
 }

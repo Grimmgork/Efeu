@@ -40,7 +40,7 @@ namespace Efeu.Runtime
 
         public EfeuTriggerMatch[] Fields = [];
 
-        public int BehaviourId;
+        public Guid BehaviourId;
 
         public Guid Group;
 

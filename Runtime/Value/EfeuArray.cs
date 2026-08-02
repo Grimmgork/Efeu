@@ -87,5 +87,10 @@ namespace Efeu.Runtime.Value
         {
             return GetEnumerator();
         }
+        
+        public override EfeuValue Traverse(EfeuValue identifier)
+        {
+            return Items[(int)identifier.AsLong()];
+        }
     }
 }

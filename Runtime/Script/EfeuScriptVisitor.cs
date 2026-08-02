@@ -87,8 +87,35 @@ namespace Efeu.Runtime.Script
 
         public override EfeuValue VisitTraversal([NotNull] EfeuGrammarParser.TraversalContext context)
         {
-            string name = context.GetText();
-            return scope.Get(name);
+            string variableName = context.ID().GetText();
+            EfeuValue value = scope.Get(variableName);
+            var traversalContext = context.traversal_tail();
+            while (traversalContext != null)
+            {
+                if (traversalContext.TRAVERSAL_ID() != null)
+                {
+                    // .name
+                    string id = traversalContext.TRAVERSAL_ID().GetText().Substring(1);
+                    value = value.AsObject().Traverse(id);
+                }
+                else if (traversalContext.TRAVERSAL_ID_EXPR() != null)
+                {
+                    // .name(expr)
+                    string id1 = traversalContext.TRAVERSAL_ID().GetText().Substring(1);
+                    string id2 = Visit(traversalContext.expression()).ToString();
+                    value = value.AsObject().Traverse(id1).AsObject().Traverse(id2);
+                }
+                else
+                {
+                    // (expr)
+                    string id = Visit(traversalContext.expression()).ToString();
+                    value = value.AsObject().Traverse(id);
+                }
+
+                traversalContext = traversalContext.traversal_tail();
+            }
+
+            return value;
         }
 
         public override EfeuValue VisitBinaryExpr([NotNull] EfeuGrammarParser.BinaryExprContext context)

@@ -18,9 +18,9 @@ namespace Efeu.Integration.Persistence
 
         public Task CreateBulkAsync(TriggerEntity[] triggers);
 
-        public Task<TriggerEntity[]> GetStaticAsync(int definitionVersionId);
+        public Task<TriggerEntity[]> GetStaticAsync(Guid definitionVersionId);
 
-        public Task DetatchStaticAsync(int DefinitionVersionId);
+        public Task DetatchStaticAsync(Guid definitionVersionId);
 
         public Task DetatchAsync(Guid[] ids);
 

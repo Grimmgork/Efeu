@@ -5,7 +5,7 @@ namespace Efeu.Integration.Entities
 
     public class BehaviourVersionEntity
 	{
-        public int Id;
+        public Guid Id;
 
         public int BehaviourId;
 

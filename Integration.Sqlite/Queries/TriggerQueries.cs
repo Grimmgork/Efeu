@@ -41,7 +41,7 @@ namespace Efeu.Integration.Sqlite.Queries
                 .UpdateAsync();
         }
 
-        public Task DetatchStaticAsync(int definitionVersionId)
+        public Task DetatchStaticAsync(Guid definitionVersionId)
         {
             return connection.GetTable<TriggerEntity>()
                 .Where(i => i.BehaviourVersionId == definitionVersionId
@@ -79,7 +79,7 @@ namespace Efeu.Integration.Sqlite.Queries
                 .ToArrayAsync();
         }
 
-        public Task<TriggerEntity[]> GetStaticAsync(int definitionVersionId)
+        public Task<TriggerEntity[]> GetStaticAsync(Guid definitionVersionId)
         {
             return connection.GetTable<TriggerEntity>()
                 .Where(i => i.BehaviourVersionId == definitionVersionId
