@@ -11,6 +11,7 @@ scope
 expression
     : LPAREN expression RPAREN # GroupExpr
     | expression operator expression # BinaryExpr
+    | expression unary_operator # UnaryExpr
     | expression with_method_call # MethodExpr
     | expression with_struct_mod # StructModExpr
     | expression with_array_mod # ArrayModExpr
@@ -37,12 +38,18 @@ operator
     | EQUALS
     ;
 
+unary_operator
+    : INCR
+    | DECR
+    | NOT
+    ;
+
 then
-    : THEN expression ELSE expression
+    : THEN expression ELSE expression END?
     ;
 
 unless
-    : UNLESS expression ELSE expression
+    : UNLESS expression ELSE expression END?
     ;
 
 array_constructor
@@ -50,7 +57,7 @@ array_constructor
     ;
 
 struct_constructor
-    : CLPAREN NL (CONST expression ((NL|COMMA) CONST expression)*)? NL CRPAREN
+    : CLPAREN (CONST expression ((COMMA?) CONST expression)*)? CRPAREN
     ;
 
 with_method_call
@@ -74,13 +81,17 @@ with_array_mod_item
     ;
 
 assignment
-    : LET CONST expression END
+    : LET CONST expression
     ;
 
 traversal
-    : ID
-    | ID '.' traversal
-    | '(' expression ')'
+    : ID traversal_tail*
+    ;
+    
+traversal_tail
+    : TRAVERSAL_ID traversal_tail*
+    | TRAVERSAL_EXPR expression ')' traversal_tail*
+    | '(' expression ')' traversal_tail*
     ;
 
 // Lexer rules (keywords first!)
@@ -88,9 +99,10 @@ END     : 'end';
 LET     : 'let';
 DO      : 'do';
 WITH    : '$';
+NOT     : 'not';
 NIL     : 'nil';
 TRUE    : 'true';
-FALSE   : 'false'; 
+FALSE   : 'false';
 
 DECIMAL : [0-9]+ '.' [0-9]+ 'd' ;
 FLOAT   : [0-9]+ '.' [0-9]+ ;
@@ -105,12 +117,16 @@ MUL   : '*' ;
 DIV   : '/' ;
 MOD   : '%' ;
 EQUALS: '=' ;
+INCR  : '++' ;
+DECR  : '--' ;
 THEN  : 'then' ;
 UNLESS: 'unless' ;
 ELSE  : 'else' ;
 
 CONST   : [a-zA-Z_][a-zA-Z0-9_]*':' ;
 ID      : [a-zA-Z_][a-zA-Z0-9_]* ;
+TRAVERSAL_EXPR : '.' [a-zA-Z_][a-zA-Z0-9_]* '(';
+TRAVERSAL_ID : '.' [a-zA-Z_][a-zA-Z0-9_]* ;
 LPAREN  : '(' ;
 RPAREN  : ')' ;
 CLPAREN : '{' ;
@@ -118,5 +134,5 @@ CRPAREN : '}' ;
 SLPAREN : '[' ;
 SRPAREN : ']' ;
 COMMA   : ',' ;
-NL      : '\r\n'|'\n'|'\r' ;
-WS      : [ \t]+ -> skip ;
+WS      : [ \t\r\n]+ -> skip ;
+LINE_COMMENT : '#' ~[\r\n]* -> skip ;

@@ -25,12 +25,12 @@
 <pre><code class="language-hyper">
 # this is a comment.
 
-let list be ["asdawd", "adawdaw", "adadwawd", "adadwad"]
-let a be 2
-let b be 4
+let list: ["asdawd", "adawdaw", "adadwawd", "adadwad"]
+let a: 2
+let b: 4
 
 list $ map do :item
-	let a be 2 + 4
+	let a: 2 + 4
 	item + a
 end $ select do :item :name
 	item > 3
@@ -45,7 +45,7 @@ obj $ map do :key :value
 
 end
 
-obj[1].name.name[1] $ list do :item 
+obj(1).name.name(1) $ list do :item 
 	item + 1
 end $ {
 	name: .name
@@ -58,6 +58,21 @@ end $ {
 
 [5..6] $ each do :item 1 end
 
+let var: 10
+let var: 10 + 2
+var unless
+{
+  name: { 
+    name: 2
+    name: 2
+  }
+  name: [1, 2, 3]
+  name: "asdawd"
+} else 2 + 2 not 
+end 
+not $ where do name:
+   name .name (1) (1) .name (name) .name (1) .name not
+end
 
 </code></pre>
 
@@ -65,11 +80,11 @@ end $ {
 <script>
 Prism.languages.hyper = {
   'comment': /#.*/,
-  'keyword': /\b(do|end|then|set|let|if|else|be|to|call|wait|for|in|send|append|and|with|or|not|pipe|switch|is|def)\b/,
+  'keyword': /\b(do|end|then|set|let|if|else|be|to|call|wait|for|in|send|append|and|with|pipe|switch|is|def)\b/,
   'boolean': /\b(true|false)\b/,
   'number': /\b\d+(\.\d+)?\b/,
   'string': /"(?:\\.|[^"\\])*"/,
-  'operator': /[$+\-*\/]|[><=]=?|:/,
+  'operator': /[$+\-*\/]|[><=]=?|not|\+\+|--:/,
   'punctuation': /[{}()[\].,]/,
   'variable': /\B@[a-zA-Z_][a-zA-Z0-9_]*\b/
 };
