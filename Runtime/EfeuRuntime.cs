@@ -102,7 +102,7 @@ namespace Efeu.Runtime
 
             EfeuRuntimeScope scope = trigger.Scope
                 .With("now", Now)
-                .With(trigger.Step.ArgumentName, message.Payload);
+                .With(trigger.Step.ArgumentName ?? "@", message.Payload);
 
             EfeuBehaviourStep[] steps = trigger.Step.Do;
             RunSteps(steps, $"{trigger.Position}/Do", scope); // Assumption: all trigger continuations are done in the Do route
@@ -287,7 +287,7 @@ namespace Efeu.Runtime
         {
             foreach (EfeuValue item in step.Input.Evaluate(scope).Each())
             {
-                RunSteps(step.Do, $"{position}/Do", scope.With(step.ArgumentName, item));
+                RunSteps(step.Do, $"{position}/Do", scope.With(step.ArgumentName ?? "@", item));
             }
         }
 

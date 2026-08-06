@@ -33,7 +33,7 @@ namespace Efeu.Runtime
 
         public EfeuBehaviourExpression Input = EfeuBehaviourExpression.Empty;
 
-        public string ArgumentName = "@";
+        public string? ArgumentName;
 
         public EfeuBehaviourStep[] Do = [];
 
@@ -72,7 +72,7 @@ namespace Efeu.Runtime
         [JsonIgnore]
         public Func<EfeuRuntimeScope, EfeuValue> Func = (_) => default;
 
-        public EfeuExpressionType Type;
+        public EfeuExpressionType Type = EfeuExpressionType.Nil;
 
         public EfeuValue Value;
 

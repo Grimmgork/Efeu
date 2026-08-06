@@ -15,7 +15,5 @@ namespace Efeu.Integration.Entities
         public string Name = "";
 
         public int Version;
-
-        public EfeuBehaviourStep[] Steps = [];
     }
 }

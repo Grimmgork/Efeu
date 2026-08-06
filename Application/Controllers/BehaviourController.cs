@@ -6,9 +6,15 @@ using Efeu.Runtime.Json.Converters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections;
+using System.Linq;
+using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
+using Efeu.Integration.Json;
+using Efeu.Runtime.Value;
 
 namespace Efeu.Application.Controllers
 {
@@ -71,7 +77,37 @@ namespace Efeu.Application.Controllers
             BehaviourVersionEntity? behaviourVersion = await behaviourQueries.GetVersionByIdAsync(id);
             if (behaviourVersion == null)
                 return NotFound();
-            return Ok(behaviourVersion);
+            
+            var resolver = new DefaultJsonTypeInfoResolver();
+            resolver.Modifiers.Add(
+                JsonModifierBuilder.For<EfeuBehaviourStep>()
+                    .IgnoreWhenEquals(i => i.Id, Guid.Empty)
+                    .IgnoreWhenEmpty(i => i.Do)
+                    .IgnoreWhenEmpty(i => i.Else)
+                    .IgnoreWhenEmpty(i => i.Error)
+                    .IgnoreWhenNull(i => i.ArgumentName)
+                    .IgnoreWhenEmpty(i => i.Name)
+                    .Build());
+            
+            resolver.Modifiers.Add(
+                JsonModifierBuilder.For<EfeuBehaviourExpression>()
+                    .IgnoreWhenEquals(i => i.Type, EfeuExpressionType.Nil)
+                    .IgnoreWhenEmpty(i => i.Code)
+                    .IgnoreWhenEmpty(i => i.Items)
+                    .IgnoreWhenEmpty(i => i.Fields)
+                    .IgnoreWhenEquals(i => i.Value, EfeuValue.Nil())
+                    .Build());
+            
+            resolver.Modifiers.Add(ObjectExtensions.JsonSkipWhenEmpty<EfeuBehaviourStep>(obj => obj.Do));
+            
+            JsonSerializerOptions options = new JsonSerializerOptions();
+            options.IncludeFields = true;
+            options.TypeInfoResolver = resolver;
+            options.WriteIndented = true;
+            options.Converters.Add(new EfeuValueJsonConverter());
+            options.Converters.Add(new JsonStringEnumConverter());
+
+            return new JsonResult(behaviourVersion, options);
         }
 
         [HttpPost]
