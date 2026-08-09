@@ -19,8 +19,7 @@ namespace Efeu.Runtime.Value
             Bytes = hash;
         }
     }
-
-
+    
     public interface IEfeuReferenceCache
     {
         public Task LoadAsync(Guid bundle);

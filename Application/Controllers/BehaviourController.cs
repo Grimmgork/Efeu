@@ -98,8 +98,6 @@ namespace Efeu.Application.Controllers
                     .IgnoreWhenEquals(i => i.Value, EfeuValue.Nil())
                     .Build());
             
-            resolver.Modifiers.Add(ObjectExtensions.JsonSkipWhenEmpty<EfeuBehaviourStep>(obj => obj.Do));
-            
             JsonSerializerOptions options = new JsonSerializerOptions();
             options.IncludeFields = true;
             options.TypeInfoResolver = resolver;
@@ -107,7 +105,14 @@ namespace Efeu.Application.Controllers
             options.Converters.Add(new EfeuValueJsonConverter());
             options.Converters.Add(new JsonStringEnumConverter());
 
-            return new JsonResult(behaviourVersion, options);
+            BehaviourExport export = new BehaviourExport()
+            {
+                Id = behaviourVersion.Id,
+                Version = behaviourVersion.Version,
+                Steps = behaviourVersion.Steps
+            };
+            
+            return new JsonResult(export, options);
         }
 
         [HttpPost]
