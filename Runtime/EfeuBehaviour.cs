@@ -6,121 +6,120 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 
-namespace Efeu.Runtime
+namespace Efeu.Runtime;
+
+public enum EfeuBehaviourStepKind
 {
-    public enum EfeuBehaviourStepKind
+    Emit,
+    Raise,
+    Let,
+    Await, // (also await all)
+    First, // (also await the first one)
+    If,
+    Unless,
+    For,
+    Loop,
+    Next,
+    On // also await any
+}
+
+public class EfeuBehaviourStep
+{
+    public Guid Id;
+
+    public EfeuBehaviourStepKind Kind;
+
+    public string Name = "";
+
+    public EfeuBehaviourExpression Input = EfeuBehaviourExpression.Empty;
+
+    public string? ArgumentName;
+
+    public EfeuBehaviourStep[] Do = [];
+
+    public EfeuBehaviourStep[] Else = [];
+
+    public EfeuBehaviourStep[] Error = [];
+}
+
+public class EfeuBehaviourMatch
+{
+    public string Name = "";
+
+    public EfeuBehaviourExpression Input = EfeuBehaviourExpression.Empty;
+
+    public EfeuBehaviourStep[] Do = [];
+}
+
+
+public enum EfeuExpressionType
+{
+    Nil,
+    String,
+    Boolean,
+    Integer,
+    Decimal,
+    Float,
+    Struct,
+    Array,
+    ScriptLine,
+    Script,
+    Eval
+}
+
+public class EfeuBehaviourExpression
+{
+    [JsonIgnore]
+    public Func<EfeuRuntimeScope, EfeuValue> Func = (_) => default;
+
+    public EfeuExpressionType Type = EfeuExpressionType.Nil;
+
+    public EfeuValue Value;
+
+    public string Code = "";
+
+    public Dictionary<string, EfeuBehaviourExpression> Fields = [];
+
+    public EfeuBehaviourExpression[] Items = [];
+
+
+    public static EfeuBehaviourExpression Empty = new EfeuBehaviourExpression();
+
+    public static EfeuBehaviourExpression Eval(Func<EfeuRuntimeScope, EfeuValue> func)
     {
-        Emit,
-        Raise,
-        Let,
-        Await, // (also await all)
-        First, // (also await the first one)
-        If,
-        Unless,
-        For,
-        Loop,
-        Next,
-        On // also await any
-    }
-
-    public class EfeuBehaviourStep
-    {
-        public Guid Id;
-
-        public EfeuBehaviourStepKind Kind;
-
-        public string Name = "";
-
-        public EfeuBehaviourExpression Input = EfeuBehaviourExpression.Empty;
-
-        public string? ArgumentName;
-
-        public EfeuBehaviourStep[] Do = [];
-
-        public EfeuBehaviourStep[] Else = [];
-
-        public EfeuBehaviourStep[] Error = [];
-    }
-
-    public class EfeuBehaviourMatch
-    {
-        public string Name = "";
-
-        public EfeuBehaviourExpression Input = EfeuBehaviourExpression.Empty;
-
-        public EfeuBehaviourStep[] Do = [];
-    }
-
-
-    public enum EfeuExpressionType
-    {
-        Nil,
-        String,
-        Boolean,
-        Integer,
-        Decimal,
-        Float,
-        Struct,
-        Array,
-        ScriptLine,
-        Script,
-        Eval
-    }
-
-    public class EfeuBehaviourExpression
-    {
-        [JsonIgnore]
-        public Func<EfeuRuntimeScope, EfeuValue> Func = (_) => default;
-
-        public EfeuExpressionType Type = EfeuExpressionType.Nil;
-
-        public EfeuValue Value;
-
-        public string Code = "";
-
-        public Dictionary<string, EfeuBehaviourExpression> Fields = [];
-
-        public EfeuBehaviourExpression[] Items = [];
-
-
-        public static EfeuBehaviourExpression Empty = new EfeuBehaviourExpression();
-
-        public static EfeuBehaviourExpression Eval(Func<EfeuRuntimeScope, EfeuValue> func)
+        return new EfeuBehaviourExpression()
         {
-            return new EfeuBehaviourExpression()
-            {
-                Type = EfeuExpressionType.Eval,
-                Func = func
-            };
-        }
+            Type = EfeuExpressionType.Eval,
+            Func = func
+        };
+    }
 
-        public static EfeuBehaviourExpression Eval(Func<EfeuValue> func)
+    public static EfeuBehaviourExpression Eval(Func<EfeuValue> func)
+    {
+        return new EfeuBehaviourExpression()
         {
-            return new EfeuBehaviourExpression()
-            {
-                Type = EfeuExpressionType.Eval,
-                Func = (_) => func()
-            };
-        }
+            Type = EfeuExpressionType.Eval,
+            Func = (_) => func()
+        };
+    }
 
-        public EfeuValue Evaluate(EfeuRuntimeScope context)
+    public EfeuValue Evaluate(EfeuRuntimeScope context)
+    {
+        return Type switch
         {
-            return Type switch
-            {
-                EfeuExpressionType.Nil => Value,
-                EfeuExpressionType.Boolean => Value,
-                EfeuExpressionType.String => Value,
-                EfeuExpressionType.Decimal => Value,
-                EfeuExpressionType.Float => Value,
-                EfeuExpressionType.Integer => Value,
-                EfeuExpressionType.Eval => Func(context),
-                EfeuExpressionType.Script => EfeuScript.Run(Code, new EfeuScriptScope(context)),
-                EfeuExpressionType.ScriptLine => EfeuScript.Run(Code, new EfeuScriptScope(context)),
-                EfeuExpressionType.Struct => new EfeuHash(Fields.Select(i =>
-                    new KeyValuePair<string, EfeuValue>(i.Key, i.Value.Evaluate(context)))),
-                EfeuExpressionType.Array => new EfeuArray(Items.Select(i => i.Evaluate(context))),
-                _ => throw new NotImplementedException()
-            };
-        }
+            EfeuExpressionType.Nil => Value,
+            EfeuExpressionType.Boolean => Value,
+            EfeuExpressionType.String => Value,
+            EfeuExpressionType.Decimal => Value,
+            EfeuExpressionType.Float => Value,
+            EfeuExpressionType.Integer => Value,
+            EfeuExpressionType.Eval => Func(context),
+            EfeuExpressionType.Script => EfeuScript.Run(Code, new EfeuScriptScope(context)),
+            EfeuExpressionType.ScriptLine => EfeuScript.Run(Code, new EfeuScriptScope(context)),
+            EfeuExpressionType.Struct => new EfeuHash(Fields.Select(i =>
+                new KeyValuePair<string, EfeuValue>(i.Key, i.Value.Evaluate(context)))),
+            EfeuExpressionType.Array => new EfeuArray(Items.Select(i => i.Evaluate(context))),
+            _ => throw new NotImplementedException()
+        };
     }
 }

@@ -7,17 +7,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration
+namespace Efeu.Integration;
+
+public static class HostExtensions
 {
-    public static class HostExtensions
+    public static Task MigrateEfeuAsync(this IHost host, int version = 0)
     {
-        public static Task MigrateEfeuAsync(this IHost host, int version = 0)
+        using (var scope = host.Services.CreateScope())
         {
-            using (var scope = host.Services.CreateScope())
-            {
-                IEfeuMigrationRunner migrationRunner = scope.ServiceProvider.GetRequiredService<IEfeuMigrationRunner>();
-                return migrationRunner.MigrateToAsync(version);
-            }
+            IEfeuMigrationRunner migrationRunner = scope.ServiceProvider.GetRequiredService<IEfeuMigrationRunner>();
+            return migrationRunner.MigrateToAsync(version);
         }
     }
 }

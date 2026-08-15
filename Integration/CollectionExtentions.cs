@@ -5,18 +5,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration
+namespace Efeu.Integration;
+
+internal static class CollectionExtentions
 {
-    internal static class CollectionExtentions
+    public static void RemoveAll<T>(this ICollection<T> collection, Func<T, bool> predicate)
     {
-        public static void RemoveAll<T>(this ICollection<T> collection, Func<T, bool> predicate)
+        foreach (T item in collection)
         {
-            foreach (T item in collection)
+            if (predicate(item))
             {
-                if (predicate(item))
-                {
-                    collection.Remove(item);
-                }
+                collection.Remove(item);
             }
         }
     }

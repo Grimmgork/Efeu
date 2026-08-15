@@ -5,26 +5,25 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Persistence
+namespace Efeu.Integration.Persistence;
+
+public interface IBehaviourQueries
 {
-    public interface IBehaviourQueries
-    {
-        public Task<BehaviourEntity?> GetByIdAsync(int id);
+    public Task<BehaviourEntity?> GetByIdAsync(int id);
 
-        public Task<BehaviourVersionEntity[]> GetVersionsByIdsAsync(Guid[] ids);
+    public Task<BehaviourVersionEntity[]> GetVersionsByIdsAsync(Guid[] ids);
 
-        public Task<BehaviourVersionEntity?> GetVersionByIdAsync(Guid id);
+    public Task<BehaviourVersionEntity?> GetVersionByIdAsync(Guid id);
 
-        public Task<BehaviourEntity[]> GetAllAsync();
+    public Task<BehaviourEntity[]> GetAllAsync();
 
-        public Task<int> CreateAsync(BehaviourEntity entity);
+    public Task<int> CreateAsync(BehaviourEntity entity);
 
-        public Task CreateVersionAsync(BehaviourVersionEntity behaviourVersion);
+    public Task CreateVersionAsync(BehaviourVersionEntity behaviourVersion);
 
-        public Task UpdateAsync(BehaviourEntity entity);
+    public Task UpdateAsync(BehaviourEntity entity);
 
-        public Task<BehaviourVersionEntity?> GetLatestVersionAsync(int behaviourId);
+    public Task<BehaviourVersionEntity?> GetLatestVersionAsync(int behaviourId);
 
-        public Task DeleteAsync(int id);
-    }
+    public Task DeleteAsync(int id);
 }

@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Foreign
+namespace Efeu.Integration.Foreign;
+
+public interface IEfeuTriggerProvider
 {
-    public interface IEfeuTriggerProvider
-    {
-        public IEfeuTrigger? TryGetTrigger(string name);
-    }
+    public IEfeuTrigger? TryGetTrigger(string name);
 }

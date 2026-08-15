@@ -5,14 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Commands
+namespace Efeu.Integration.Commands;
+
+public interface IBehaviourCommands
 {
-    public interface IBehaviourCommands
-    {
-        public Task<int> CreateAsync(string name);
+    public Task<int> CreateAsync(string name);
 
-        public Task<Guid> PublishVersionAsync(int behaviourId, EfeuBehaviourStep[] steps);
+    public Task<Guid> PublishVersionAsync(int behaviourId, EfeuBehaviourStep[] steps);
 
-        public Task DeleteAsync(int id);
-    }
+    public Task DeleteAsync(int id);
 }

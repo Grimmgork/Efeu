@@ -9,42 +9,41 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Sqlite.Queries
+namespace Efeu.Integration.Sqlite.Queries;
+
+internal class DeduplicationKeyQueries : IDeduplicationKeyQueries
 {
-    internal class DeduplicationKeyQueries : IDeduplicationKeyQueries
+    private readonly DataConnection connection;
+
+    public DeduplicationKeyQueries(DataConnection connection)
     {
-        private readonly DataConnection connection;
+        this.connection = connection;
+    }
 
-        public DeduplicationKeyQueries(DataConnection connection)
-        {
-            this.connection = connection;
-        }
+    public Task ClearBeforeAsync(DateTimeOffset timestamp)
+    {
+        return connection.GetTable<DeduplicationKeyEntity>()
+            .DeleteAsync(i => i.Timestamp < timestamp);
+    }
 
-        public Task ClearBeforeAsync(DateTimeOffset timestamp)
+    public async Task<int> TryInsertAsync(string key, DateTimeOffset timestamp)
+    {
+        try
         {
-            return connection.GetTable<DeduplicationKeyEntity>()
-                .DeleteAsync(i => i.Timestamp < timestamp);
-        }
-
-        public async Task<int> TryInsertAsync(string key, DateTimeOffset timestamp)
-        {
-            try
+            await connection.InsertAsync(new DeduplicationKeyEntity()
             {
-                await connection.InsertAsync(new DeduplicationKeyEntity()
-                {
-                    Key = key,
-                    Timestamp = timestamp
-                });
-            }
-            catch (Exception ex)
-            {
-                if (ex is SQLiteException sqliteEx &&
-                    sqliteEx.ResultCode == SQLiteErrorCode.Constraint)
-                    return 0;
-
-                throw;
-            }
-            return 1;
+                Key = key,
+                Timestamp = timestamp
+            });
         }
+        catch (Exception ex)
+        {
+            if (ex is SQLiteException sqliteEx &&
+                sqliteEx.ResultCode == SQLiteErrorCode.Constraint)
+                return 0;
+
+            throw;
+        }
+        return 1;
     }
 }

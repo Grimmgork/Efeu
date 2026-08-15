@@ -6,22 +6,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Foreign
+namespace Efeu.Integration.Foreign;
+
+public class EfeuTriggerContext
 {
-    public class EfeuTriggerContext
-    {
-        public readonly Guid Id;
+    public readonly Guid Id;
 
-        public readonly EfeuValue Input;
+    public readonly EfeuValue Input;
 
-        public readonly DateTimeOffset Time;
+    public readonly DateTimeOffset Time;
 
-        public DateTimeOffset Schedule;
+    public DateTimeOffset Schedule;
 
-        public EfeuMessageTag MessageTag;
+    public EfeuMessageTag MessageTag;
 
-        public string MessageName = "";
+    public string MessageName = "";
 
-        public EfeuValue Output;
-    }
+    public EfeuValue Output;
 }

@@ -5,65 +5,65 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Efeu.Runtime.Value.Reference;
 
-namespace Efeu.Runtime.Value
+namespace Efeu.Runtime.Value;
+
+public class EfeuHash : EfeuObject, IEnumerable<KeyValuePair<string, EfeuValue>>
 {
-    public class EfeuHash : EfeuObject, IEnumerable<KeyValuePair<string, EfeuValue>>
+    public readonly IImmutableDictionary<string, EfeuValue> Hash = ImmutableDictionary<string, EfeuValue>.Empty;
+
+    public static EfeuHash Empty = new EfeuHash();
+
+    public EfeuHash(IEnumerable<KeyValuePair<string, EfeuValue>> fields)
     {
-        public readonly IImmutableDictionary<string, EfeuValue> Hash = ImmutableDictionary<string, EfeuValue>.Empty;
+        Hash = Hash.AddRange(fields);
+    }
 
-        public static EfeuHash Empty = new EfeuHash();
+    public EfeuHash(params KeyValuePair<string, EfeuValue>[] fields)
+    {
+        Hash = Hash.AddRange(fields);
+    }
 
-        public EfeuHash(IEnumerable<KeyValuePair<string, EfeuValue>> fields)
+    public EfeuValue this[string field]
+    {
+        get
         {
-            Hash = Hash.AddRange(fields);
+            return Hash.GetValueOrDefault(field, default);
         }
+    }
 
-        public EfeuHash(params KeyValuePair<string, EfeuValue>[] fields)
-        {
-            Hash = Hash.AddRange(fields);
-        }
+    public EfeuHash With(string key, EfeuValue value)
+    {
+        return new EfeuHash(Hash.SetItem(key, value));
+    }
 
-        public EfeuValue this[string field]
-        {
-            get
-            {
-                return Hash.GetValueOrDefault(field, default);
-            }
-        }
+    public EfeuHash Remove(string key)
+    {
+        return new EfeuHash(Hash.Remove(key));
+    }
 
-        public EfeuHash With(string key, EfeuValue value)
-        {
-            return new EfeuHash(Hash.SetItem(key, value));
-        }
+    public IEnumerator<KeyValuePair<string, EfeuValue>> GetEnumerator()
+    {
+        return Hash.GetEnumerator();
+    }
 
-        public EfeuHash Remove(string key)
-        {
-            return new EfeuHash(Hash.Remove(key));
-        }
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 
-        public IEnumerator<KeyValuePair<string, EfeuValue>> GetEnumerator()
+    public override void WriteReference(IEfeuReferenceHasher context)
+    {
+        foreach (KeyValuePair<string, EfeuValue> keys in Hash)
         {
-            return Hash.GetEnumerator();
+            context.WriteString(keys.Key + ":");
+            context.WriteReference(keys.Value);
         }
+    }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public override void WriteReference(IEfeuReferenceHasher context)
-        {
-            foreach (KeyValuePair<string, EfeuValue> keys in Hash)
-            {
-                context.WriteString(keys.Key + ":");
-                context.WriteReference(keys.Value);
-            }
-        }
-
-        public override EfeuValue Traverse(EfeuValue identifier)
-        {
-            return Hash[identifier.ToString()];
-        }
+    public override EfeuValue Traverse(EfeuValue identifier)
+    {
+        return Hash[identifier.ToString()];
     }
 }

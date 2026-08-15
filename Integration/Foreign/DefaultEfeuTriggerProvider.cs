@@ -5,20 +5,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Foreign
+namespace Efeu.Integration.Foreign;
+
+internal class DefaultEfeuTriggerProvider : IEfeuTriggerProvider
 {
-    internal class DefaultEfeuTriggerProvider : IEfeuTriggerProvider
+    private readonly IServiceProvider services;
+
+    public DefaultEfeuTriggerProvider(IServiceProvider serviceProvider)
     {
-        private readonly IServiceProvider services;
+        this.services = serviceProvider;
+    }
 
-        public DefaultEfeuTriggerProvider(IServiceProvider serviceProvider)
-        {
-            this.services = serviceProvider;
-        }
-
-        public IEfeuTrigger? TryGetTrigger(string name)
-        {
-            return services.GetKeyedService<IEfeuTrigger>(name);
-        }
+    public IEfeuTrigger? TryGetTrigger(string name)
+    {
+        return services.GetKeyedService<IEfeuTrigger>(name);
     }
 }

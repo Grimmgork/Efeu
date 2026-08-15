@@ -4,18 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Runtime.Script
+namespace Efeu.Runtime.Script;
+
+public class EfeuScriptExecutionException : Exception
 {
-    public class EfeuScriptExecutionException : Exception
+    public readonly int Line;
+
+    public readonly int Column;
+
+    public EfeuScriptExecutionException(int line, int column, string message) : base(message)
     {
-        public readonly int Line;
-
-        public readonly int Column;
-
-        public EfeuScriptExecutionException(int line, int column, string message) : base(message)
-        {
-            Line = line;
-            Column = column;
-        }
+        Line = line;
+        Column = column;
     }
 }

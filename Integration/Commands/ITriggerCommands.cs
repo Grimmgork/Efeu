@@ -5,18 +5,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Commands
+namespace Efeu.Integration.Commands;
+
+public interface ITriggerCommands
 {
-    public interface ITriggerCommands
-    {
-        public Task CreateBulkAsync(EfeuTrigger[] triggers);
+    public Task CreateBulkAsync(EfeuTrigger[] triggers);
 
-        public Task DeleteStaticAsync(Guid behaviourVersionId);
+    public Task DeleteStaticAsync(Guid behaviourVersionId);
 
-        public Task DeleteAsync(Guid[] ids);
+    public Task DeleteAsync(Guid[] ids);
 
-        public Task ResolveMattersAsync(Guid[] matters);
+    public Task ResolveMattersAsync(Guid[] matters);
 
-        public Task CompleteGroupsAsync(Guid[] groups);
-    }
+    public Task CompleteGroupsAsync(Guid[] groups);
 }

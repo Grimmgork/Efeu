@@ -5,20 +5,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Foreign
+namespace Efeu.Integration.Foreign;
+
+internal class DefaultEfeuEffectProvider : IEfeuEffectProvider
 {
-    internal class DefaultEfeuEffectProvider : IEfeuEffectProvider
+    private readonly IServiceProvider services;
+
+    public DefaultEfeuEffectProvider(IServiceProvider serviceProvider)
     {
-        private readonly IServiceProvider services;
+        this.services = serviceProvider;
+    }
 
-        public DefaultEfeuEffectProvider(IServiceProvider serviceProvider) 
-        {
-            this.services = serviceProvider;
-        }
-
-        public IEfeuEffect? TryGetEffect(string name)
-        {
-            return services.GetKeyedService<IEfeuEffect>(name);
-        }
+    public IEfeuEffect? TryGetEffect(string name)
+    {
+        return services.GetKeyedService<IEfeuEffect>(name);
     }
 }

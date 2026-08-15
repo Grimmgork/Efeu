@@ -4,50 +4,49 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Runtime.Value
+namespace Efeu.Runtime.Value;
+
+public class EfeuFloat : EfeuObject
 {
-    public class EfeuFloat : EfeuObject
+    public readonly double Value;
+
+    public EfeuFloat(double value)
     {
-        public readonly double Value;
+        this.Value = value;
+    }
 
-        public EfeuFloat(double value)
-        {
-            this.Value = value;
-        }
+    public override string ToString()
+    {
+        return Value.ToString();
+    }
 
-        public override string ToString()
-        {
-            return Value.ToString();
-        }
+    public override bool AsBoolean()
+    {
+        return Value > 0f;
+    }
 
-        public override bool AsBoolean()
-        {
-            return Value > 0f;
-        }
+    public override decimal AsDecimal()
+    {
+        return (decimal)Value;
+    }
 
-        public override decimal AsDecimal()
-        {
-            return (decimal)Value;
-        }
+    public override long AsLong()
+    {
+        return (long)Value;
+    }
 
-        public override long AsLong()
-        {
-            return (long)Value;
-        }
+    public override double AsDouble()
+    {
+        return Value;
+    }
 
-        public override double AsDouble()
-        {
-            return Value;
-        }
+    public override bool Equals(EfeuValue value)
+    {
+        return value.AsDouble() == Value;
+    }
 
-        public override bool Equals(EfeuValue value)
-        {
-            return value.AsDouble() == Value;
-        }
-
-        public override int GetHashCode()
-        {
-            return Value.GetHashCode();
-        }
+    public override int GetHashCode()
+    {
+        return Value.GetHashCode();
     }
 }

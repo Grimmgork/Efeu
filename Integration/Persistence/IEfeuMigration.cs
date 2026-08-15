@@ -5,14 +5,13 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Persistence
+namespace Efeu.Integration.Persistence;
+
+public interface IEfeuMigration
 {
-    public interface IEfeuMigration
-    {
-        public int Version => int.Parse(Regex.Match(GetType().Name, "^_([0-9]+)_").Groups[1].Value);
+    public int Version => int.Parse(Regex.Match(GetType().Name, "^_([0-9]+)_").Groups[1].Value);
 
-        public Task Up();
+    public Task Up();
 
-        public Task Down();
-    }
+    public Task Down();
 }

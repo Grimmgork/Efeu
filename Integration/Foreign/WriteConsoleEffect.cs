@@ -10,14 +10,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
 
-namespace Efeu.Integration.Foreign
+namespace Efeu.Integration.Foreign;
+
+internal class WriteConsoleEffect : IEfeuEffect
 {
-    internal class WriteConsoleEffect : IEfeuEffect
+    public Task<EfeuEffectResult> RunAsync(EfeuEffectExecutionContext context, CancellationToken token)
     {
-        public Task<EfeuEffectResult> RunAsync(EfeuEffectExecutionContext context, CancellationToken token)
-        {
-            Console.WriteLine(context.Input);
-            return Task.FromResult(EfeuEffectResult.Suspended);
-        }
+        Console.WriteLine(context.Input);
+        return Task.FromResult(EfeuEffectResult.Suspended);
     }
 }

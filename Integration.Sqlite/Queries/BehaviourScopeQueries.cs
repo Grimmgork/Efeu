@@ -8,76 +8,75 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Sqlite.Queries
+namespace Efeu.Integration.Sqlite.Queries;
+
+internal class BehaviourScopeQueries : IBehaviourScopeQueries
 {
-    internal class BehaviourScopeQueries : IBehaviourScopeQueries
+    private readonly DataConnection connection;
+
+    public BehaviourScopeQueries(DataConnection connection)
     {
-        private readonly DataConnection connection;
+        this.connection = connection;
+    }
 
-        public BehaviourScopeQueries(DataConnection connection)
+    public Task<BehaviourScopeEntity?> GetByIdAsync(Guid id)
+    {
+        return connection.GetTable<BehaviourScopeEntity>()
+            .FirstOrDefaultAsync(u => u.Id == id);
+    }
+
+    public async Task<BehaviourScopeEntity[]> GetByIdsAsync(Guid[] ids)
+    {
+        if (ids.Length == 0)
         {
-            this.connection = connection;
+            return [];
         }
-
-        public Task<BehaviourScopeEntity?> GetByIdAsync(Guid id)
+        else if (ids.Length == 1)
         {
-            return connection.GetTable<BehaviourScopeEntity>()
-                .FirstOrDefaultAsync(u => u.Id == id);
-        }
-
-        public async Task<BehaviourScopeEntity[]> GetByIdsAsync(Guid[] ids)
-        {
-            if (ids.Length == 0)
+            BehaviourScopeEntity? entity = await GetByIdAsync(ids.First());
+            if (entity == null)
             {
                 return [];
             }
-            else if (ids.Length == 1)
-            {
-                BehaviourScopeEntity? entity = await GetByIdAsync(ids.First());
-                if (entity == null)
-                {
-                    return [];
-                }
-                else
-                {
-                    return [entity];
-                }
-            }
             else
             {
-                return await connection.GetTable<BehaviourScopeEntity>()
-                    .Where(u => ids.Contains(u.Id))
-                    .ToArrayAsync();
+                return [entity];
             }
         }
-
-        public Task CreateBulkAsync(BehaviourScopeEntity[] entities)
+        else
         {
-            return connection.BulkCopyAsync(new BulkCopyOptions()
-            {
-                BulkCopyType = BulkCopyType.MultipleRows
-            }, entities);
+            return await connection.GetTable<BehaviourScopeEntity>()
+                .Where(u => ids.Contains(u.Id))
+                .ToArrayAsync();
         }
+    }
 
-        public Task DecrementReferenceCountAsync(Dictionary<Guid, uint> decrements)
+    public Task CreateBulkAsync(BehaviourScopeEntity[] entities)
+    {
+        return connection.BulkCopyAsync(new BulkCopyOptions()
         {
-            using var temp = connection.CreateTempTable(decrements.Select(i => new
-            {
-                Id = i.Key,
-                Delta = i.Value
-            }));
+            BulkCopyType = BulkCopyType.MultipleRows
+        }, entities);
+    }
 
-            return connection.GetTable<BehaviourScopeEntity>()
-              .Join(temp, i => i.Id, t => t.Id, (i, t) => new { i, t })
-              .Set(x => x.i.ReferenceCount, x => x.i.ReferenceCount - x.t.Delta)
-              .UpdateAsync();
-        }
-
-        public Task CleanupAsync()
+    public Task DecrementReferenceCountAsync(Dictionary<Guid, uint> decrements)
+    {
+        using var temp = connection.CreateTempTable(decrements.Select(i => new
         {
-            return connection.GetTable<BehaviourScopeEntity>()
-                .Where(u => u.ReferenceCount == 0)
-                .DeleteAsync();
-        }
+            Id = i.Key,
+            Delta = i.Value
+        }));
+
+        return connection.GetTable<BehaviourScopeEntity>()
+          .Join(temp, i => i.Id, t => t.Id, (i, t) => new { i, t })
+          .Set(x => x.i.ReferenceCount, x => x.i.ReferenceCount - x.t.Delta)
+          .UpdateAsync();
+    }
+
+    public Task CleanupAsync()
+    {
+        return connection.GetTable<BehaviourScopeEntity>()
+            .Where(u => u.ReferenceCount == 0)
+            .DeleteAsync();
     }
 }

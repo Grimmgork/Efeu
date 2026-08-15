@@ -8,49 +8,48 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Commands
+namespace Efeu.Integration.Commands;
+
+internal class TriggerCommands : ITriggerCommands
 {
-    internal class TriggerCommands : ITriggerCommands
+    private readonly IEfeuUnitOfWork unitOfWork;
+    private readonly ITriggerQueries triggerQueries;
+
+    public TriggerCommands(IEfeuUnitOfWork unitOfWork, ITriggerQueries triggerQueries, IEfeuTriggerProvider triggerProvider)
     {
-        private readonly IEfeuUnitOfWork unitOfWork;
-        private readonly ITriggerQueries triggerQueries;
+        this.unitOfWork = unitOfWork;
+        this.triggerQueries = triggerQueries;
+    }
 
-        public TriggerCommands(IEfeuUnitOfWork unitOfWork, ITriggerQueries triggerQueries, IEfeuTriggerProvider triggerProvider)
-        {
-            this.unitOfWork = unitOfWork;
-            this.triggerQueries = triggerQueries;
-        }
+    public async Task CreateBulkAsync(EfeuTrigger[] triggers)
+    {
+        await unitOfWork.BeginAsync();
+        TriggerEntity[] triggerEntities = triggers.Select(i => i.MapToTriggerEntity()).ToArray();
+        await triggerQueries.CreateBulkAsync(triggerEntities);
+        await unitOfWork.CompleteAsync();
+    }
 
-        public async Task CreateBulkAsync(EfeuTrigger[] triggers)
-        {
-            await unitOfWork.BeginAsync();
-            TriggerEntity[] triggerEntities = triggers.Select(i => i.MapToTriggerEntity()).ToArray();
-            await triggerQueries.CreateBulkAsync(triggerEntities);
-            await unitOfWork.CompleteAsync();
-        }
+    public async Task DeleteStaticAsync(Guid definitionVersionId)
+    {
+        await unitOfWork.BeginAsync();
+        await unitOfWork.LockAsync("Trigger");
+        // TriggerEntity[] triggers = await behaviourTriggerRepository.GetStaticAsync(definitionVersionId);
+        await triggerQueries.DetatchStaticAsync(definitionVersionId);
+        await unitOfWork.CompleteAsync();
+    }
 
-        public async Task DeleteStaticAsync(Guid definitionVersionId)
-        {
-            await unitOfWork.BeginAsync();
-            await unitOfWork.LockAsync("Trigger");
-            // TriggerEntity[] triggers = await behaviourTriggerRepository.GetStaticAsync(definitionVersionId);
-            await triggerQueries.DetatchStaticAsync(definitionVersionId);
-            await unitOfWork.CompleteAsync();
-        }
+    public Task DeleteAsync(Guid[] ids)
+    {
+        return triggerQueries.DetatchAsync(ids);
+    }
 
-        public Task DeleteAsync(Guid[] ids)
-        {
-            return triggerQueries.DetatchAsync(ids);
-        }
+    public Task ResolveMattersAsync(Guid[] matters)
+    {
+        return triggerQueries.DetatchByMatterBulkAsync(matters);
+    }
 
-        public Task ResolveMattersAsync(Guid[] matters)
-        {
-            return triggerQueries.DetatchByMatterBulkAsync(matters);
-        }
-
-        public Task CompleteGroupsAsync(Guid[] groups)
-        {
-            return triggerQueries.DetatchByGroupBulkAsync(groups);
-        }
+    public Task CompleteGroupsAsync(Guid[] groups)
+    {
+        return triggerQueries.DetatchByGroupBulkAsync(groups);
     }
 }

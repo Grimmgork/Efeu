@@ -1,11 +1,10 @@
 ﻿using System;
 
-namespace Efeu.Application.Controllers
+namespace Efeu.Application.Controllers;
+
+public class BehaviourSession
 {
-    public class BehaviourSession
-    {
-        public Guid Id;
+    public Guid Id;
 
 
-    }
 }

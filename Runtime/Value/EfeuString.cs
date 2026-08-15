@@ -3,36 +3,36 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Efeu.Runtime.Value.Reference;
 
-namespace Efeu.Runtime.Value
+namespace Efeu.Runtime.Value;
+
+public class EfeuString : EfeuObject
 {
-    public class EfeuString : EfeuObject
+    private readonly string Text;
+
+    public EfeuString(string value)
     {
-        private readonly string Text;
+        this.Text = value;
+    }
 
-        public EfeuString(string value)
-        {
-            this.Text = value;
-        }
+    public override string ToString()
+    {
+        return Text;
+    }
 
-        public override string ToString()
-        {
-            return Text;
-        }
+    public override bool AsBoolean()
+    {
+        return string.IsNullOrEmpty(Text);
+    }
 
-        public override bool AsBoolean()
-        {
-            return string.IsNullOrEmpty(Text);
-        }
+    public override bool Equals(EfeuValue value)
+    {
+        return value.ToString() == Text;
+    }
 
-        public override bool Equals(EfeuValue value)
-        {
-            return value.ToString() == Text;
-        }
-
-        public override void WriteReference(IEfeuReferenceHasher hasher)
-        {
-            hasher.WriteString(Text);
-        }
+    public override void WriteReference(IEfeuReferenceHasher hasher)
+    {
+        hasher.WriteString(Text);
     }
 }

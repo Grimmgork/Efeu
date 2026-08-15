@@ -8,10 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Foreign
+namespace Efeu.Integration.Foreign;
+
+public interface IEfeuEngine
 {
-    public interface IEfeuEngine
-    {
-        public Task SendMessageAsync(EfeuMessage message);
-    }
+    public Task SendMessageAsync(EfeuMessage message);
 }

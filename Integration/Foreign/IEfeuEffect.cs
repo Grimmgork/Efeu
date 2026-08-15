@@ -7,10 +7,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Foreign
+namespace Efeu.Integration.Foreign;
+
+public interface IEfeuEffect
 {
-    public interface IEfeuEffect
-    {
-        public Task<EfeuEffectResult> RunAsync(EfeuEffectExecutionContext context, CancellationToken token);
-    }
+    public Task<EfeuEffectResult> RunAsync(EfeuEffectExecutionContext context, CancellationToken token);
 }

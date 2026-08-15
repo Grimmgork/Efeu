@@ -11,287 +11,199 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Runtime
+namespace Efeu.Runtime;
+
+public class EfeuRuntime
 {
-    public class EfeuRuntime
+    public List<EfeuMessage> Messages = [];
+    public List<EfeuTrigger> Triggers = [];
+
+    public DateTimeOffset Now;
+
+    public bool IsImmediate;
+    public Guid BehaviourId;
+    public Guid CorrelationId;
+    public Guid CausationId;
+    public bool IsStatic;
+
+    public Guid Matter;
+    public Guid Group;
+
+    public bool Skipped;
+
+    private Dictionary<EfeuBehaviourStep, string> positionLookup = new Dictionary<EfeuBehaviourStep, string>();
+
+    public EfeuRuntime(Guid correlationId, Guid causationId, Guid behaviourId, bool isImmediate, Guid matter, bool isStatic, DateTimeOffset now)
     {
-        public List<EfeuMessage> Messages = [];
-        public List<EfeuTrigger> Triggers = [];
+        this.CorrelationId = correlationId;
+        this.IsImmediate = isImmediate;
+        this.BehaviourId = behaviourId;
+        this.CausationId = causationId;
+        this.Matter = matter;
+        this.Now = now;
+    }
 
-        public DateTimeOffset Now;
+    public static EfeuRuntime Run(EfeuBehaviourStep[] steps, Guid behaviourId, DateTimeOffset timestamp)
+    {
+        EfeuRuntime runtime = new EfeuRuntime(
+            correlationId: Guid.NewGuid(),
+            causationId: Guid.NewGuid(),
+            behaviourId: behaviourId,
+            isImmediate: true,
+            matter: Guid.Empty,
+            isStatic: false,
+            now: timestamp
+        );
+        runtime.Execute(steps);
+        return runtime;
+    }
 
-        public bool IsImmediate;
-        public Guid BehaviourId;
-        public Guid CorrelationId;
-        public Guid CausationId;
-        public bool IsStatic;
+    public static EfeuRuntime RunTrigger(EfeuTrigger trigger, EfeuMessage message)
+    {
+        Guid correlationId = trigger.IsStatic ? Guid.NewGuid() : trigger.CorrelationId;
+        EfeuRuntime runtime = new EfeuRuntime(
+            correlationId: correlationId,
+            causationId: message.Id,
+            behaviourId: trigger.BehaviourId,
+            isImmediate: false,
+            matter: message.Matter,
+            isStatic: trigger.IsStatic,
+            message.Timestamp
+        );
+        runtime.ExecuteTrigger(trigger, message);
+        return runtime;
+    }
 
-        public Guid Matter;
-        public Guid Group;
+    private void Execute(EfeuBehaviourStep[] steps)
+    {
+        if (!IsImmediate)
+            throw new InvalidOperationException();
 
-        public bool Skipped;
+        EfeuRuntimeScope scope = EfeuRuntimeScope.Empty
+                .With("now", Now);
 
-        private Dictionary<EfeuBehaviourStep, string> positionLookup = new Dictionary<EfeuBehaviourStep, string>();
+        RunSteps(steps, "", scope);
+    }
 
-        public EfeuRuntime(Guid correlationId, Guid causationId, Guid behaviourId, bool isImmediate, Guid matter, bool isStatic, DateTimeOffset now)
+    private void ExecuteTrigger(EfeuTrigger trigger, EfeuMessage message)
+    {
+        if (IsImmediate)
+            throw new InvalidOperationException();
+
+        // trigger continuation
+        if (!TriggerMatchesMessage(trigger, message))
         {
-            this.CorrelationId = correlationId;
-            this.IsImmediate = isImmediate;
-            this.BehaviourId = behaviourId;
-            this.CausationId = causationId;
-            this.Matter = matter;
-            this.Now = now;
+            Skipped = true;
+            return;
         }
 
-        public static EfeuRuntime Run(EfeuBehaviourStep[] steps, Guid behaviourId, DateTimeOffset timestamp)
+        if (!trigger.IsStatic)
+            Group = trigger.Group;
+
+        EfeuRuntimeScope scope = trigger.Scope
+            .With("now", Now)
+            .With(trigger.Step.ArgumentName ?? "@", message.Payload);
+
+        EfeuBehaviourStep[] steps = trigger.Step.Do;
+        RunSteps(steps, $"{trigger.Position}/Do", scope); // Assumption: all trigger continuations are done in the Do route
+    }
+
+    public static bool TriggerMatchesMessage(EfeuTrigger trigger, EfeuMessage message)
+    {
+        return message.Timestamp >= trigger.CreationTime &&
+               message.Tag == trigger.Tag &&
+               message.Type == trigger.Type &&
+               message.Matter == trigger.Matter;
+    }
+
+    private void RunSteps(EfeuBehaviourStep[] steps, string position, EfeuRuntimeScope parentScope)
+    {
+        Dictionary<EfeuBehaviourStep, int> indexLookup = new Dictionary<EfeuBehaviourStep, int>();
+        List<EfeuBehaviourStep> executableSteps = [];
+        EfeuRuntimeScope scope = parentScope;
+        for (int i = 0; i < steps.Length; i++)
         {
-            EfeuRuntime runtime = new EfeuRuntime(
-                correlationId: Guid.NewGuid(), 
-                causationId: Guid.NewGuid(), 
-                behaviourId: behaviourId, 
-                isImmediate: true, 
-                matter: Guid.Empty, 
-                isStatic: false,
-                now: timestamp
-            );
-            runtime.Execute(steps);
-            return runtime;
-        }
-
-        public static EfeuRuntime RunTrigger(EfeuTrigger trigger, EfeuMessage message)
-        {
-            Guid correlationId = trigger.IsStatic ? Guid.NewGuid() : trigger.CorrelationId;
-            EfeuRuntime runtime = new EfeuRuntime(
-                correlationId: correlationId,
-                causationId: message.Id, 
-                behaviourId: trigger.BehaviourId,
-                isImmediate: false,
-                matter: message.Matter,
-                isStatic: trigger.IsStatic,
-                message.Timestamp
-            );
-            runtime.ExecuteTrigger(trigger, message);
-            return runtime;
-        }
-
-        private void Execute(EfeuBehaviourStep[] steps)
-        {
-            if (!IsImmediate)
-                throw new InvalidOperationException();
-
-            EfeuRuntimeScope scope = EfeuRuntimeScope.Empty
-                    .With("now", Now);
-
-            RunSteps(steps, "", scope);
-        }
-
-        private void ExecuteTrigger(EfeuTrigger trigger, EfeuMessage message)
-        {
-            if (IsImmediate)
-                throw new InvalidOperationException();
-
-            // trigger continuation
-            if (!TriggerMatchesMessage(trigger, message))
+            EfeuBehaviourStep step = steps[i];
+            if (step.Kind == EfeuBehaviourStepKind.Let)
             {
-                Skipped = true;
-                return;
+                scope = scope.With(step.Name, step.Input.Evaluate(scope));
             }
-
-            if (!trigger.IsStatic)
-                Group = trigger.Group;
-
-            EfeuRuntimeScope scope = trigger.Scope
-                .With("now", Now)
-                .With(trigger.Step.ArgumentName ?? "@", message.Payload);
-
-            EfeuBehaviourStep[] steps = trigger.Step.Do;
-            RunSteps(steps, $"{trigger.Position}/Do", scope); // Assumption: all trigger continuations are done in the Do route
-        }
-
-        public static bool TriggerMatchesMessage(EfeuTrigger trigger, EfeuMessage message)
-        {
-            return message.Timestamp >= trigger.CreationTime &&
-                   message.Tag == trigger.Tag &&
-                   message.Type == trigger.Type &&
-                   message.Matter == trigger.Matter;
-        }
-
-        private void RunSteps(EfeuBehaviourStep[] steps, string position, EfeuRuntimeScope parentScope)
-        {
-            Dictionary<EfeuBehaviourStep, int> indexLookup = new Dictionary<EfeuBehaviourStep, int>();
-            List<EfeuBehaviourStep> executableSteps = [];
-            EfeuRuntimeScope scope = parentScope;
-            for (int i = 0; i < steps.Length; i++)
+            else
             {
-                EfeuBehaviourStep step = steps[i];
-                if (step.Kind == EfeuBehaviourStepKind.Let)
-                {
-                    scope = scope.With(step.Name, step.Input.Evaluate(scope));
-                }
-                else
-                {
-                    indexLookup.Add(step, i);
-                    executableSteps.Add(step);
-                }
-            }
-
-            foreach (EfeuBehaviourStep step in executableSteps)
-            {
-                int index = indexLookup[step];
-                RunStep(step, $"{position}/{index}", scope);
+                indexLookup.Add(step, i);
+                executableSteps.Add(step);
             }
         }
 
-        private void RunStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
+        foreach (EfeuBehaviourStep step in executableSteps)
         {
-            if (step.Kind == EfeuBehaviourStepKind.Emit)
-            {
-                RunEmitStep(step, position, scope);
-            }
-            else if (step.Kind == EfeuBehaviourStepKind.Raise)
-            {
-                RunRaiseStep(step, position, scope);
-            }
-            else if (step.Kind == EfeuBehaviourStepKind.If)
-            {
-                RunIfStep(step, position, scope);
-            }
-            else if (step.Kind == EfeuBehaviourStepKind.Unless)
-            {
-                RunUnlessStep(step, position, scope);
-            }
-            else if (step.Kind == EfeuBehaviourStepKind.For)
-            {
-                RunForStep(step, position, scope);
-            }
-            else if (step.Kind == EfeuBehaviourStepKind.Await)
-            {
-                RunAwaitStep(step, position, scope);
-            }
-            else if (step.Kind == EfeuBehaviourStepKind.On)
-            {
-                RunOnStep(step, position, scope);
-            }
-            else if (step.Kind == EfeuBehaviourStepKind.Loop)
-            {
-                RunLoopStep(step, position, scope);
-            }
-            else if (step.Kind == EfeuBehaviourStepKind.Next)
-            {
-                RunNextStep(step, position, scope);
-            }
+            int index = indexLookup[step];
+            RunStep(step, $"{position}/{index}", scope);
         }
+    }
 
-        private void RunEmitStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
+    private void RunStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
+    {
+        if (step.Kind == EfeuBehaviourStepKind.Emit)
         {
-            Guid messageId = Guid.NewGuid();
-            Guid group = Guid.NewGuid();
-            if (step.Do.Length > 0)
-            {
-                Triggers.Add(new EfeuTrigger()
-                {
-                    Id = Guid.NewGuid(),
-                    CorrelationId = CorrelationId,
-                    CreationTime = Now,
-                    Scope = scope,
-                    Tag = EfeuMessageTag.Result,
-                    Position = position,
-                    BehaviourId = BehaviourId,
-                    Matter = messageId,
-                    Group = group,
-                    Step = step,
-                });
-            }
+            RunEmitStep(step, position, scope);
+        }
+        else if (step.Kind == EfeuBehaviourStepKind.Raise)
+        {
+            RunRaiseStep(step, position, scope);
+        }
+        else if (step.Kind == EfeuBehaviourStepKind.If)
+        {
+            RunIfStep(step, position, scope);
+        }
+        else if (step.Kind == EfeuBehaviourStepKind.Unless)
+        {
+            RunUnlessStep(step, position, scope);
+        }
+        else if (step.Kind == EfeuBehaviourStepKind.For)
+        {
+            RunForStep(step, position, scope);
+        }
+        else if (step.Kind == EfeuBehaviourStepKind.Await)
+        {
+            RunAwaitStep(step, position, scope);
+        }
+        else if (step.Kind == EfeuBehaviourStepKind.On)
+        {
+            RunOnStep(step, position, scope);
+        }
+        else if (step.Kind == EfeuBehaviourStepKind.Loop)
+        {
+            RunLoopStep(step, position, scope);
+        }
+        else if (step.Kind == EfeuBehaviourStepKind.Next)
+        {
+            RunNextStep(step, position, scope);
+        }
+    }
 
-            if (step.Error.Length > 0)
+    private void RunEmitStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
+    {
+        Guid messageId = Guid.NewGuid();
+        Guid group = Guid.NewGuid();
+        if (step.Do.Length > 0)
+        {
+            Triggers.Add(new EfeuTrigger()
             {
-                Triggers.Add(new EfeuTrigger()
-                {
-                    Id = Guid.NewGuid(),
-                    CorrelationId = CorrelationId,
-                    CreationTime = Now,
-                    Scope = scope,
-                    Tag = EfeuMessageTag.Fault,
-                    Position = position,
-                    BehaviourId = BehaviourId,
-                    Matter = messageId,
-                    Group = group,
-                    Step = step,
-                });
-            }
-
-            Messages.Add(new EfeuMessage()
-            {
-                Id = messageId,
+                Id = Guid.NewGuid(),
                 CorrelationId = CorrelationId,
-                Timestamp = Now,
-                Type = step.Name,
-                Tag = EfeuMessageTag.Effect,
+                CreationTime = Now,
+                Scope = scope,
+                Tag = EfeuMessageTag.Result,
+                Position = position,
+                BehaviourId = BehaviourId,
                 Matter = messageId,
-                Payload = step.Input.Evaluate(scope)
+                Group = group,
+                Step = step,
             });
         }
 
-        private void RunRaiseStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
-        {
-            Messages.Add(new EfeuMessage()
-            {
-                Id = Guid.NewGuid(),
-                CorrelationId = CorrelationId,
-                Timestamp = Now,
-                Type = step.Name,
-                Tag = EfeuMessageTag.Data,
-                Payload = step.Input.Evaluate(scope)
-            });
-        }
-
-        private void RunLoopStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
-        {
-            RunSteps(step.Do, $"{position}/Do", scope.PushLoopback(step, position, scope));
-        }
-
-        private void RunNextStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
-        {
-            if (scope.Loopback != null)
-            {
-                EfeuValue item = step.Input.Evaluate(scope);
-                RunSteps(scope.Loopback.Step.Do, $"{scope.Loopback.Position}/Do", scope.PushLoopbackIteration(item));
-            }
-        }
-
-        private void RunIfStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
-        {
-            if (step.Input.Evaluate(scope))
-            {
-                RunSteps(step.Do, $"{position}/Do", scope);
-            }
-            else
-            {
-                RunSteps(step.Else, $"{position}/Else", scope);
-            }
-        }
-
-        private void RunUnlessStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
-        {
-            if (step.Input.Evaluate(scope))
-            {
-                RunSteps(step.Else, $"{position}/Else", scope);
-            }
-            else
-            {
-                RunSteps(step.Do, $"{position}/Do", scope);
-            }
-        }
-
-        private void RunForStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
-        {
-            foreach (EfeuValue item in step.Input.Evaluate(scope).Each())
-            {
-                RunSteps(step.Do, $"{position}/Do", scope.With(step.ArgumentName ?? "@", item));
-            }
-        }
-
-        private void RunAwaitStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
+        if (step.Error.Length > 0)
         {
             Triggers.Add(new EfeuTrigger()
             {
@@ -299,35 +211,122 @@ namespace Efeu.Runtime
                 CorrelationId = CorrelationId,
                 CreationTime = Now,
                 Scope = scope,
-                Tag = EfeuMessageTag.Data,
-                Type = step.Name,
+                Tag = EfeuMessageTag.Fault,
                 Position = position,
-                Input = step.Input.Evaluate(scope),
                 BehaviourId = BehaviourId,
+                Matter = messageId,
+                Group = group,
                 Step = step,
-                Group = Guid.NewGuid(),
             });
         }
 
-        private void RunOnStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
+        Messages.Add(new EfeuMessage()
         {
-            if (!IsImmediate)
-                throw new InvalidOperationException("Static Triggers (On) is only available in immediate mode!");
+            Id = messageId,
+            CorrelationId = CorrelationId,
+            Timestamp = Now,
+            Type = step.Name,
+            Tag = EfeuMessageTag.Effect,
+            Matter = messageId,
+            Payload = step.Input.Evaluate(scope)
+        });
+    }
 
-            Triggers.Add(new EfeuTrigger()
-            {
-                Id = Guid.NewGuid(),
-                Scope = scope,
-                CreationTime = Now,
-                Tag = EfeuMessageTag.Data,
-                Type = step.Name,
-                BehaviourId = BehaviourId,
-                CorrelationId = Guid.Empty,
-                Input = step.Input.Evaluate(scope),
-                Position = position,
-                Step = step,
-                Group = Guid.NewGuid()
-            });
+    private void RunRaiseStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
+    {
+        Messages.Add(new EfeuMessage()
+        {
+            Id = Guid.NewGuid(),
+            CorrelationId = CorrelationId,
+            Timestamp = Now,
+            Type = step.Name,
+            Tag = EfeuMessageTag.Data,
+            Payload = step.Input.Evaluate(scope)
+        });
+    }
+
+    private void RunLoopStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
+    {
+        RunSteps(step.Do, $"{position}/Do", scope.PushLoopback(step, position, scope));
+    }
+
+    private void RunNextStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
+    {
+        if (scope.Loopback != null)
+        {
+            EfeuValue item = step.Input.Evaluate(scope);
+            RunSteps(scope.Loopback.Step.Do, $"{scope.Loopback.Position}/Do", scope.PushLoopbackIteration(item));
         }
+    }
+
+    private void RunIfStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
+    {
+        if (step.Input.Evaluate(scope))
+        {
+            RunSteps(step.Do, $"{position}/Do", scope);
+        }
+        else
+        {
+            RunSteps(step.Else, $"{position}/Else", scope);
+        }
+    }
+
+    private void RunUnlessStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
+    {
+        if (step.Input.Evaluate(scope))
+        {
+            RunSteps(step.Else, $"{position}/Else", scope);
+        }
+        else
+        {
+            RunSteps(step.Do, $"{position}/Do", scope);
+        }
+    }
+
+    private void RunForStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
+    {
+        foreach (EfeuValue item in step.Input.Evaluate(scope).Each())
+        {
+            RunSteps(step.Do, $"{position}/Do", scope.With(step.ArgumentName ?? "@", item));
+        }
+    }
+
+    private void RunAwaitStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
+    {
+        Triggers.Add(new EfeuTrigger()
+        {
+            Id = Guid.NewGuid(),
+            CorrelationId = CorrelationId,
+            CreationTime = Now,
+            Scope = scope,
+            Tag = EfeuMessageTag.Data,
+            Type = step.Name,
+            Position = position,
+            Input = step.Input.Evaluate(scope),
+            BehaviourId = BehaviourId,
+            Step = step,
+            Group = Guid.NewGuid(),
+        });
+    }
+
+    private void RunOnStep(EfeuBehaviourStep step, string position, EfeuRuntimeScope scope)
+    {
+        if (!IsImmediate)
+            throw new InvalidOperationException("Static Triggers (On) is only available in immediate mode!");
+
+        Triggers.Add(new EfeuTrigger()
+        {
+            Id = Guid.NewGuid(),
+            Scope = scope,
+            CreationTime = Now,
+            Tag = EfeuMessageTag.Data,
+            Type = step.Name,
+            BehaviourId = BehaviourId,
+            CorrelationId = Guid.Empty,
+            Input = step.Input.Evaluate(scope),
+            Position = position,
+            Step = step,
+            Group = Guid.NewGuid()
+        });
     }
 }

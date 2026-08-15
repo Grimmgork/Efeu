@@ -10,126 +10,125 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Services
+namespace Efeu.Integration.Services;
+
+internal class EffectExecutionService : IHostedService
 {
-    internal class EffectExecutionService : IHostedService
+    private readonly IServiceScopeFactory scopeFactory;
+    private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+
+    private Task work = Task.CompletedTask;
+
+    public EffectExecutionService(IServiceScopeFactory scopeFactory)
     {
-        private readonly IServiceScopeFactory scopeFactory;
-        private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        this.scopeFactory = scopeFactory;
+    }
 
-        private Task work = Task.CompletedTask;
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
+        CancellationToken token = cancellationTokenSource.Token;
 
-        public EffectExecutionService(IServiceScopeFactory scopeFactory)
+        List<Task> workers = new List<Task>();
+        for (int i = 0; i < 5; i++)
         {
-            this.scopeFactory = scopeFactory;
-        }
-
-        public Task StartAsync(CancellationToken cancellationToken)
-        {
-            CancellationToken token = cancellationTokenSource.Token;
-
-            List<Task> workers = new List<Task>();
-            for (int i = 0; i < 5; i++)
+            workers.Add(Task.Run(async () =>
             {
-                workers.Add(Task.Run(async () =>
+                Guid workerId = Guid.NewGuid();
+                while (!token.IsCancellationRequested)
                 {
-                    Guid workerId = Guid.NewGuid();
-                    while (!token.IsCancellationRequested)
+                    try
                     {
-                        try
+                        using var scope = scopeFactory.CreateScope();
+                        int execution = await ExecuteEffect(scope.ServiceProvider, workerId, token);
+                        if (execution == 0)
                         {
-                            using var scope = scopeFactory.CreateScope();
-                            int execution = await ExecuteEffect(scope.ServiceProvider, workerId, token);
-                            if (execution == 0)
-                            {
-                                await Task.Delay(1000, cancellationToken);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            if (ex is not OperationCanceledException)
-                            {
-                                Console.WriteLine(ex);
-                                await Task.Delay(2000, cancellationToken);
-                            }
+                            await Task.Delay(1000, cancellationToken);
                         }
                     }
-                }));
+                    catch (Exception ex)
+                    {
+                        if (ex is not OperationCanceledException)
+                        {
+                            Console.WriteLine(ex);
+                            await Task.Delay(2000, cancellationToken);
+                        }
+                    }
+                }
+            }));
+        }
+
+        work = Task.WhenAll(workers);
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        cancellationTokenSource.Cancel();
+        return work;
+    }
+
+    private async Task<int> ExecuteEffect(IServiceProvider services, Guid workerId, CancellationToken token)
+    {
+        IEffectQueries effectQueries = services.GetRequiredService<IEffectQueries>();
+        IEffectCommands effectCommands = services.GetRequiredService<IEffectCommands>();
+        IEfeuUnitOfWork unitOfWork = services.GetRequiredService<IEfeuUnitOfWork>();
+        IEfeuEffectProvider effectProvider = services.GetRequiredService<IEfeuEffectProvider>();
+
+        EffectEntity? effect = await FindAndLockEffect(effectQueries, workerId, token);
+        if (effect is null)
+            return 0;
+
+        await unitOfWork.ResetAsync();
+
+        DateTimeOffset executionTime = DateTime.Now;
+        try
+        {
+            if (effect.Tag == EfeuMessageTag.Effect)
+            {
+                IEfeuEffect? effectInstance = effectProvider.TryGetEffect(effect.Type);
+                if (effectInstance is null)
+                    throw new Exception($"Unknown effect '{effect.Type}'.");
+
+                EfeuEffectExecutionContext context = new EfeuEffectExecutionContext(effect.Id, effect.CorrelationId, executionTime, effect.Times, effect.Input);
+
+                await effectInstance.RunAsync(context, token);
+                await effectQueries.CompleteEffectWithResultAndUnlockAsync(workerId, effect.Id, DateTime.Now, default);
             }
+            else
+            {
+                await unitOfWork.BeginAsync();
+                EfeuMessage message = effect.MapToEfeuMessage();
 
-            work = Task.WhenAll(workers);
-            return Task.CompletedTask;
+                await effectCommands.SendMessageDeduplicatedAsync(message);
+                await effectQueries.CompleteEffectAndUnlockAsync(workerId, effect.Id, executionTime);
+                await unitOfWork.CompleteAsync();
+            }
         }
-
-        public Task StopAsync(CancellationToken cancellationToken)
+        catch (Exception ex)
         {
-            cancellationTokenSource.Cancel();
-            return work;
-        }
-
-        private async Task<int> ExecuteEffect(IServiceProvider services, Guid workerId, CancellationToken token)
-        {
-            IEffectQueries effectQueries = services.GetRequiredService<IEffectQueries>();
-            IEffectCommands effectCommands = services.GetRequiredService<IEffectCommands>();
-            IEfeuUnitOfWork unitOfWork = services.GetRequiredService<IEfeuUnitOfWork>();
-            IEfeuEffectProvider effectProvider = services.GetRequiredService<IEfeuEffectProvider>();
-
-            EffectEntity? effect = await FindAndLockEffect(effectQueries, workerId, token);
-            if (effect is null)
-                return 0;
-
             await unitOfWork.ResetAsync();
 
-            DateTimeOffset executionTime = DateTime.Now;
-            try
-            {
-                if (effect.Tag == EfeuMessageTag.Effect)
-                {
-                    IEfeuEffect? effectInstance = effectProvider.TryGetEffect(effect.Type);
-                    if (effectInstance is null)
-                        throw new Exception($"Unknown effect '{effect.Type}'.");
-
-                    EfeuEffectExecutionContext context = new EfeuEffectExecutionContext(effect.Id, effect.CorrelationId, executionTime, effect.Times, effect.Input);
-
-                    await effectInstance.RunAsync(context, token);
-                    await effectQueries.CompleteEffectWithResultAndUnlockAsync(workerId, effect.Id, DateTime.Now, default);
-                }
-                else
-                {
-                    await unitOfWork.BeginAsync();
-                    EfeuMessage message = effect.MapToEfeuMessage();
-
-                    await effectCommands.SendMessageDeduplicatedAsync(message);
-                    await effectQueries.CompleteEffectAndUnlockAsync(workerId, effect.Id, executionTime);
-                    await unitOfWork.CompleteAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                await unitOfWork.ResetAsync();
-
-                Console.WriteLine(ex.ToString());
-                await effectQueries.FaultEffectAndUnlockAsync(workerId, effect.Id, executionTime, ex.ToString());
-            }
-            
-            return 1;
+            Console.WriteLine(ex.ToString());
+            await effectQueries.FaultEffectAndUnlockAsync(workerId, effect.Id, executionTime, ex.ToString());
         }
 
-        private async Task<EffectEntity?> FindAndLockEffect(IEffectQueries effectQueries, Guid workerId, CancellationToken token)
+        return 1;
+    }
+
+    private async Task<EffectEntity?> FindAndLockEffect(IEffectQueries effectQueries, Guid workerId, CancellationToken token)
+    {
+        Guid[] candidateIds = await effectQueries.GetRunningEffectsNotLockedAsync();
+        EffectEntity? effect = null;
+        foreach (Guid candidateId in candidateIds)
         {
-            Guid[] candidateIds = await effectQueries.GetRunningEffectsNotLockedAsync();
-            EffectEntity? effect = null;
-            foreach (Guid candidateId in candidateIds)
+            DateTimeOffset timestamp = DateTime.Now;
+            if (await effectQueries.LockEffectAsync(candidateId, workerId, TimeSpan.FromSeconds(30)) > 0)
             {
-                DateTimeOffset timestamp = DateTime.Now;
-                if (await effectQueries.LockEffectAsync(candidateId, workerId, TimeSpan.FromSeconds(30)) > 0)
-                {
-                    effect = await effectQueries.GetByIdAsync(candidateId);
-                    if (effect is not null)
-                        break;
-                }
+                effect = await effectQueries.GetByIdAsync(candidateId);
+                if (effect is not null)
+                    break;
             }
-            return effect;
         }
+        return effect;
     }
 }

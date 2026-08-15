@@ -12,91 +12,90 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
 
-namespace Efeu.Integration.Sqlite
+namespace Efeu.Integration.Sqlite;
+
+internal class UnitOfWork : IEfeuUnitOfWork, IDisposable
 {
-    internal class UnitOfWork : IEfeuUnitOfWork, IDisposable
+    private readonly Guid id;
+    private readonly DataConnection connection;
+    private readonly SQLiteConnection sqliteConnection;
+
+    private TransactionScope? scope;
+
+
+    private HashSet<string> locks = new HashSet<string>();
+    private int depth;
+
+    public UnitOfWork(DataConnection connection, SQLiteConnection sqliteConnection)
     {
-        private readonly Guid id;
-        private readonly DataConnection connection;
-        private readonly SQLiteConnection sqliteConnection;
+        this.connection = connection;
+        this.sqliteConnection = sqliteConnection;
+        this.id = Guid.NewGuid();
+    }
 
-        private TransactionScope? scope;
-
-
-        private HashSet<string> locks = new HashSet<string>();
-        private int depth;
-
-        public UnitOfWork(DataConnection connection, SQLiteConnection sqliteConnection)
+    public Task BeginAsync()
+    {
+        if (depth == 0)
         {
-            this.connection = connection;
-            this.sqliteConnection = sqliteConnection;
-            this.id = Guid.NewGuid();
-        }
-
-        public Task BeginAsync()
-        {
-            if (depth == 0)
+            TransactionOptions options = new TransactionOptions
             {
-                TransactionOptions options = new TransactionOptions
-                {
-                    IsolationLevel = System.Transactions.IsolationLevel.ReadCommitted,
-                    Timeout = TransactionManager.DefaultTimeout
-                };
+                IsolationLevel = System.Transactions.IsolationLevel.ReadCommitted,
+                Timeout = TransactionManager.DefaultTimeout
+            };
 
-                scope = new TransactionScope(TransactionScopeOption.Required, options, TransactionScopeAsyncFlowOption.Enabled);
+            scope = new TransactionScope(TransactionScopeOption.Required, options, TransactionScopeAsyncFlowOption.Enabled);
+        }
+        depth++;
+        return Task.CompletedTask;
+    }
+
+    public async Task CompleteAsync()
+    {
+        if (depth == 0)
+            throw new InvalidOperationException("No transaction is running.");
+
+        depth--;
+        if (depth == 0)
+        {
+            try
+            {
+                await connection.GetTable<LockEntity>().DeleteAsync(i => i.Bundle == id);
+                scope?.Complete();
             }
-            depth++;
-            return Task.CompletedTask;
-        }
-
-        public async Task CompleteAsync()
-        {
-            if (depth == 0)
-                throw new InvalidOperationException("No transaction is running.");
-
-            depth--;
-            if (depth == 0)
+            finally
             {
-                try
-                {
-                    await connection.GetTable<LockEntity>().DeleteAsync(i => i.Bundle == id);
-                    scope?.Complete();
-                }
-                finally
-                {
-                    scope?.Dispose();
-                }
+                scope?.Dispose();
             }
         }
+    }
 
-        public async Task LockAsync(string key)
+    public async Task LockAsync(string key)
+    {
+        if (depth == 0)
+            throw new InvalidOperationException("No transaction is running.");
+
+        if (locks.Contains(key))
+            return;
+
+        await connection.InsertAsync(new LockEntity()
         {
-            if (depth == 0)
-                throw new InvalidOperationException("No transaction is running.");
+            Name = key,
+            Bundle = id
+        });
 
-            if (locks.Contains(key))
-                return;
+        locks.Add(key);
+    }
 
-            await connection.InsertAsync(new LockEntity()
-            {
-                Name = key,
-                Bundle = id
-            });
+    public Task ResetAsync()
+    {
+        scope?.Dispose();
+        depth = 0;
+        locks.Clear();
+        return sqliteConnection.CloseAsync();
+    }
 
-            locks.Add(key);
-        }
-
-        public Task ResetAsync()
-        {
-            scope?.Dispose();
-            depth = 0;
-            locks.Clear();
-            return sqliteConnection.CloseAsync();
-        }
-
-        public void Dispose()
-        {
-            scope?.Dispose();
-        }
+    public void Dispose()
+    {
+        scope?.Dispose();
     }
 }

@@ -6,16 +6,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Persistence
+namespace Efeu.Integration.Persistence;
+
+public interface IEfeuUnitOfWork
 {
-    public interface IEfeuUnitOfWork
-    {
-        public Task BeginAsync();
+    public Task BeginAsync();
 
-        public Task CompleteAsync();
+    public Task CompleteAsync();
 
-        public Task ResetAsync();
+    public Task ResetAsync();
 
-        public Task LockAsync(string locks);
-    }
+    public Task LockAsync(string locks);
 }

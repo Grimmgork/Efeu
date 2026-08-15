@@ -24,7 +24,7 @@ public static class JsonModifierBuilder
                 throw new ArgumentException("Expression must be a property or field.");
 
             var propertyName = member.Member.Name;
-            
+
             _modifiers.Add(typeInfo =>
             {
                 if (typeInfo.Type != typeof(T))
@@ -45,7 +45,7 @@ public static class JsonModifierBuilder
         {
             return IgnoreWhen(propertyExpression, (value) => value is null);
         }
-        
+
         public Builder<T> IgnoreWhenEquals<TMember>(
             Expression<Func<T, TMember>> propertyExpression, TMember equals)
         {

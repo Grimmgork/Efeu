@@ -6,14 +6,13 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Entities
+namespace Efeu.Integration.Entities;
+
+public class BehaviourEntity
 {
-    public class BehaviourEntity
-    {
-        public int Id;
+    public int Id;
 
-        public string Name = "";
+    public string Name = "";
 
-        public int Version;
-    }
+    public int Version;
 }

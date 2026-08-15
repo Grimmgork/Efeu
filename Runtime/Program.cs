@@ -12,112 +12,111 @@ using System.Xml.Linq;
 using static System.Formats.Asn1.AsnWriter;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace Efeu.Runtime
+namespace Efeu.Runtime;
+
+internal class Program
 {
-    internal class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
-        {
-            //EfeuRuntimeScope scope = EfeuRuntimeScope.Empty
-            //    .With("time", DateTime.UtcNow)
-            //    .With("time", DateTime.Now);
+        //EfeuRuntimeScope scope = EfeuRuntimeScope.Empty
+        //    .With("time", DateTime.UtcNow)
+        //    .With("time", DateTime.Now);
 
-            //// string script = "time";
-            //JsonSerializerOptions options = new JsonSerializerOptions();
-            //options.Converters.Add(new EfeuValueJsonConverter());
-            //options.Converters.Add(new EfeuRuntimeScopeJsonConverter());
-            //options.Converters.Add(new JsonStringEnumConverter());
+        //// string script = "time";
+        //JsonSerializerOptions options = new JsonSerializerOptions();
+        //options.Converters.Add(new EfeuValueJsonConverter());
+        //options.Converters.Add(new EfeuRuntimeScopeJsonConverter());
+        //options.Converters.Add(new JsonStringEnumConverter());
 
-            //string serialized = JsonSerializer.Serialize(scope, options);
+        //string serialized = JsonSerializer.Serialize(scope, options);
 
-            //scope = JsonSerializer.Deserialize<EfeuRuntimeScope>(serialized, options);
+        //scope = JsonSerializer.Deserialize<EfeuRuntimeScope>(serialized, options);
 
-            //// EfeuValue value = EfeuScript.Run(script, scope);
-            //Console.WriteLine();
+        //// EfeuValue value = EfeuScript.Run(script, scope);
+        //Console.WriteLine();
 
-            //return;
+        //return;
 
-            //EfeuValue value = EfeuHash.Empty
-            //    .With("name", 42);
+        //EfeuValue value = EfeuHash.Empty
+        //    .With("name", 42);
 
-            //Sha256EfeuReferenceHasher hasher = new Sha256EfeuReferenceHasher();
-            //EfeuReference reference = hasher.HashReference(value);
+        //Sha256EfeuReferenceHasher hasher = new Sha256EfeuReferenceHasher();
+        //EfeuReference reference = hasher.HashReference(value);
 
-            //Console.WriteLine(Convert.ToBase64String(reference.Bytes));
-            //return;
+        //Console.WriteLine(Convert.ToBase64String(reference.Bytes));
+        //return;
 
-            EfeuBehaviourStep[] steps = [
-                new () {
-                    Kind = EfeuBehaviourStepKind.Let,
-                    Name = "var",
-                    Input = new () {
-                        Type = EfeuExpressionType.String,
-                        Value = "Hello World!"
-                    }
-                },
-                new () {
-                    Kind = EfeuBehaviourStepKind.Raise,
-                    Name = "A"
-                },
-                new () {
-                    Kind = EfeuBehaviourStepKind.On,
-                    Name = "A",
-                    Do = [
-                        new () {
-                            Kind = EfeuBehaviourStepKind.Loop,
-                            Do = [
-                                new () {
-                                    Kind = EfeuBehaviourStepKind.If,
-                                    Input = new () {
-                                        Type = EfeuExpressionType.Eval,
-                                        Func = (scope) => scope.Get("@").AsArray().Count < 100
-                                    },
-                                    Do = [
-                                        new () {
-                                            Kind = EfeuBehaviourStepKind.Emit,
-                                            Name = "B",
-                                            Input = new () {
-                                                Type = EfeuExpressionType.Eval,
-                                                Func = (scope) => scope.Get("@").AsArray().Count
-                                            }
-                                        },
-                                        new () {
-                                            Kind = EfeuBehaviourStepKind.Next,
-                                            Input = new () {
-                                                Type = EfeuExpressionType.Integer,
-                                                Value = 42
-                                            }
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
+        EfeuBehaviourStep[] steps = [
+            new () {
+                Kind = EfeuBehaviourStepKind.Let,
+                Name = "var",
+                Input = new () {
+                    Type = EfeuExpressionType.String,
+                    Value = "Hello World!"
                 }
-            ];
+            },
+            new () {
+                Kind = EfeuBehaviourStepKind.Raise,
+                Name = "A"
+            },
+            new () {
+                Kind = EfeuBehaviourStepKind.On,
+                Name = "A",
+                Do = [
+                    new () {
+                        Kind = EfeuBehaviourStepKind.Loop,
+                        Do = [
+                            new () {
+                                Kind = EfeuBehaviourStepKind.If,
+                                Input = new () {
+                                    Type = EfeuExpressionType.Eval,
+                                    Func = (scope) => scope.Get("@").AsArray().Count < 100
+                                },
+                                Do = [
+                                    new () {
+                                        Kind = EfeuBehaviourStepKind.Emit,
+                                        Name = "B",
+                                        Input = new () {
+                                            Type = EfeuExpressionType.Eval,
+                                            Func = (scope) => scope.Get("@").AsArray().Count
+                                        }
+                                    },
+                                    new () {
+                                        Kind = EfeuBehaviourStepKind.Next,
+                                        Input = new () {
+                                            Type = EfeuExpressionType.Integer,
+                                            Value = 42
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ];
 
-            EfeuRuntimeSimulation simulation = EfeuRuntimeSimulation.Run(steps);
+        EfeuRuntimeSimulation simulation = EfeuRuntimeSimulation.Run(steps);
 
-            // simulation.Send(new EfeuMessage()
-            // {
-            //    Id = Guid.NewGuid(),
-            //    Type = "A",
-            //    Timestamp = DateTime.Now,
-            //    Tag = EfeuMessageTag.Data
-            //});
+        // simulation.Send(new EfeuMessage()
+        // {
+        //    Id = Guid.NewGuid(),
+        //    Type = "A",
+        //    Timestamp = DateTime.Now,
+        //    Tag = EfeuMessageTag.Data
+        //});
 
-            return;
+        return;
 
-            //EfeuRuntime runtime1 = EfeuRuntime.Run(steps, 10);
-            //EfeuTrigger trigger = runtime1.Triggers.First();
+        //EfeuRuntime runtime1 = EfeuRuntime.Run(steps, 10);
+        //EfeuTrigger trigger = runtime1.Triggers.First();
 
-            //EfeuRuntime runtime2 = EfeuRuntime.RunTrigger(trigger, new EfeuMessage()
-            //{
-            //     Tag = EfeuMessageTag.Data,
-            //     Type = "Event"
-            //});
+        //EfeuRuntime runtime2 = EfeuRuntime.RunTrigger(trigger, new EfeuMessage()
+        //{
+        //     Tag = EfeuMessageTag.Data,
+        //     Type = "Event"
+        //});
 
-            //Console.WriteLine("done");
-        }
+        //Console.WriteLine("done");
     }
 }

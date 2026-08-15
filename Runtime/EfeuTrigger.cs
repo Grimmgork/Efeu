@@ -5,45 +5,44 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Runtime
+namespace Efeu.Runtime;
+
+public class EfeuTriggerMatch
 {
-    public class EfeuTriggerMatch
-    {
-        public string Name = "";
+    public string Name = "";
 
-        public EfeuBehaviourExpression Value = EfeuBehaviourExpression.Empty;
+    public EfeuBehaviourExpression Value = EfeuBehaviourExpression.Empty;
 
-        public EfeuTriggerMatch[] Fields = [];
-    }
+    public EfeuTriggerMatch[] Fields = [];
+}
 
-    public class EfeuTrigger
-    {
-        public Guid Id;
+public class EfeuTrigger
+{
+    public Guid Id;
 
-        public Guid CorrelationId;
+    public Guid CorrelationId;
 
-        public DateTimeOffset CreationTime;
+    public DateTimeOffset CreationTime;
 
-        public string Position = ""; // position of trigger row /guid/0/Else/1
+    public string Position = ""; // position of trigger row /guid/0/Else/1
 
-        public EfeuRuntimeScope Scope = EfeuRuntimeScope.Empty; // Scope around trigger row
+    public EfeuRuntimeScope Scope = EfeuRuntimeScope.Empty; // Scope around trigger row
 
-        public string Type = "";
+    public string Type = "";
 
-        public EfeuMessageTag Tag;
+    public EfeuMessageTag Tag;
 
-        public Guid Matter;
+    public Guid Matter;
 
-        public EfeuValue Input;
+    public EfeuValue Input;
 
-        public EfeuBehaviourStep Step = new EfeuBehaviourStep();
+    public EfeuBehaviourStep Step = new EfeuBehaviourStep();
 
-        public EfeuTriggerMatch[] Fields = [];
+    public EfeuTriggerMatch[] Fields = [];
 
-        public Guid BehaviourId;
+    public Guid BehaviourId;
 
-        public Guid Group;
+    public Guid Group;
 
-        public bool IsStatic => CorrelationId == Guid.Empty; // a trigger is static if it is not assigned to a instance
-    }
+    public bool IsStatic => CorrelationId == Guid.Empty; // a trigger is static if it is not assigned to a instance
 }

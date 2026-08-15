@@ -6,20 +6,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Commands
+namespace Efeu.Integration.Commands;
+
+internal class BehaviourScopeCommands : IBehaviourScopeCommands
 {
-    internal class BehaviourScopeCommands : IBehaviourScopeCommands
+    private readonly IBehaviourScopeQueries behaviourScopeQueries;
+
+    public BehaviourScopeCommands(IBehaviourScopeQueries behaviourScopeQueries)
     {
-        private readonly IBehaviourScopeQueries behaviourScopeQueries;
+        this.behaviourScopeQueries = behaviourScopeQueries;
+    }
 
-        public BehaviourScopeCommands(IBehaviourScopeQueries behaviourScopeQueries)
-        {
-            this.behaviourScopeQueries = behaviourScopeQueries;
-        }
-
-        public Task CreateBulkAsync(BehaviourScopeEntity[] entities)
-        {
-            return behaviourScopeQueries.CreateBulkAsync(entities);
-        }
+    public async Task CreateBulkAsync(BehaviourScopeEntity[] entities)
+    {
+        await behaviourScopeQueries.CreateBulkAsync(entities);
     }
 }

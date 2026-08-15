@@ -14,68 +14,67 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace Efeu.Application
+namespace Efeu.Application;
+
+public class Program
 {
-    public class Program
+    public static void Main(string[] args)
     {
-        public static void Main(string[] args)
+        var builder = WebApplication.CreateBuilder(args);
+
+        builder.Services.AddAuthorization();
+
+        builder.Services.AddControllersWithViews()
+                 .AddJsonOptions(options =>
+                 {
+                     options.JsonSerializerOptions.IncludeFields = true;
+                     options.JsonSerializerOptions.Converters.Add(new EfeuValueJsonConverter());
+                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                 });
+
+        SQLiteConnectionStringBuilder connBuilder = new SQLiteConnectionStringBuilder();
+        connBuilder.DataSource = "data.db";
+        connBuilder.Version = 3;
+        connBuilder.PageSize = 4096;
+        connBuilder.CacheSize = 10000;
+        connBuilder.JournalMode = SQLiteJournalModeEnum.Wal;
+        connBuilder.Pooling = true;
+        connBuilder.LegacyFormat = false;
+        connBuilder.DefaultTimeout = 800;
+
+        builder.Services.AddScoped((services) =>
+            new SQLiteConnection(connBuilder.ToString()));
+
+        builder.Services.AddEfeu();
+        builder.Services.AddEfeuDefaultEffects();
+        // builder.Services.AddEfeuSqlite("efeu", "Data Source=data.db");
+        builder.Services.AddEfeuSqlite("efeu");
+
+        var app = builder.Build();
+
+        app.UseCors((builder) =>
         {
-            var builder = WebApplication.CreateBuilder(args);
+            builder.AllowAnyOrigin();
+            builder.AllowAnyHeader();
+        });
+        app.UseStaticFiles();
+        app.UseHttpsRedirection();
+        app.UseRouting();
+        app.UseAuthorization();
 
-            builder.Services.AddAuthorization();
+        app.MapControllerRoute(
+                name: "default",
+                pattern: "{controller=Home}/{action=Index}/{id?}");
 
-            builder.Services.AddControllersWithViews()
-                     .AddJsonOptions(options =>
-                     {
-                         options.JsonSerializerOptions.IncludeFields = true;
-                         options.JsonSerializerOptions.Converters.Add(new EfeuValueJsonConverter());
-                         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-                     });
-
-            SQLiteConnectionStringBuilder connBuilder = new SQLiteConnectionStringBuilder();
-            connBuilder.DataSource = "data.db";
-            connBuilder.Version = 3;
-            connBuilder.PageSize = 4096;
-            connBuilder.CacheSize = 10000;
-            connBuilder.JournalMode = SQLiteJournalModeEnum.Wal;
-            connBuilder.Pooling = true;
-            connBuilder.LegacyFormat = false;
-            connBuilder.DefaultTimeout = 800;
-
-            builder.Services.AddScoped((services) =>
-                new SQLiteConnection(connBuilder.ToString()));
-
-            builder.Services.AddEfeu();
-            builder.Services.AddEfeuDefaultEffects();
-            // builder.Services.AddEfeuSqlite("efeu", "Data Source=data.db");
-            builder.Services.AddEfeuSqlite("efeu");
-
-            var app = builder.Build();
-
-            app.UseCors((builder) =>
-            {
-                builder.AllowAnyOrigin();
-                builder.AllowAnyHeader();
-            });
-            app.UseStaticFiles();
-            app.UseHttpsRedirection();
-            app.UseRouting();
-            app.UseAuthorization();
-
-            app.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
-
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
-            Console.WriteLine("running migrations ...");
-            app.MigrateEfeuAsync().GetAwaiter().GetResult();
-            Console.WriteLine("done");
-            
-            app.Run();
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
         }
+
+        Console.WriteLine("running migrations ...");
+        app.MigrateEfeuAsync().GetAwaiter().GetResult();
+        Console.WriteLine("done");
+
+        app.Run();
     }
 }

@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Foreign
+namespace Efeu.Integration.Foreign;
+
+public interface IEfeuEffectProvider
 {
-    public interface IEfeuEffectProvider
-    {
-        public IEfeuEffect? TryGetEffect(string name);
-    }
+    public IEfeuEffect? TryGetEffect(string name);
 }

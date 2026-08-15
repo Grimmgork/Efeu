@@ -12,78 +12,77 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace Efeu.Application.Controllers
+namespace Efeu.Application.Controllers;
+
+[Route("Effect")]
+public class EffectController : Controller
 {
-    [Route("Effect")]
-    public class EffectController : Controller
+    private readonly IEffectCommands effectCommands;
+    private readonly IEffectQueries effectQueries;
+    private readonly JsonOptions jsonOptions;
+
+    public EffectController(IEffectCommands effectCommands, IEffectQueries effectQueries, IOptions<JsonOptions> jsonOptions)
     {
-        private readonly IEffectCommands effectCommands;
-        private readonly IEffectQueries effectQueries;
-        private readonly JsonOptions jsonOptions;
+        this.effectCommands = effectCommands;
+        this.effectQueries = effectQueries;
+        this.jsonOptions = jsonOptions.Value;
+    }
 
-        public EffectController(IEffectCommands effectCommands, IEffectQueries effectQueries, IOptions<JsonOptions> jsonOptions)
-        {
-            this.effectCommands = effectCommands;
-            this.effectQueries = effectQueries;
-            this.jsonOptions = jsonOptions.Value;
-        }
+    [HttpGet]
+    public async Task<IActionResult> Index()
+    {
+        EffectEntity[] effects = await effectQueries.GetAllAsync();
+        return View(effects);
+    }
 
-        [HttpGet]
-        public async Task<IActionResult> Index()
+    [HttpPost]
+    [Route("")]
+    public async Task<IActionResult> Create(string type, EfeuMessageTag tag, Guid matter, string json)
+    {
+        await effectCommands.SendMessageDeduplicatedAsync(new EfeuMessage()
         {
-            EffectEntity[] effects = await effectQueries.GetAllAsync();
-            return View(effects);
-        }
+            Timestamp = DateTime.Now,
+            Type = type,
+            Tag = tag,
+            Matter = Guid.Empty,
+            Payload = JsonSerializer.Deserialize<EfeuValue>(string.IsNullOrWhiteSpace(json) ? "null" : json, jsonOptions.JsonSerializerOptions)
+        });
+        Response.Headers["HX-Trigger"] = "close-dialog";
+        Response.Headers["HX-Refresh"] = "true";
+        return Ok();
+    }
 
-        [HttpPost]
-        [Route("")]
-        public async Task<IActionResult> Create(string type, EfeuMessageTag tag, Guid matter, string json)
-        {
-            await effectCommands.SendMessageDeduplicatedAsync(new EfeuMessage()
-            {
-                Timestamp = DateTime.Now,
-                Type = type,
-                Tag = tag,
-                Matter = Guid.Empty,
-                Payload = JsonSerializer.Deserialize<EfeuValue>(string.IsNullOrWhiteSpace(json) ? "null" : json, jsonOptions.JsonSerializerOptions)
-            });
-            Response.Headers["HX-Trigger"] = "close-dialog";
-            Response.Headers["HX-Refresh"] = "true";
-            return Ok();
-        }
+    [HttpGet]
+    [Route("DialogForCreate")]
+    public async Task<IActionResult> DialogForCreate()
+    {
+        return PartialView();
+    }
 
-        [HttpGet]
-        [Route("DialogForCreate")]
-        public async Task<IActionResult> DialogForCreate()
-        {
-            return PartialView();
-        }
+    [HttpDelete]
+    [Route("{id}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        await effectCommands.AbortEffect(id);
+        Response.Headers["HX-Refresh"] = "true";
+        return Ok();
+    }
 
-        [HttpDelete]
-        [Route("{id}")]
-        public async Task<IActionResult> Delete(Guid id)
-        {
-            await effectCommands.AbortEffect(id);
-            Response.Headers["HX-Refresh"] = "true";
-            return Ok();
-        }
+    [HttpPost]
+    [Route("{id}/Nudge")]
+    public async Task<IActionResult> Nudge(Guid id)
+    {
+        await effectCommands.NudgeEffect(id);
+        Response.Headers["HX-Refresh"] = "true";
+        return Ok();
+    }
 
-        [HttpPost]
-        [Route("{id}/Nudge")]
-        public async Task<IActionResult> Nudge(Guid id)
-        {
-            await effectCommands.NudgeEffect(id);
-            Response.Headers["HX-Refresh"] = "true";
-            return Ok();
-        }
-
-        [HttpPost]
-        [Route("{id}/Suspend")]
-        public async Task<IActionResult> Suspend(Guid id)
-        {
-            await effectCommands.SuspendEffect(id, DateTime.Now);
-            Response.Headers["HX-Refresh"] = "true";
-            return Ok();
-        }
+    [HttpPost]
+    [Route("{id}/Suspend")]
+    public async Task<IActionResult> Suspend(Guid id)
+    {
+        await effectCommands.SuspendEffect(id, DateTime.Now);
+        Response.Headers["HX-Refresh"] = "true";
+        return Ok();
     }
 }

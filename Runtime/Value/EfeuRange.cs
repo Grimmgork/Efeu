@@ -5,46 +5,45 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Runtime.Value
+namespace Efeu.Runtime.Value;
+
+public class EfeuRange : EfeuObject, IEnumerable<EfeuValue>
 {
-    public class EfeuRange : EfeuObject, IEnumerable<EfeuValue>
+    public readonly int Start;
+    public readonly int End;
+
+    public EfeuRange(int start, int end)
     {
-        public readonly int Start;
-        public readonly int End;
+        this.Start = start;
+        this.End = end;
+    }
 
-        public EfeuRange(int start, int end)
-        {
-            this.Start = start;
-            this.End = end;
-        }
+    public IEnumerator<EfeuValue> GetEnumerator()
+    {
+        return Enumerable.Range(Start, End)
+            .Select(i => (EfeuValue)i)
+            .GetEnumerator();
+    }
 
-        public IEnumerator<EfeuValue> GetEnumerator()
-        {
-            return Enumerable.Range(Start, End)
-                .Select(i => (EfeuValue)i)
-                .GetEnumerator();
-        }
+    public override bool AsBoolean()
+    {
+        return this.Any();
+    }
 
-        public override bool AsBoolean()
+    public override bool Equals(EfeuValue value)
+    {
+        if (value.AsObject() is EfeuRange range)
         {
-            return this.Any();
+            return range.Start == this.Start && range.End == this.End;
         }
+        else
+        {
+            return false;
+        }
+    }
 
-        public override bool Equals(EfeuValue value)
-        {
-            if (value.AsObject() is EfeuRange range)
-            {
-                return range.Start == this.Start && range.End == this.End;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
     }
 }

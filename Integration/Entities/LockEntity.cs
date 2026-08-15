@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Entities
-{
-    public class LockEntity
-    {
-        public Guid Bundle;
+namespace Efeu.Integration.Entities;
 
-        public string Name = "";
-    }
+public class LockEntity
+{
+    public Guid Bundle;
+
+    public string Name = "";
 }

@@ -4,20 +4,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Commands
+namespace Efeu.Integration.Commands;
+
+public interface IDeduplicationKeyCommands
 {
-    public interface IDeduplicationKeyCommands
+    public Task CleanupAsync(DateTimeOffset timestamp);
+
+    public Task<bool> TryInsertAsync(string key, DateTimeOffset timestamp);
+
+    public Task<bool> TryInsertAsync(Guid key, DateTimeOffset timestamp)
     {
-        public Task CleanupAsync(DateTimeOffset timestamp);
+        if (key == Guid.Empty)
+            return Task.FromResult(true);
 
-        public Task<bool> TryInsertAsync(string key, DateTimeOffset timestamp);
-
-        public Task<bool> TryInsertAsync(Guid key, DateTimeOffset timestamp)
-        {
-            if (key == Guid.Empty)
-                return Task.FromResult(true);
-
-            return TryInsertAsync(key.ToString(), timestamp);
-        }
+        return TryInsertAsync(key.ToString(), timestamp);
     }
 }

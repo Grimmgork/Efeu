@@ -6,34 +6,33 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Entities
+namespace Efeu.Integration.Entities;
+
+public class TriggerEntity
 {
-    public class TriggerEntity
-    {
-        public Guid Id;
+    public Guid Id;
 
-        public DateTimeOffset CreationTime;
+    public DateTimeOffset CreationTime;
 
-        public EfeuValue Input;
+    public EfeuValue Input;
 
-        public Guid CorrelationId;
+    public Guid CorrelationId;
 
-        public Guid BehaviourVersionId;
+    public Guid BehaviourVersionId;
 
-        public string Position = ""; // position of trigger row 0/Else/1
+    public string Position = ""; // position of trigger row 0/Else/1
 
-        public string Type = "";
+    public string Type = "";
 
-        public EfeuMessageTag Tag;
+    public EfeuMessageTag Tag;
 
-        public Guid Matter;
+    public Guid Matter;
 
-        public Guid Group;
+    public Guid Group;
 
-        public Guid ScopeId;
+    public Guid ScopeId;
 
-        public Guid LoopbackScopeId;
+    public Guid LoopbackScopeId;
 
-        public bool IsDetatched;
-    }
+    public bool IsDetatched;
 }

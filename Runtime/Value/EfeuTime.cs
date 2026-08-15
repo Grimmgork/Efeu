@@ -3,65 +3,65 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Efeu.Runtime.Value.Reference;
 
-namespace Efeu.Runtime.Value
+namespace Efeu.Runtime.Value;
+
+public class EfeuTime : EfeuObject
 {
-    public class EfeuTime : EfeuObject
+    public readonly DateTimeOffset Value;
+
+    public EfeuTime(long seconds, int milliseconds = 0)
     {
-        public readonly DateTimeOffset Value;
+        Value = DateTimeOffset.FromUnixTimeSeconds(seconds).AddMilliseconds(milliseconds);
+    }
 
-        public EfeuTime(long seconds, int milliseconds = 0)
+    public EfeuTime()
+    {
+        Value = DateTimeOffset.MinValue;
+    }
+
+    public EfeuTime(DateTime timestamp)
+    {
+        this.Value = timestamp;
+    }
+
+    public EfeuTime(DateTimeOffset timestamp)
+    {
+        this.Value = timestamp;
+    }
+
+    public static EfeuTime Now => new EfeuTime(DateTimeOffset.Now);
+
+    public override string ToString()
+    {
+        return Value.ToLocalTime().ToString();
+    }
+
+    public override long AsLong()
+    {
+        return Value.ToUnixTimeMilliseconds();
+    }
+
+    public override bool AsBoolean()
+    {
+        return Value != DateTimeOffset.MinValue;
+    }
+
+    public override bool Equals(EfeuValue value)
+    {
+        if (value.AsObject() is EfeuTime time)
         {
-            Value = DateTimeOffset.FromUnixTimeSeconds(seconds).AddMilliseconds(milliseconds);
+            return this.Value == time.Value;
         }
-
-        public EfeuTime()
+        else
         {
-            Value = DateTimeOffset.MinValue;
+            return value.AsLong() == Value.ToUnixTimeMilliseconds();
         }
+    }
 
-        public EfeuTime(DateTime timestamp)
-        {
-            this.Value = timestamp;
-        }
-
-        public EfeuTime(DateTimeOffset timestamp)
-        {
-            this.Value = timestamp;
-        }
-
-        public static EfeuTime Now => new EfeuTime(DateTimeOffset.Now);
-
-        public override string ToString()
-        {
-            return Value.ToLocalTime().ToString();
-        }
-
-        public override long AsLong()
-        {
-            return Value.ToUnixTimeMilliseconds();
-        }
-
-        public override bool AsBoolean()
-        {
-            return Value != DateTimeOffset.MinValue;
-        }
-
-        public override bool Equals(EfeuValue value)
-        {
-            if (value.AsObject() is EfeuTime time)
-            {
-                return this.Value == time.Value;
-            }
-            else
-            {
-                return value.AsLong() == Value.ToUnixTimeMilliseconds();
-            }
-        }
-
-        public override void WriteReference(IEfeuReferenceHasher hasher)
-        {
-            hasher.WriteInt64(Value.ToUnixTimeMilliseconds());
-        }
+    public override void WriteReference(IEfeuReferenceHasher hasher)
+    {
+        hasher.WriteInt64(Value.ToUnixTimeMilliseconds());
     }
 }

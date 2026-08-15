@@ -9,24 +9,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Commands
+namespace Efeu.Integration.Commands;
+
+public interface IEffectCommands
 {
-    public interface IEffectCommands
-    {
-        public Task SkipEffect(Guid id, DateTimeOffset timestamp, EfeuValue output = default);
+    public Task SkipEffect(Guid id, DateTimeOffset timestamp, EfeuValue output = default);
 
-        public Task SuspendEffect(Guid id, DateTimeOffset timestamp);
+    public Task SuspendEffect(Guid id, DateTimeOffset timestamp);
 
-        public Task NudgeEffect(Guid id);
+    public Task NudgeEffect(Guid id);
 
-        public Task AbortEffect(Guid id);
+    public Task AbortEffect(Guid id);
 
-        public Task CreateEffect(EfeuMessage message);
+    public Task CreateEffect(EfeuMessage message);
 
-        public Task SendMessageAsync(EfeuMessage message);
+    public Task SendMessageAsync(EfeuMessage message);
 
-        public Task SendMessageDeduplicatedAsync(EfeuMessage message);
+    public Task SendMessageDeduplicatedAsync(EfeuMessage message);
 
-        public Task RunImmediate(EfeuBehaviourStep[] steps, Guid behaviourVersionId, DateTimeOffset timestamp);
-    }
+    public Task RunImmediate(EfeuBehaviourStep[] steps, Guid behaviourVersionId, DateTimeOffset timestamp);
 }

@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Entities
-{
-    public class DeduplicationKeyEntity
-    {
-        public DateTimeOffset Timestamp;
+namespace Efeu.Integration.Entities;
 
-        public string Key = "";
-    }
+public class DeduplicationKeyEntity
+{
+    public DateTimeOffset Timestamp;
+
+    public string Key = "";
 }

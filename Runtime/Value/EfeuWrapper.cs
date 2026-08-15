@@ -4,25 +4,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Runtime.Value
+namespace Efeu.Runtime.Value;
+
+public class EfeuWrapper : EfeuObject
 {
-    public class EfeuWrapper : EfeuObject
+    public readonly object Wrappee;
+
+    public EfeuWrapper(object wrappee)
     {
-        public readonly object Wrappee;
-
-        public EfeuWrapper(object wrappee)
+        if (wrappee is EfeuObject)
         {
-            if (wrappee is EfeuObject)
-            {
-                throw new InvalidOperationException($"Cannot wrap {nameof(EfeuObject)}.");
-            }
-
-            this.Wrappee = wrappee;
+            throw new InvalidOperationException($"Cannot wrap {nameof(EfeuObject)}.");
         }
 
-        public override string ToString()
-        {
-            return Wrappee.ToString() ?? "";
-        }
+        this.Wrappee = wrappee;
+    }
+
+    public override string ToString()
+    {
+        return Wrappee.ToString() ?? "";
     }
 }

@@ -9,20 +9,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Foreign
+namespace Efeu.Integration.Foreign;
+
+internal class EfeuEngine : IEfeuEngine
 {
-    internal class EfeuEngine : IEfeuEngine
+    private readonly IEffectCommands behaviourEffectCommands;
+
+    public EfeuEngine(IEffectCommands behaviourEffectCommands)
     {
-        private readonly IEffectCommands behaviourEffectCommands;
+        this.behaviourEffectCommands = behaviourEffectCommands;
+    }
 
-        public EfeuEngine(IEffectCommands behaviourEffectCommands)
-        {
-            this.behaviourEffectCommands = behaviourEffectCommands;
-        }
-
-        public Task SendMessageAsync(EfeuMessage message)
-        {
-            return behaviourEffectCommands.SendMessageAsync(message);
-        }
+    public Task SendMessageAsync(EfeuMessage message)
+    {
+        return behaviourEffectCommands.SendMessageAsync(message);
     }
 }

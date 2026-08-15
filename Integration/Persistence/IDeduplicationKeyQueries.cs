@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Persistence
-{
-    public interface IDeduplicationKeyQueries
-    {
-        public Task<int> TryInsertAsync(string key, DateTimeOffset timestamp);
+namespace Efeu.Integration.Persistence;
 
-        public Task ClearBeforeAsync(DateTimeOffset timestamp);
-    }
+public interface IDeduplicationKeyQueries
+{
+    public Task<int> TryInsertAsync(string key, DateTimeOffset timestamp);
+
+    public Task ClearBeforeAsync(DateTimeOffset timestamp);
 }

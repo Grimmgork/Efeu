@@ -7,20 +7,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Efeu.Integration.Entities
+namespace Efeu.Integration.Entities;
+
+public class BehaviourScopeEntity
 {
-    public class BehaviourScopeEntity
-    {
-        public Guid Id { get; set; }
+    public Guid Id;
 
-        public uint ReferenceCount { get; set; }
+    public uint ReferenceCount;
 
-        public Guid LoopbackScopeId { get; set; }
+    public Guid LoopbackScopeId;
 
-        public string LoopbackPosition { get; set; } = "";
+    public string LoopbackPosition = "";
 
-        public EfeuArray LoopbackIterator { get; set; } = EfeuArray.Empty;
-
-        public ImmutableDictionary<string, EfeuValue> Constants { get; set; } = ImmutableDictionary<string, EfeuValue>.Empty;
-    }
+    public ImmutableDictionary<string, EfeuValue> Constants = ImmutableDictionary<string, EfeuValue>.Empty;
 }
