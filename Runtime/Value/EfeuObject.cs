@@ -17,7 +17,7 @@ public abstract class EfeuObject : IEquatable<EfeuValue>
         return $"<{TypeName}>";
     }
 
-    public virtual void WriteReference(IEfeuReferenceHasher context)
+    public virtual void WriteReference(IEfeuValueReferenceHasher context)
     {
         throw new NotImplementedException();
     }

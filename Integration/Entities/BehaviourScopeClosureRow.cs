@@ -4,9 +4,13 @@ using Efeu.Runtime.Value.Reference;
 
 namespace Efeu.Integration.Entities;
 
-public class DataNodeReferenceEntity
+public class BehaviourScopeClosureRow
 {
     public Guid ScopeId;
 
-    public EfeuReference NodeId;
+    public string? Constant;
+
+    public int Sequence;
+
+    public EfeuValueReference Value;
 }

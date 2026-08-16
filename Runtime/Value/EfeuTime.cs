@@ -60,7 +60,7 @@ public class EfeuTime : EfeuObject
         }
     }
 
-    public override void WriteReference(IEfeuReferenceHasher hasher)
+    public override void WriteReference(IEfeuValueReferenceHasher hasher)
     {
         hasher.WriteInt64(Value.ToUnixTimeMilliseconds());
     }

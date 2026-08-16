@@ -7,11 +7,9 @@ namespace Efeu.Integration.Utils;
 
 internal class CachedLookup<TKey, TValue> where TKey : notnull
 {
-    private Dictionary<TKey, TValue> cache = new Dictionary<TKey, TValue>();
-
-    private Func<TKey[], Task<TValue[]>> fetch;
-
-    private Func<TValue, TKey> getKey;
+    private readonly Dictionary<TKey, TValue> cache = new Dictionary<TKey, TValue>();
+    private readonly Func<TKey[], Task<TValue[]>> fetch;
+    private readonly Func<TValue, TKey> getKey;
 
     public CachedLookup(Func<TKey[], Task<TValue[]>> fetch, Func<TValue, TKey> getKey)
     {

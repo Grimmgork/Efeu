@@ -5,9 +5,9 @@ using Efeu.Runtime.Value.Reference;
 
 namespace Efeu.Runtime.Value.Reference;
 
-public interface IEfeuReferenceHasher
+public interface IEfeuValueReferenceHasher
 {
-    public EfeuReference HashReference(EfeuValue value);
+    public EfeuValueReference HashReference(EfeuValue value);
 
     public void WriteByte(byte value);
 
@@ -15,11 +15,13 @@ public interface IEfeuReferenceHasher
 
     public void WriteReference(EfeuValue value)
     {
-        EfeuReference reference = HashReference(value);
-        WriteUInt64(reference.A);
-        WriteUInt64(reference.B);
-        WriteUInt64(reference.C);
-        WriteUInt64(reference.D);
+        EfeuValueReference valueReference = HashReference(value);
+        WriteByte((byte)valueReference.Tag);
+        WriteInt64(valueReference.Integer);
+        WriteUInt64(valueReference.A);
+        WriteUInt64(valueReference.B);
+        WriteUInt64(valueReference.C);
+        WriteUInt64(valueReference.D);
     }
 
     public void WriteUInt64(ulong value)

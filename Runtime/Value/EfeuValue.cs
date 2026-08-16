@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Security.AccessControl;
+using Efeu.Runtime.Value.Reference;
 
 namespace Efeu.Runtime.Value;
 
@@ -21,28 +22,28 @@ public enum EfeuValueTag : byte
 public readonly struct EfeuValue
 {
     public readonly EfeuValueTag Tag;
-    private readonly long integer;
+    public readonly long Integer;
     private readonly EfeuObject? obj;
 
     public EfeuValue(long i)
     {
         Tag = EfeuValueTag.Integer;
         obj = null;
-        integer = i;
+        Integer = i;
     }
     public EfeuValue(bool b)
     {
         Tag = b ? EfeuValueTag.True : EfeuValueTag.False;
         obj = null;
-        integer = 0;
+        Integer = 0;
     }
     public EfeuValue(EfeuObject obj)
     {
-        Tag = EfeuValueTag.Object;
+        this.Tag = EfeuValueTag.Object;
         this.obj = obj;
-        integer = 0;
+        this.Integer = 0;
     }
-
+    
     public static implicit operator EfeuValue(int i) => new EfeuValue(i);
     public static implicit operator EfeuValue(long i) => new EfeuValue(i);
     public static implicit operator EfeuValue(bool b) => new EfeuValue(b);
@@ -125,7 +126,7 @@ public readonly struct EfeuValue
     {
         if (Tag == EfeuValueTag.Integer)
         {
-            return integer;
+            return Integer;
         }
         else if (Tag == EfeuValueTag.Nil)
         {
@@ -158,7 +159,7 @@ public readonly struct EfeuValue
     {
         if (Tag == EfeuValueTag.Integer)
         {
-            return integer;
+            return Integer;
         }
         else if (Tag == EfeuValueTag.Nil)
         {
@@ -199,7 +200,7 @@ public readonly struct EfeuValue
         }
         else if (Tag == EfeuValueTag.Integer)
         {
-            return integer > 0;
+            return Integer > 0;
         }
         else if (Tag == EfeuValueTag.Object)
         {
@@ -213,7 +214,7 @@ public readonly struct EfeuValue
     {
         if (Tag == EfeuValueTag.Integer)
         {
-            return integer;
+            return Integer;
         }
         else if (Tag == EfeuValueTag.Nil)
         {
@@ -251,7 +252,7 @@ public readonly struct EfeuValue
         }
         else if (Tag == EfeuValueTag.Integer)
         {
-            return integer.ToString();
+            return Integer.ToString();
         }
         else if (Tag == EfeuValueTag.Object)
         {
@@ -299,7 +300,7 @@ public readonly struct EfeuValue
         }
         else if (Tag == EfeuValueTag.Integer)
         {
-            return integer.GetHashCode();
+            return Integer.GetHashCode();
         }
         else
         {
@@ -331,7 +332,7 @@ public readonly struct EfeuValue
 
         if (this.Tag == EfeuValueTag.Integer)
         {
-            return this.integer == value.AsLong();
+            return this.Integer == value.AsLong();
         }
 
         if (this.Tag == EfeuValueTag.Object)

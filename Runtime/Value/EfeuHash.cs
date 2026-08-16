@@ -53,7 +53,7 @@ public class EfeuHash : EfeuObject, IEnumerable<KeyValuePair<string, EfeuValue>>
         return GetEnumerator();
     }
 
-    public override void WriteReference(IEfeuReferenceHasher context)
+    public override void WriteReference(IEfeuValueReferenceHasher context)
     {
         foreach (KeyValuePair<string, EfeuValue> keys in Hash)
         {
