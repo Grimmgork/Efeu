@@ -8,16 +8,16 @@ namespace Efeu.Runtime.Value.Reference;
 public sealed class Sha256EfeuValueReferenceHasher : IEfeuValueReferenceHasher, IDisposable
 {
     private readonly Stack<IncrementalHash> stack = new Stack<IncrementalHash>();
-    private readonly Dictionary<EfeuObject, EfeuValueReference> cache = new Dictionary<EfeuObject, EfeuValueReference>();
-    private readonly Dictionary<EfeuValueReference, EfeuValue> lookup = new Dictionary<EfeuValueReference, EfeuValue>();
-    private readonly Action<EfeuValue, EfeuValueReference>? callback;
+    private readonly Dictionary<EfeuObject, EfeuReference> cache = new Dictionary<EfeuObject, EfeuReference>();
+    private readonly Dictionary<EfeuReference, EfeuValue> lookup = new Dictionary<EfeuReference, EfeuValue>();
+    private readonly Action<EfeuValue, EfeuReference>? callback;
 
-    public Sha256EfeuValueReferenceHasher(Action<EfeuValue, EfeuValueReference>? callback = null)
+    public Sha256EfeuValueReferenceHasher(Action<EfeuValue, EfeuReference>? callback = null)
     {
         this.callback = callback;
     }
 
-    public EfeuValueReference HashReference(EfeuValue value)
+    public EfeuReference HashReference(EfeuValue value)
     {
         if (value.Tag  == EfeuValueTag.Object)
         {
@@ -30,7 +30,7 @@ public sealed class Sha256EfeuValueReferenceHasher : IEfeuValueReferenceHasher, 
             BeginHash();
             obj.WriteReference(this);
             byte[] objectHashBytes = EndHash();
-            EfeuValueReference result = EfeuValueReference.From(objectHashBytes);
+            EfeuReference result = EfeuReference.From(objectHashBytes);
             cache.Add(obj, result);
             lookup.Add(result, value);
             callback?.Invoke(value, result);
@@ -38,7 +38,7 @@ public sealed class Sha256EfeuValueReferenceHasher : IEfeuValueReferenceHasher, 
         }
         else
         {
-            return EfeuValueReference.From(value.Tag, value.Integer);
+            return EfeuReference.From(value.Tag, value.Integer);
         }
     }
 

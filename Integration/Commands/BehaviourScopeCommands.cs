@@ -30,7 +30,7 @@ internal class BehaviourScopeCommands : IBehaviourScopeCommands
     {
         await unitOfWork.BeginAsync();
 
-        List<BehaviourScopeClosureRow> edgeEntities = [];
+        List<ValueNodeClosureEntity> edgeEntities = [];
         // hash values
         Sha256EfeuValueReferenceHasher valueReferenceHasher = new Sha256EfeuValueReferenceHasher((value, reference) =>
         {

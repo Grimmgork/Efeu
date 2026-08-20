@@ -7,21 +7,21 @@ namespace Efeu.Runtime.Value.Reference;
 
 public interface IEfeuValueReferenceHasher
 {
-    public EfeuValueReference HashReference(EfeuValue value);
+    public EfeuReference HashReference(EfeuValue value);
 
     public void WriteByte(byte value);
 
     public void WriteBytes(ReadOnlySpan<byte> bytes);
 
-    public void WriteReference(EfeuValue value)
+    public void WriteValue(EfeuValue value)
     {
-        EfeuValueReference valueReference = HashReference(value);
-        WriteByte((byte)valueReference.Tag);
-        WriteInt64(valueReference.Integer);
-        WriteUInt64(valueReference.A);
-        WriteUInt64(valueReference.B);
-        WriteUInt64(valueReference.C);
-        WriteUInt64(valueReference.D);
+        EfeuReference reference = HashReference(value);
+        WriteByte((byte)reference.Tag);
+        WriteInt64(reference.Integer);
+        WriteUInt64(reference.A);
+        WriteUInt64(reference.B);
+        WriteUInt64(reference.C);
+        WriteUInt64(reference.D);
     }
 
     public void WriteUInt64(ulong value)

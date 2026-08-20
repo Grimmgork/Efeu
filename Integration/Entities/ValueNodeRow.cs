@@ -6,17 +6,7 @@ namespace Efeu.Integration.Entities;
 
 public class ValueNodeRow
 {
-    public EfeuValueReference Id;
+    public EfeuReference Id;
 
-    public EfeuValueReference? ParentId;
-
-    public string? Field;
-    
-    public EfeuValueReference ValueReference;
-    
-    public EfeuValueTag Tag;
-
-    public string? Type = "";
-    
     public byte[] Payload = [];
 }
