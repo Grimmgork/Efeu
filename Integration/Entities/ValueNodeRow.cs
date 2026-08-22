@@ -6,7 +6,7 @@ namespace Efeu.Integration.Entities;
 
 public class ValueNodeRow
 {
-    public EfeuReference Id;
+    public byte[] Hash = [];
 
     public byte[] Payload = [];
 }

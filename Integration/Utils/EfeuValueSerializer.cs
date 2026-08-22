@@ -7,7 +7,7 @@ namespace Efeu.Integration.Utils;
 
 public class EfeuValueDeserializer
 {
-    public void Deserialize(EfeuReference reference, ValueNodeRow[] nodes)
+    public void Deserialize(byte[] bytes, ValueNodeRow[] nodes)
     {
         
     }
@@ -16,11 +16,9 @@ public class EfeuValueDeserializer
 public class EfeuValueSerializer
 {
     public List<ValueNodeRow> Nodes = [];
-    public ValueNodeClosureEntity Closure = new ValueNodeClosureEntity();
-    public List<ValueNodeClosureRow> ClosureRows = [];
-
-    private void Serialize(EfeuValue root)
+    
+    private byte[] Serialize(EfeuValue root)
     {
-        
+        return [];
     }
 }
