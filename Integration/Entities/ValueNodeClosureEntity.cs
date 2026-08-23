@@ -10,7 +10,7 @@ public class ValueNodeClosureEntity
 
     public DateTimeOffset Created;
 
-    public EfeuReference Reference;
+    public EfeuValueHash ValueHash;
 }
 
 public class ValueNodeClosureRow
@@ -19,5 +19,5 @@ public class ValueNodeClosureRow
     
     public int Sequence;
     
-    public EfeuReference Reference;
+    public EfeuValueHash ValueHash;
 }

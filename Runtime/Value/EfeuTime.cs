@@ -59,9 +59,4 @@ public class EfeuTime : EfeuObject
             return value.AsLong() == Value.ToUnixTimeMilliseconds();
         }
     }
-
-    public override void WriteReference(IEfeuValueReferenceHasher hasher)
-    {
-        hasher.WriteInt64(Value.ToUnixTimeMilliseconds());
-    }
 }

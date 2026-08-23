@@ -17,16 +17,6 @@ public abstract class EfeuObject : IEquatable<EfeuValue>
         return $"<{TypeName}>";
     }
 
-    public virtual void Serialize(IEfeuValueReferenceHasher context)
-    {
-        throw new NotImplementedException();
-    }
-
-    public virtual EfeuObject Deserialize(IEfeuValueReferenceHasher context)
-    {
-        throw new NotImplementedException();
-    }
-
     public virtual decimal AsDecimal()
     {
         throw new NotImplementedException();

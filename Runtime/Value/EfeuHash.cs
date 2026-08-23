@@ -53,15 +53,6 @@ public class EfeuHash : EfeuObject, IEnumerable<KeyValuePair<string, EfeuValue>>
         return GetEnumerator();
     }
 
-    public override void Serialize(IEfeuValueReferenceHasher context)
-    {
-        foreach (KeyValuePair<string, EfeuValue> keys in Hash)
-        {
-            context.WriteString(keys.Key + ":");
-            context.WriteValue(keys.Value);
-        }
-    }
-
     public override EfeuValue Traverse(EfeuValue identifier)
     {
         return Hash[identifier.ToString()];

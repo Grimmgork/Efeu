@@ -11,13 +11,16 @@ using Efeu.Runtime.Value.Reference;
 
 namespace Efeu.Runtime.Value.Reference;
 
-public readonly struct EfeuReference : IEquatable<EfeuReference>
+public readonly struct EfeuValueHash : IEquatable<EfeuValueHash>
 {
-    public readonly EfeuValueTag Tag;
-    public readonly byte[] Hash = [];
-    public readonly byte[] Payload = [];
+    public const int SizeInBytes = 32;
     
-    private EfeuReference(ulong a, ulong b, ulong c, ulong d)
+    public readonly ulong A;
+    public readonly ulong B;
+    public readonly ulong C;
+    public readonly ulong D;
+    
+    private EfeuValueHash(ulong a, ulong b, ulong c, ulong d)
     {
         A = a;
         B = b;
@@ -25,24 +28,24 @@ public readonly struct EfeuReference : IEquatable<EfeuReference>
         D = d;
     }
 
-    public bool Equals(EfeuReference other)
+    public bool Equals(EfeuValueHash other)
         => A == other.A
            && B == other.B
            && C == other.C
            && D == other.D;
 
     public override bool Equals(object? obj)
-        => obj is EfeuReference other && Equals(other);
+        => obj is EfeuValueHash other && Equals(other);
 
     public override int GetHashCode()
         => HashCode.Combine(A, B, C, D);
 
-    public static EfeuReference FromBytes(byte[] bytes)
+    public static EfeuValueHash FromBytes(byte[] bytes)
     {
         if (bytes.Length != SizeInBytes)
             throw new ArgumentException("Object hash length must be 32 bytes.");
         
-        return new EfeuReference(
+        return new EfeuValueHash(
             BinaryPrimitives.ReadUInt64LittleEndian(bytes[0..8]),
             BinaryPrimitives.ReadUInt64LittleEndian(bytes[8..16]),
             BinaryPrimitives.ReadUInt64LittleEndian(bytes[16..24]),
@@ -68,7 +71,7 @@ public readonly struct EfeuReference : IEquatable<EfeuReference>
         return Convert.ToHexString(bytes);
     }
 
-    public static EfeuReference FromString(string str)
+    public static EfeuValueHash FromString(string str)
     {
         return FromBytes(Convert.FromHexString(str));
     }

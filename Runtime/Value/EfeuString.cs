@@ -30,9 +30,4 @@ public class EfeuString : EfeuObject
     {
         return value.ToString() == Text;
     }
-
-    public override void WriteReference(IEfeuValueReferenceHasher hasher)
-    {
-        hasher.WriteString(Text);
-    }
 }
