@@ -42,14 +42,14 @@ public class EfeuValueSerializer
     private IEfeuValueWriter writer;
     private IEfeuValueHasher hasher;
     private Action<byte[], byte[]> visit;
+
+    private string rootHash;
     
-    private byte[] result = [];
-    
-    private static byte[] Serialize(EfeuValue root, EfeuValueSerializerOptions options)
+    public static string Serialize(EfeuValue root, EfeuValueSerializerOptions options)
     {
         EfeuValueSerializer serializer = new EfeuValueSerializer(root, options);
         serializer.Serialize(root);
-        return serializer.result;
+        return serializer.rootHash;
     }
     
     private EfeuValueSerializer(EfeuValue root, EfeuValueSerializerOptions options)
@@ -195,7 +195,6 @@ public sealed class Sha256EfeuValueHasher : IEfeuValueHasher, IDisposable
         stack.Clear();
     }
 }
-}
 
 public class EfeuValueSerializerOptions
 {
@@ -204,6 +203,24 @@ public class EfeuValueSerializerOptions
     public required IEfeuValueWriter Writer { get; set; }
     
     public required IEfeuValueHasher Hasher { get; set; }
+}
+
+public class EfeuValueBinaryWriter : IEfeuValueWriter
+{
+    public void WriteBytes(byte[] bytes)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void WriteByte(byte value)
+    {
+        throw new NotImplementedException();
+    }
+
+    public byte[] ReadBytes(int length)
+    {
+        throw new NotImplementedException();
+    }
 }
 
 public class EfeuValueDeserializerOptions

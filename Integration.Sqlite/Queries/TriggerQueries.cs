@@ -5,6 +5,7 @@ using LinqToDB.Data;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using LinqToDB.Async;
 
 namespace Efeu.Integration.Sqlite.Queries;
 
@@ -24,10 +25,7 @@ internal class TriggerQueries : ITriggerQueries
 
     public Task CreateBulkAsync(TriggerEntity[] triggers)
     {
-        return connection.BulkCopyAsync(new BulkCopyOptions()
-        {
-            BulkCopyType = BulkCopyType.MultipleRows
-        }, triggers);
+        return connection.BulkCopyAsync(triggers);
     }
 
     public Task DetatchAsync(Guid[] ids)
@@ -36,7 +34,7 @@ internal class TriggerQueries : ITriggerQueries
             return Task.CompletedTask;
 
         return connection.GetTable<TriggerEntity>()
-            .Where(i => ids.Contains(i.Id) && !i.IsDetatched)
+            .Where(i => ids.AsEnumerable().Contains(i.Id) && !i.IsDetatched)
             .Set(u => u.IsDetatched, true)
             .UpdateAsync();
     }
@@ -56,7 +54,7 @@ internal class TriggerQueries : ITriggerQueries
             return Task.CompletedTask;
 
         return connection.GetTable<TriggerEntity>()
-            .Where(i => matters.Contains(i.Matter) && !i.IsDetatched)
+            .Where(i => matters.AsEnumerable().Contains(i.Matter) && !i.IsDetatched)
             .Set(u => u.IsDetatched, true)
             .UpdateAsync();
     }
@@ -67,7 +65,7 @@ internal class TriggerQueries : ITriggerQueries
             return Task.CompletedTask;
 
         return connection.GetTable<TriggerEntity>()
-            .Where(i => groups.Contains(i.Group) && !i.IsDetatched)
+            .Where(i => groups.AsEnumerable().Contains(i.Group) && !i.IsDetatched)
             .Set(u => u.IsDetatched, true)
             .UpdateAsync();
     }
@@ -115,7 +113,7 @@ internal class TriggerQueries : ITriggerQueries
         else
         {
             return await connection.GetTable<TriggerEntity>()
-                .Where(i => ids.Contains(i.Id) && !i.IsDetatched)
+                .Where(i => ids.AsEnumerable().Contains(i.Id) && !i.IsDetatched)
                 .ToArrayAsync();
         }
     }
@@ -131,6 +129,6 @@ internal class TriggerQueries : ITriggerQueries
     public Task DeleteAsync(Guid[] ids)
     {
         return connection.GetTable<TriggerEntity>()
-                .DeleteAsync(i => ids.Contains(i.Id) && i.IsDetatched);
+                .DeleteAsync(i => ids.AsEnumerable().Contains(i.Id) && i.IsDetatched);
     }
 }

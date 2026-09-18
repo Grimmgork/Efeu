@@ -27,6 +27,9 @@ public class _0001_Initial : IEfeuMigration
         await connection.ExecuteAsync("CREATE TABLE Lock (Name TEXT PRIMARY KEY, Bundle TEXT)");
         await connection.ExecuteAsync("CREATE TABLE DeduplicationKey (Key TEXT PRIMARY KEY, Timestamp INTEGER)");
         await connection.ExecuteAsync("CREATE TABLE BehaviourScope (Id TEXT PRIMARY KEY, ReferenceCount INTEGER, Constants TEXT, LoopbackScopeId TEXT, LoopbackPosition TEXT)");
+        await connection.ExecuteAsync("CREATE TABLE ValueNode (Hash TEXT PRIMARY KEY, Payload BLOB)");
+        await connection.ExecuteAsync("CREATE TABLE ValueNodeReference (SourceHash TEXT NOT NULL REFERENCES ValueNode(hash) ON DELETE CASCADE, TargetHash TEXT NOT NULL REFERENCES ValueNode(hash))");
+        await connection.ExecuteAsync("CREATE UNIQUE INDEX IX_ValueNodeReference_SourceHash_TargetHash ON ValueNodeReference (SourceHash, TargetHash)");
     }
 
     public async Task Down()
@@ -38,5 +41,7 @@ public class _0001_Initial : IEfeuMigration
         await connection.ExecuteAsync("DROP TABLE Behaviour");
         await connection.ExecuteAsync("DROP TABLE DeduplicationKey");
         await connection.ExecuteAsync("DROP TABLE BehaviourScope");
+        await connection.ExecuteAsync("DROP TABLE ValueNode");
+        await connection.ExecuteAsync("DROP TABLE ValueNodeReference");
     }
 }

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LinqToDB.Async;
 
 namespace Efeu.Integration.Sqlite.Queries;
 
@@ -46,17 +47,14 @@ internal class BehaviourScopeQueries : IBehaviourScopeQueries
         else
         {
             return await connection.GetTable<BehaviourScopeEntity>()
-                .Where(u => ids.Contains(u.Id))
+                .Where(u => ids.AsEnumerable().Contains(u.Id))
                 .ToArrayAsync();
         }
     }
 
     public Task CreateBulkAsync(BehaviourScopeEntity[] entities)
     {
-        return connection.BulkCopyAsync(new BulkCopyOptions()
-        {
-            BulkCopyType = BulkCopyType.MultipleRows
-        }, entities);
+        return connection.BulkCopyAsync(entities);
     }
 
     public Task DecrementReferenceCountAsync(Dictionary<Guid, uint> decrements)

@@ -340,21 +340,16 @@ public readonly struct EfeuValue
             return this.obj!.Equals(value);
         }
 
-        return base.Equals(obj);
+        throw new InvalidOperationException();
     }
 
-    public static EfeuValue operator ==(EfeuValue left, EfeuValue right) => left.Equals(right);
+    public static bool operator == (EfeuValue left, EfeuValue right) => left.Equals(right);
 
-    public static EfeuValue operator !=(EfeuValue left, EfeuValue right) => !left.Equals(right);
+    public static bool operator != (EfeuValue left, EfeuValue right) => !left.Equals(right);
 
     public static bool operator true(EfeuValue x) => x.AsBool();
 
     public static bool operator false(EfeuValue x) => !x.AsBool();
 
-    public static bool operator !(EfeuValue x) => !x;
-
-    public override bool Equals(object obj)
-    {
-        throw new NotImplementedException();
-    }
+    public static bool operator !(EfeuValue x) => !x.AsBool();
 }

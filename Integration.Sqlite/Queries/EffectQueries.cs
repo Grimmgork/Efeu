@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using LinqToDB.Async;
 
 namespace Efeu.Integration.Sqlite.Queries;
 
@@ -30,10 +31,7 @@ internal class EffectQueries : IEffectQueries
 
     public Task CreateBulkAsync(EffectEntity[] entities)
     {
-        return connection.BulkCopyAsync(new BulkCopyOptions()
-        {
-            BulkCopyType = BulkCopyType.MultipleRows
-        }, entities);
+        return connection.BulkCopyAsync(entities);
     }
 
     public Task AbortEffectAsync(Guid id)

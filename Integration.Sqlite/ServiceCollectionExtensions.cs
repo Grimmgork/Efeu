@@ -15,6 +15,7 @@ using Efeu.Runtime.Json.Converters;
 using LinqToDB.DataProvider.SQLite;
 using System.Data.SQLite;
 using System.Collections.Immutable;
+using System.Linq.Expressions;
 
 namespace Efeu.Integration.Sqlite;
 
@@ -22,14 +23,30 @@ public static class ServiceCollectionExtensions
 {
     private static T ConvertFromJson<T>(string json, JsonSerializerOptions jsonOptions)
     {
-        T value = JsonSerializer.Deserialize<T>(json, jsonOptions)!;
-        return value;
+        return JsonSerializer.Deserialize<T>(json, jsonOptions)!;
     }
-
-    private static DataParameter ConvertToJson<T>(T value, JsonSerializerOptions jsonOptions)
+    
+    private static string ConvertToJson<T>(T value, JsonSerializerOptions jsonOptions)
     {
-        string json = JsonSerializer.Serialize(value, jsonOptions);
-        return new DataParameter(null, json, DataType.Text);
+        return JsonSerializer.Serialize(value, jsonOptions);
+    }
+    
+    private static void RegisterJsonConversion<T>(
+        MappingSchema mappingSchema,
+        JsonSerializerOptions jsonOptions)
+    {
+        mappingSchema.AddScalarType(typeof(T), DataType.Text);
+        
+        mappingSchema.SetConverter<T, string>(
+            value => ConvertToJson(value, jsonOptions));
+        
+        mappingSchema.SetConverter<string, T>(
+            value => ConvertFromJson<T>(value, jsonOptions));
+        
+        mappingSchema.SetConvertExpression<T, DataParameter>(
+            value => DataParameter.Text(
+                null,
+                ConvertToJson(value, jsonOptions)));
     }
 
     private static MappingSchema ConfigureMappingSchema(string schema)
@@ -39,26 +56,24 @@ public static class ServiceCollectionExtensions
         jsonOptions.Converters.Add(new EfeuValueJsonConverter());
         jsonOptions.Converters.Add(new JsonStringEnumConverter());
         jsonOptions.Converters.Add(new EfeuRuntimeScopeJsonConverter());
-
+        
         FluentMappingBuilder builder = new FluentMappingBuilder();
-        builder.MappingSchema.SetConverter<EfeuValue, DataParameter>(c => ConvertToJson(c, jsonOptions));
-        builder.MappingSchema.SetConverter<IDictionary<int, EfeuValue>, DataParameter>(c => ConvertToJson(c, jsonOptions));
-        builder.MappingSchema.SetConverter<Stack<int>, DataParameter>(c => ConvertToJson(c, jsonOptions));
-        builder.MappingSchema.SetConverter<EfeuBehaviourStep[], DataParameter>(c => ConvertToJson(c, jsonOptions));
-        builder.MappingSchema.SetConverter<EfeuRuntimeScope, DataParameter>(c => ConvertToJson(c, jsonOptions));
-        builder.MappingSchema.SetConverter<ImmutableDictionary<string, EfeuValue>, DataParameter>(c => ConvertToJson(c, jsonOptions));
-        builder.MappingSchema.SetConverter<DateTimeOffset, DataParameter>(c => new DataParameter(null, c.ToUnixTimeMilliseconds(), DataType.Long));
 
-        builder.MappingSchema.SetConverter<string, EfeuValue>(i => ConvertFromJson<EfeuValue>(i, jsonOptions));
-        builder.MappingSchema.SetConverter<string, Stack<int>>(i => ConvertFromJson<Stack<int>>(i, jsonOptions));
-        builder.MappingSchema.SetConverter<string, IDictionary<int, EfeuValue>>(i => ConvertFromJson<IDictionary<int, EfeuValue>>(i, jsonOptions));
-        builder.MappingSchema.SetConverter<string, EfeuBehaviourStep[]>(i => ConvertFromJson<EfeuBehaviourStep[]>(i, jsonOptions));
-        builder.MappingSchema.SetConverter<string, EfeuRuntimeScope>(i => ConvertFromJson<EfeuRuntimeScope>(i, jsonOptions));
-        builder.MappingSchema.SetConverter<string, ImmutableDictionary<string, EfeuValue>>(i => ConvertFromJson<ImmutableDictionary<string, EfeuValue>>(i, jsonOptions));
+        RegisterJsonConversion<EfeuValue>(builder.MappingSchema, jsonOptions);
+        RegisterJsonConversion<Dictionary<int, EfeuValue>>(builder.MappingSchema, jsonOptions);
+        RegisterJsonConversion<Stack<int>>(builder.MappingSchema, jsonOptions);
+        RegisterJsonConversion<EfeuBehaviourStep[]>(builder.MappingSchema, jsonOptions);
+        RegisterJsonConversion<EfeuRuntimeScope>(builder.MappingSchema, jsonOptions);
+        RegisterJsonConversion<ImmutableDictionary<string, EfeuValue>>(builder.MappingSchema, jsonOptions);
+        
+        builder.MappingSchema.AddScalarType(typeof(DateTimeOffset), DataType.Int64);
+        builder.MappingSchema.SetConverter<DateTimeOffset, long>(c => c.ToUnixTimeMilliseconds());
         builder.MappingSchema.SetConverter<long, DateTimeOffset>(DateTimeOffset.FromUnixTimeMilliseconds);
-
-        builder.MappingSchema.SetDataType(typeof(DateTimeOffset), DataType.Int64);
-
+        builder.MappingSchema.SetConvertExpression<DateTimeOffset, DataParameter>(
+            value => DataParameter.Int64(
+                null,
+                value.ToUnixTimeMilliseconds()));
+        
         builder.Entity<BehaviourEntity>()
             .HasTableName("Behaviour")
             .HasSchemaName(schema)
@@ -141,11 +156,26 @@ public static class ServiceCollectionExtensions
             .Property(p => p.ReferenceCount)
             .Property(p => p.Constants);
 
+        builder.Entity<ValueNodeEntity>()
+            .HasTableName("ValueNode")
+            .HasSchemaName(schema)
+            .Property(p => p.Hash)
+                .IsIdentity()
+                .IsPrimaryKey()
+                .HasSkipOnInsert(false)
+            .Property(p => p.Payload);
+        
+        builder.Entity<ValueNodeReferenceEntity>()
+            .HasTableName("ValueNodeReference")
+            .HasSchemaName(schema)
+            .Property(p => p.SourceHash)
+            .Property(p => p.TargetHash);
+
         builder.Build();
 
         return builder.MappingSchema;
     }
-
+    
     public static void AddEfeuSqlite(this IServiceCollection services, string schema, string connectionString)
     {
         MappingSchema mappingSchema = ConfigureMappingSchema(schema);
@@ -166,7 +196,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped((serviceProvider) =>
         {
             var options = new DataOptions()
-                .UseDataProvider(SQLiteTools.GetDataProvider(ProviderName.SQLite))
+                .UseDataProvider(SQLiteTools.GetDataProvider(SQLiteProvider.System))
                 .UseConnection(serviceProvider.GetRequiredService<SQLiteConnection>())
                 .UseMappingSchema(mappingSchema);
             return new DataConnection(options);
@@ -185,5 +215,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEfeuMigrationRunner, MigrationRunner>();
         services.AddScoped<IDeduplicationKeyQueries, DeduplicationKeyQueries>();
         services.AddScoped<IBehaviourScopeQueries, BehaviourScopeQueries>();
+        services.AddScoped<IValueNodeQueries, ValueNodeQueries>();
     }
 }

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LinqToDB.Async;
 
 namespace Efeu.Integration.Sqlite.Queries;
 
@@ -52,7 +53,7 @@ internal class BehaviourQueries : IBehaviourQueries
             return Task.FromResult<BehaviourVersionEntity[]>([]);
 
         return connection.GetTable<BehaviourVersionEntity>()
-            .Where(i => ids.Contains(i.Id))
+            .Where(i => ids.AsEnumerable().Contains(i.Id))
             .ToArrayAsync();
     }
 

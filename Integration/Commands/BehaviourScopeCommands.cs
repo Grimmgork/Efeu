@@ -29,25 +29,7 @@ internal class BehaviourScopeCommands : IBehaviourScopeCommands
     public async Task CreateBulkAsync(BehaviourScopeEntity[] entities)
     {
         await unitOfWork.BeginAsync();
-
-        List<ValueNodeClosureEntity> edgeEntities = [];
-        // hash values
-        Sha256EfeuValueReferenceHasher valueReferenceHasher = new Sha256EfeuValueReferenceHasher((value, reference) =>
-        {
-            edgeEntities.Add(new );
-        });
-        
-        // BehaviourScopeEdge
-        // Name
-        // ScopeId
-        // Value
-        
         await behaviourScopeQueries.CreateBulkAsync(entities);
         await unitOfWork.CompleteAsync();
-    }
-
-    private static EfeuRuntimeScope ConstructScope()
-    {
-        
     }
 }
