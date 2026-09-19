@@ -8,6 +8,14 @@
 		}
 	},
 	{
+		"Kind": "Let",
+		"Name": "var2",
+		"Input": {
+			"Type": "Integer",
+			"Value": 42
+		}
+	},
+	{
 		"Kind": "Raise",
 		"Name": "A"
 	},

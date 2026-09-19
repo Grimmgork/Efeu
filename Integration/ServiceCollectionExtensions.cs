@@ -22,6 +22,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEfeuTriggerProvider, DefaultEfeuTriggerProvider>();
         services.AddScoped<IEfeuEngine, EfeuEngine>();
         services.AddScoped<IBehaviourScopeCommands, BehaviourScopeCommands>();
+        services.AddScoped<ValueNodeCommands>();
         services.AddHostedService<DeduplicationKeyCleanupService>();
         services.AddHostedService<EffectExecutionService>();
         services.AddHostedService<TriggerCleanupService>();
