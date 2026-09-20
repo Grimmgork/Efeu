@@ -38,7 +38,7 @@ public class ValueNodeCommands
             Hasher = new Sha256EfeuValueHasher()
         };
         
-        string rootHash = EfeuValueSerializer.Serialize(value, serializerOptions);
+        EfeuValueSerializationResult result = EfeuValueSerializer.Serialize(value, serializerOptions);
 
         EfeuValueDeserializerOptions deserializerOptions = new EfeuValueDeserializerOptions()
         {
@@ -46,12 +46,12 @@ public class ValueNodeCommands
             Reader = new EfeuValueBinaryReader()
         };
         
-        EfeuValue result = EfeuValueDeserializer.Deserialize(rootHash, deserializerOptions);
+        value = EfeuValueDeserializer.Deserialize(result.Hash, deserializerOptions);
         
-        await valueNodeQueries.InsertNodesAsync([]);
-        await valueNodeQueries.InsertNodeReferencesAsync([]);
+        await valueNodeQueries.InsertNodesAsync(result.Nodes);
+        await valueNodeQueries.InsertNodeReferencesAsync(result.References);
         await unitOfWork.CompleteAsync();
-        return rootHash;
+        return result.Hash;
     }
     
     public Task<EfeuValue> ReadAsync(string rootHash)

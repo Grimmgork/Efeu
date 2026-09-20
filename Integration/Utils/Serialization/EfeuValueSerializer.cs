@@ -19,24 +19,39 @@ public class EfeuValueSerializerOptions
     public required IEfeuValueHasher Hasher { get; set; }
 }
 
+public class EfeuValueSerializationResult
+{
+    public string Hash = "";
+
+    public IEnumerable<ValueNodeEntity> Nodes = [];
+    
+    public IEnumerable<ValueNodeReferenceEntity> References = [];
+}
 
 public class EfeuValueSerializer
 {
-    private EfeuValue root;
     private IEfeuValueWriter writer;
     private IEfeuValueHasher hasher;
     private Action<string, byte[]> visit;
-    private HashSet<string> visitedHashes = new();
-    
-    public static string Serialize(EfeuValue root, EfeuValueSerializerOptions options)
+    private HashSet<string> visitedHashes = new ();
+
+    private List<ValueNodeEntity> nodes = [];
+    private List<ValueNodeReferenceEntity> references = [];
+
+    public static EfeuValueSerializationResult Serialize(EfeuValue root, EfeuValueSerializerOptions options)
     {
-        EfeuValueSerializer serializer = new EfeuValueSerializer(root, options);
-        return serializer.Serialize(root);
+        EfeuValueSerializer serializer = new EfeuValueSerializer(options);
+        string hash = serializer.Serialize(root);
+        return new EfeuValueSerializationResult()
+        {
+            Hash = hash,
+            Nodes = serializer.nodes,
+            References = serializer.references
+        };
     }
 
-    private EfeuValueSerializer(EfeuValue root, EfeuValueSerializerOptions options)
+    private EfeuValueSerializer(EfeuValueSerializerOptions options)
     {
-        this.root = root;
         this.writer = options.Writer;
         this.hasher = options.Hasher;
         this.visit = options.Visit;
