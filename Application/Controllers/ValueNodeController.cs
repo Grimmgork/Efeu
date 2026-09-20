@@ -26,4 +26,13 @@ public class ValueNodeController : Controller
         string hash = await valueNodeCommands.WriteAsync(value);
         return Ok(hash);
     }
+
+    [HttpGet]
+    [Route("{hash}")]
+    public async Task<ActionResult> Get(string hash)
+    {
+        EfeuValue value = await valueNodeCommands.ReadAsync(hash);
+        JsonElement json = JsonSerializer.SerializeToElement(value, jsonOptions.JsonSerializerOptions);
+        return Ok(json);
+    }
 }

@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading.Tasks;
 using Efeu.Integration.Entities;
 using Efeu.Integration.Persistence;
@@ -33,9 +34,41 @@ public class ValueNodeQueries : IValueNodeQueries
             }, serialization.References);
     }
 
-    public Task<EfeuValueSerializationResult> ReadAsync(string hash)
+    public async Task<EfeuValueSerializationResult> ReadAsync(string hash)
     {
-        throw new System.NotImplementedException();
+        var query = await connection.QueryAsync<ValueNodeEntity>(
+            """
+            WITH RECURSIVE reachable(hash) AS (
+                SELECT @rootHash
+
+                UNION
+
+                SELECT r.TargetHash
+                FROM ValueNodeReference r
+                JOIN reachable x
+                  ON r.SourceHash = x.Hash
+            )
+            SELECT n.Hash, n.Payload
+            FROM reachable x
+            JOIN ValueNode n
+              ON n.Hash = x.Hash
+            """,
+            new DataParameter("rootHash", hash)
+        );
+        
+        ValueNodeEntity[] nodes = query.ToArray();
+
+        EfeuValueSerializationResult result = new EfeuValueSerializationResult()
+        {
+            Hash = hash,
+        };
+
+        foreach (ValueNodeEntity node in nodes)
+        {
+            result.Nodes.Add(node.Hash, node);
+        }
+
+        return result;
     }
 
     public Task CleanupAsync()

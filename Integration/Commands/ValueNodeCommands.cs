@@ -24,12 +24,6 @@ public class ValueNodeCommands
     public async Task<string> WriteAsync(EfeuValue value)
     {
         await unitOfWork.BeginAsync();
-        // traverse value
-        // generate payloads
-        // generate hashes
-        // generate entities
-        // insert entities
-        
         EfeuValueSerializerOptions serializerOptions = new()
         {
             Writer = new EfeuValueBinaryWriter(),
@@ -37,26 +31,21 @@ public class ValueNodeCommands
         };
         
         EfeuValueSerializationResult result = EfeuValueSerializer.Serialize(value, serializerOptions);
-
-        EfeuValueDeserializerOptions deserializerOptions = new EfeuValueDeserializerOptions()
-        {
-            Reader = new EfeuValueBinaryReader()
-        };
-        
-        value = EfeuValueDeserializer.Deserialize(result, deserializerOptions);
         
         await valueNodeQueries.WriteAsync(result);
         await unitOfWork.CompleteAsync();
         return result.Hash;
     }
     
-    public Task<EfeuValue> ReadAsync(string rootHash)
+    public async Task<EfeuValue> ReadAsync(string rootHash)
     {
-        // run query
-        // traverse all nodes
-        // deserialize payload
-        // reconstruct value
-
-        throw new NotImplementedException();
+        EfeuValueSerializationResult result = await valueNodeQueries.ReadAsync(rootHash);
+        EfeuValueDeserializerOptions deserializerOptions = new EfeuValueDeserializerOptions()
+        {
+            Reader = new EfeuValueBinaryReader()
+        };
+        
+        EfeuValue value = EfeuValueDeserializer.Deserialize(result, deserializerOptions);
+        return value;
     }
 }
