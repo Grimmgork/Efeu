@@ -28,7 +28,7 @@ public class _0001_Initial : IEfeuMigration
         await connection.ExecuteAsync("CREATE TABLE DeduplicationKey (Key TEXT PRIMARY KEY, Timestamp INTEGER)");
         await connection.ExecuteAsync("CREATE TABLE BehaviourScope (Id TEXT PRIMARY KEY, ReferenceCount INTEGER, Constants TEXT, LoopbackScopeId TEXT, LoopbackPosition TEXT)");
         await connection.ExecuteAsync("CREATE TABLE ValueNode (Hash TEXT PRIMARY KEY, Payload BLOB)");
-        await connection.ExecuteAsync("CREATE TABLE ValueNodeReference (SourceHash TEXT NOT NULL REFERENCES ValueNode(hash) ON DELETE CASCADE, TargetHash TEXT NOT NULL REFERENCES ValueNode(hash))");
+        await connection.ExecuteAsync("CREATE TABLE ValueNodeReference (SourceHash TEXT NOT NULL, TargetHash TEXT NOT NULL, FOREIGN KEY (SourceHash) REFERENCES ValueNode(Hash) ON DELETE CASCADE, FOREIGN KEY (TargetHash) REFERENCES ValueNode(Hash))");
         await connection.ExecuteAsync("CREATE UNIQUE INDEX IX_ValueNodeReference_SourceHash_TargetHash ON ValueNodeReference (SourceHash, TargetHash)");
     }
 

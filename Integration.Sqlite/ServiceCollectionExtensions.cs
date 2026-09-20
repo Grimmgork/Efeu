@@ -15,7 +15,11 @@ using Efeu.Runtime.Json.Converters;
 using LinqToDB.DataProvider.SQLite;
 using System.Data.SQLite;
 using System.Collections.Immutable;
+using System.Data.Common;
 using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Primitives;
 
 namespace Efeu.Integration.Sqlite;
 
@@ -183,13 +187,14 @@ public static class ServiceCollectionExtensions
         {
             var options = new DataOptions()
                 .UseSQLite(connectionString)
-                .UseMappingSchema(mappingSchema);
+                .UseMappingSchema(mappingSchema)
+                .UseAfterConnectionOpened(AfterConnectionOpened);
             return new DataConnection(options);
         });
 
         services.AddEfeuSqliteServices();
     }
-
+    
     public static void AddEfeuSqlite(this IServiceCollection services, string schema)
     {
         MappingSchema mappingSchema = ConfigureMappingSchema(schema);
@@ -198,11 +203,19 @@ public static class ServiceCollectionExtensions
             var options = new DataOptions()
                 .UseDataProvider(SQLiteTools.GetDataProvider(SQLiteProvider.System))
                 .UseConnection(serviceProvider.GetRequiredService<SQLiteConnection>())
-                .UseMappingSchema(mappingSchema);
+                .UseMappingSchema(mappingSchema)
+                .UseAfterConnectionOpened(AfterConnectionOpened);
             return new DataConnection(options);
         });
 
         services.AddEfeuSqliteServices();
+    }
+    
+    private static void AfterConnectionOpened(DbConnection connection)
+    {
+        using var command = connection.CreateCommand();
+        command.CommandText = "PRAGMA foreign_keys = ON";
+        command.ExecuteNonQuery();
     }
 
     private static void AddEfeuSqliteServices(this IServiceCollection services)

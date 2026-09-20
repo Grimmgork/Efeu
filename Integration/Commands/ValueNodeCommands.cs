@@ -37,9 +37,9 @@ public class ValueNodeCommands
         return result.Hash;
     }
     
-    public async Task<EfeuValue> ReadAsync(string rootHash)
+    public async Task<EfeuValue> ReadAsync(string hash)
     {
-        EfeuValueSerializationResult result = await valueNodeQueries.ReadAsync(rootHash);
+        EfeuValueSerializationResult result = await valueNodeQueries.ReadAsync(hash);
         EfeuValueDeserializerOptions deserializerOptions = new EfeuValueDeserializerOptions()
         {
             Reader = new EfeuValueBinaryReader()
