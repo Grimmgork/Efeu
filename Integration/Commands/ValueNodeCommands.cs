@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Efeu.Integration.Entities;
 using Efeu.Integration.Persistence;
@@ -29,11 +30,8 @@ public class ValueNodeCommands
         // generate entities
         // insert entities
         
-        Dictionary<string, byte[]> payloads = new Dictionary<string, byte[]>();
-        
         EfeuValueSerializerOptions serializerOptions = new()
         {
-            Visit = (hash, payload) => payloads.Add(hash, payload),
             Writer = new EfeuValueBinaryWriter(),
             Hasher = new Sha256EfeuValueHasher()
         };
@@ -42,14 +40,12 @@ public class ValueNodeCommands
 
         EfeuValueDeserializerOptions deserializerOptions = new EfeuValueDeserializerOptions()
         {
-            Resolve = (hash) => payloads[hash],
             Reader = new EfeuValueBinaryReader()
         };
         
-        value = EfeuValueDeserializer.Deserialize(result.Hash, deserializerOptions);
+        value = EfeuValueDeserializer.Deserialize(result, deserializerOptions);
         
-        await valueNodeQueries.InsertNodesAsync(result.Nodes);
-        await valueNodeQueries.InsertNodeReferencesAsync(result.References);
+        await valueNodeQueries.WriteAsync(result);
         await unitOfWork.CompleteAsync();
         return result.Hash;
     }

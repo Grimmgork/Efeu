@@ -1,33 +1,31 @@
 using System;
 using System.Collections.Generic;
+using Efeu.Integration.Entities;
 using Efeu.Runtime.Value;
 
 namespace Efeu.Integration.Utils.Serialization;
 
 public class EfeuValueDeserializerOptions
 {
-    public Func<string, byte[]> Resolve = (_) => [];
-
-    public required IEfeuValueReader Reader { get; set; }
+    public required IEfeuValueReader Reader;
 }
 
 public class EfeuValueDeserializer
 {
     private IEfeuValueReader reader;
     private Dictionary<string, EfeuValue> cache = new Dictionary<string, EfeuValue>();
-    private Func<string, byte[]> resolve;
+    private Dictionary<string, ValueNodeEntity> nodes;
     
-    private EfeuValueDeserializer(string rootHash, EfeuValueDeserializerOptions options)
+    private EfeuValueDeserializer(EfeuValueSerializationResult result, EfeuValueDeserializerOptions options)
     {
         this.reader = options.Reader;
-        this.resolve =  options.Resolve;
+        this.nodes = result.Nodes;
     }
-
-    public static EfeuValue Deserialize(string hash, EfeuValueDeserializerOptions options)
+    
+    public static EfeuValue Deserialize(EfeuValueSerializationResult result, EfeuValueDeserializerOptions options)
     {
-        EfeuValueDeserializer deserializer = new EfeuValueDeserializer(hash, options);
-
-        return deserializer.Deserialize(hash);
+        EfeuValueDeserializer deserializer = new EfeuValueDeserializer(result, options);
+        return deserializer.Deserialize(result.Hash);
     }
 
     private EfeuValue Deserialize(string hash)
@@ -37,7 +35,16 @@ public class EfeuValueDeserializer
             return value;
         }
 
-        byte[] payload = resolve(hash);
+        byte[] payload = [];
+        if (hash.Length < 64)
+        {
+            payload = Convert.FromHexString(hash);
+        }
+        else
+        {
+            payload = nodes[hash].Payload;
+        }
+        
         EfeuValue result = EfeuValue.Nil();
         
         reader.Push(payload);
@@ -59,9 +66,10 @@ public class EfeuValueDeserializer
         {
             result = reader.ReadInt64();
         }
-        else if (tag == EfeuValueTag.Object)
+        else
         {
-            result = DeserializeObject(payload);
+            Type type = EfeuValueSerializer.GetEfeuObjectType((byte)tag);
+            result = DeserializeObject(type, payload);
         }
         
         reader.Pop();
@@ -69,33 +77,46 @@ public class EfeuValueDeserializer
         return result;
     }
 
-    private EfeuObject DeserializeObject(byte[] payload)
+    private EfeuObject DeserializeObject(Type type, byte[] payload)
     {
-        string type = reader.ReadString();
-        if (type == nameof(EfeuString))
+        if (type == typeof(EfeuString))
         {
             string str = reader.ReadString();
             return new EfeuString(str);
         }
         
-        if (type == nameof(EfeuDecimal))
+        if (type == typeof(EfeuDecimal))
         {
             string str = reader.ReadString();
             decimal dec = decimal.Parse(str);
             return new EfeuDecimal(dec);
         }
         
-        if (type == nameof(EfeuArray))
+        if (type == typeof(EfeuArray))
         {
             int length = reader.ReadInt32();
             EfeuValue[] items = new EfeuValue[length];
             for (int i = 0; i < length; i++)
             {
-                string str = reader.ReadString();
-                items[i] = Deserialize(str);
+                string hash = reader.ReadString();
+                items[i] = Deserialize(hash);
             }
             
             return new EfeuArray(items);
+        }
+
+        if (type == typeof(EfeuHash))
+        {
+            int length = reader.ReadInt32();
+            KeyValuePair<string, EfeuValue>[] entries = new KeyValuePair<string, EfeuValue>[length];
+            for (int i = 0; i < length; i++)
+            {
+                string key = reader.ReadString();
+                string hash = reader.ReadString();
+                EfeuValue value = Deserialize(hash);
+                entries[i] = new KeyValuePair<string, EfeuValue>(key, value);
+            }
+            return new EfeuHash(entries);
         }
 
         throw new InvalidOperationException();

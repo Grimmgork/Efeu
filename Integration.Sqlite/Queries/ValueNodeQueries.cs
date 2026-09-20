@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Efeu.Integration.Entities;
 using Efeu.Integration.Persistence;
+using Efeu.Integration.Utils.Serialization;
 using LinqToDB;
 using LinqToDB.Data;
 
@@ -14,24 +15,25 @@ public class ValueNodeQueries : IValueNodeQueries
     {
         this.connection = connection;
     }
-    
-    public Task InsertNodesAsync(ValueNodeEntity[] nodes)
+
+    public async Task WriteAsync(EfeuValueSerializationResult serialization)
     {
-        return connection.GetTable<ValueNodeEntity>()
-            .BulkCopyAsync(nodes);
-    }
-    
-    public Task InsertNodeReferencesAsync(ValueNodeReferenceEntity[] references)
-    {
-        return connection.GetTable<ValueNodeReferenceEntity>()
+        await connection.GetTable<ValueNodeEntity>()
             .BulkCopyAsync(new BulkCopyOptions
             {
                 ConflictAction = ConflictAction.Ignore,
-                MaxBatchSize = 5000
-            }, references);
+                MaxBatchSize = 100
+            }, serialization.Nodes.Values);
+        
+        await connection.GetTable<ValueNodeReferenceEntity>()
+            .BulkCopyAsync(new BulkCopyOptions
+            {
+                ConflictAction = ConflictAction.Ignore,
+                MaxBatchSize = 100
+            }, serialization.References);
     }
 
-    public Task<ValueNodeEntity[]> LoadAsync(string rootHash)
+    public Task<EfeuValueSerializationResult> ReadAsync(string hash)
     {
         throw new System.NotImplementedException();
     }

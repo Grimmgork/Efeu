@@ -1,15 +1,14 @@
 using System.Threading.Tasks;
 using Efeu.Integration.Entities;
+using Efeu.Integration.Utils.Serialization;
 
 namespace Efeu.Integration.Persistence;
 
 public interface IValueNodeQueries
 {
-    public Task InsertNodesAsync(ValueNodeEntity[] nodes);
+    public Task WriteAsync(EfeuValueSerializationResult serialization);
     
-    public Task InsertNodeReferencesAsync(ValueNodeReferenceEntity[] references);
-    
-    public Task<ValueNodeEntity[]> LoadAsync(string rootHash);
+    public Task<EfeuValueSerializationResult> ReadAsync(string hash);
 
     public Task CleanupAsync();
 }
