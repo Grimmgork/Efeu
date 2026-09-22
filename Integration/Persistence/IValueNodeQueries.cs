@@ -8,7 +8,7 @@ public interface IValueNodeQueries
 {
     public Task WriteAsync(EfeuValueSerializationResult serialization);
     
-    public Task<EfeuValueSerializationResult> ReadAsync(string hash);
+    public Task<EfeuValueSerializationResult> ReadAsync(string[] hashes);
 
     public Task CleanupAsync();
 }

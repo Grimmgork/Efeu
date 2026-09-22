@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Efeu.Runtime.Value.Reference;
 
 namespace Efeu.Runtime.Value;
 
@@ -35,7 +35,7 @@ public class EfeuTime : EfeuObject
 
     public override string ToString()
     {
-        return Value.ToLocalTime().ToString();
+        return Value.ToLocalTime().ToString(CultureInfo.InvariantCulture);
     }
 
     public override long AsLong()
@@ -56,7 +56,12 @@ public class EfeuTime : EfeuObject
         }
         else
         {
-            return value.AsLong() == Value.ToUnixTimeMilliseconds();
+            return Value.ToUnixTimeMilliseconds() == value.AsLong();
         }
+    }
+
+    public override int GetHashCode()
+    {
+        return Value.GetHashCode();
     }
 }

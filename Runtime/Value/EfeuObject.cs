@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Efeu.Runtime.Value.Reference;
 
 namespace Efeu.Runtime.Value;
 
@@ -42,8 +41,8 @@ public abstract class EfeuObject : IEquatable<EfeuValue>
         throw new NotImplementedException();
     }
 
-    public virtual bool Equals(EfeuValue value)
+    public virtual bool Equals(EfeuValue other)
     {
-        return this.Equals((object)value.AsObject());
+        return this.Equals((object)other.AsObject());
     }
 }

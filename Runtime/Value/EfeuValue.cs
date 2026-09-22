@@ -1,12 +1,9 @@
-﻿using SharpCompress.Common;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using System.Security.AccessControl;
-using Efeu.Runtime.Value.Reference;
 
 namespace Efeu.Runtime.Value;
 
@@ -19,12 +16,12 @@ public enum EfeuValueTag : byte
     Object = 4,
 }
 
-public readonly struct EfeuValue
+public readonly struct EfeuValue : IEquatable<EfeuValue>
 {
     public readonly EfeuValueTag Tag;
     public readonly long Integer;
     private readonly EfeuObject? obj;
-
+    
     public EfeuValue(long i)
     {
         Tag = EfeuValueTag.Integer;
@@ -286,26 +283,7 @@ public readonly struct EfeuValue
 
     public override int GetHashCode()
     {
-        if (Tag == EfeuValueTag.Nil)
-        {
-            return 0;
-        }
-        else if (Tag == EfeuValueTag.True)
-        {
-            return true.GetHashCode();
-        }
-        else if (Tag == EfeuValueTag.False)
-        {
-            return false.GetHashCode();
-        }
-        else if (Tag == EfeuValueTag.Integer)
-        {
-            return Integer.GetHashCode();
-        }
-        else
-        {
-            return obj!.GetHashCode();
-        }
+        return HashCode.Combine(Tag, Integer, obj);
     }
 
     public static EfeuValue Nil()

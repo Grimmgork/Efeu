@@ -42,7 +42,7 @@ public class EfeuFloat : EfeuObject
 
     public override bool Equals(EfeuValue value)
     {
-        return value.AsDouble() == Value;
+        return value.AsDouble().Equals(Value);
     }
 
     public override int GetHashCode()

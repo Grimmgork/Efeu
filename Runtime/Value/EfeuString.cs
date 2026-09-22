@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Efeu.Runtime.Value.Reference;
 
 namespace Efeu.Runtime.Value;
 
@@ -28,6 +27,11 @@ public class EfeuString : EfeuObject
 
     public override bool Equals(EfeuValue value)
     {
-        return value.ToString() == Text;
+        return Text.Equals(value.ToString());
+    }
+
+    public override int GetHashCode()
+    {
+        return Text.GetHashCode();
     }
 }

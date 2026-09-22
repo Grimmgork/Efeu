@@ -34,7 +34,7 @@ public class ValueNodeQueries : IValueNodeQueries
             }, serialization.References);
     }
 
-    public async Task<EfeuValueSerializationResult> ReadAsync(string hash)
+    public async Task<EfeuValueSerializationResult> ReadAsync(string[] hashes)
     {
         var query = await connection.QueryAsync<ValueNodeEntity>(
             """
@@ -60,7 +60,7 @@ public class ValueNodeQueries : IValueNodeQueries
 
         EfeuValueSerializationResult result = new EfeuValueSerializationResult()
         {
-            Hash = hash,
+            Hashes = hashes,
         };
 
         foreach (ValueNodeEntity node in nodes)

@@ -40,13 +40,13 @@ public class EfeuDecimal : EfeuObject
         return (long)Value;
     }
 
-    public override bool Equals(EfeuValue value)
-    {
-        return value.AsDecimal() == Value;
-    }
-
     public override int GetHashCode()
     {
         return Value.GetHashCode();
+    }
+    
+    public override bool Equals(EfeuValue value)
+    {
+        return Value == value.AsDecimal();
     }
 }

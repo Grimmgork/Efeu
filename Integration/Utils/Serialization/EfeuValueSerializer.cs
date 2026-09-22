@@ -7,7 +7,6 @@ using System.Text;
 using Efeu.Integration.Entities;
 using Efeu.Integration.Utils;
 using Efeu.Runtime.Value;
-using Efeu.Runtime.Value.Reference;
 
 namespace Efeu.Integration.Utils.Serialization;
 
@@ -26,13 +25,13 @@ public class EfeuValueSerializer
     private Dictionary<string, ValueNodeEntity> nodes = new ();
     private List<ValueNodeReferenceEntity> references = [];
     
-    public static EfeuValueSerializationResult Serialize(EfeuValue root, EfeuValueSerializerOptions options)
+    public static EfeuValueSerializationResult Serialize(EfeuValue[] roots, EfeuValueSerializerOptions options)
     {
         EfeuValueSerializer serializer = new EfeuValueSerializer(options);
-        string hash = serializer.Serialize(root);
+        string[] hashes = serializer.Serialize(roots);
         return new EfeuValueSerializationResult()
         {
-            Hash = hash,
+            Hashes = hashes,
             Nodes = serializer.nodes,
             References = serializer.references
         };
@@ -63,6 +62,16 @@ public class EfeuValueSerializer
         if (type == typeof(EfeuArray)) return 7;
         if (type == typeof(EfeuHash)) return 8;
         throw new InvalidOperationException();
+    }
+
+    private string[] Serialize(EfeuValue[] roots)
+    {
+        string[] results = new string[roots.Length];
+        for (int i = 0; i < roots.Length; i++)
+        {
+            results[i] = Serialize(roots[i]);
+        }
+        return results;
     }
     
     private string Serialize(EfeuValue value)

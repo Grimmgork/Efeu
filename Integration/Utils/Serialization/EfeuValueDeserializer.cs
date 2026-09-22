@@ -22,12 +22,22 @@ public class EfeuValueDeserializer
         this.nodes = result.Nodes;
     }
     
-    public static EfeuValue Deserialize(EfeuValueSerializationResult result, EfeuValueDeserializerOptions options)
+    public static EfeuValue[] Deserialize(EfeuValueSerializationResult result, EfeuValueDeserializerOptions options)
     {
         EfeuValueDeserializer deserializer = new EfeuValueDeserializer(result, options);
-        return deserializer.Deserialize(result.Hash);
+        return deserializer.Deserialize(result.Hashes);
     }
 
+    private EfeuValue[] Deserialize(string[] hashes)
+    {
+        EfeuValue[] results = new EfeuValue[hashes.Length];
+        for (int i = 0; i < hashes.Length; i++)
+        {
+            results[i] = Deserialize(hashes[i]);
+        }
+        return results;
+    }
+    
     private EfeuValue Deserialize(string hash)
     {
         if (cache.TryGetValue(hash, out var value))
@@ -35,7 +45,7 @@ public class EfeuValueDeserializer
             return value;
         }
 
-        byte[] payload = [];
+        byte[] payload;
         if (hash.Length < 64)
         {
             payload = Convert.FromHexString(hash);

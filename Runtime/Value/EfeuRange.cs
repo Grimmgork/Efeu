@@ -42,6 +42,16 @@ public class EfeuRange : EfeuObject, IEnumerable<EfeuValue>
         }
     }
 
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(this.Start, this.End);
+    }
+
+    public override string ToString()
+    {
+        return $"[{this.Start}..{this.End}]";
+    }
+
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
