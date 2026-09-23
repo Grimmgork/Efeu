@@ -23,16 +23,24 @@ public class ValueNodeController : Controller
     public async Task<ActionResult> Add([FromBody] JsonElement json)
     {
         EfeuValue value = JsonSerializer.Deserialize<EfeuValue>(json, jsonOptions.JsonSerializerOptions)!;
-        string hash = await valueNodeCommands.WriteAsync(value);
-        return Ok(hash);
+        string[] hashes = await valueNodeCommands.WriteAsync([value]);
+        return Ok(hashes[0]);
+    }
+
+    [HttpPut]
+    [Route("/Cleanup")]
+    public async Task<ActionResult> Cleanup()
+    {
+        await valueNodeCommands.CleanupAsync();
+        return Ok();
     }
 
     [HttpGet]
     [Route("{hash}")]
     public async Task<ActionResult> Get(string hash)
     {
-        EfeuValue value = await valueNodeCommands.ReadAsync(hash);
-        JsonElement json = JsonSerializer.SerializeToElement(value, jsonOptions.JsonSerializerOptions);
+        EfeuValue[] values = await valueNodeCommands.ReadAsync([hash]);
+        JsonElement json = JsonSerializer.SerializeToElement(values[0], jsonOptions.JsonSerializerOptions);
         return Ok(json);
     }
 }

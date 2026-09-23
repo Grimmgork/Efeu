@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Efeu.Integration.Entities;
@@ -36,28 +37,27 @@ public class ValueNodeQueries : IValueNodeQueries
 
     public async Task<EfeuValueSerializationResult> ReadAsync(string[] hashes)
     {
-        var query = await connection.QueryAsync<ValueNodeEntity>(
-            """
-            WITH RECURSIVE reachable(hash) AS (
-                SELECT @rootHash
+        DataParameter[] parameters = hashes.Select((h, i) => new DataParameter($"@{i}", h)).ToArray();
+        IEnumerable<ValueNodeEntity> nodes = await connection.QueryAsync<ValueNodeEntity>(
+            $"""
+             WITH RECURSIVE reachable(hash) AS (
+                 VALUES {string.Join(", ", parameters.Select(i => $"({i.Name})"))}
 
-                UNION
+                 UNION
 
-                SELECT r.TargetHash
-                FROM ValueNodeReference r
-                JOIN reachable x
-                  ON r.SourceHash = x.Hash
-            )
-            SELECT n.Hash, n.Payload
-            FROM reachable x
-            JOIN ValueNode n
-              ON n.Hash = x.Hash
-            """,
-            new DataParameter("rootHash", hash)
+                 SELECT r.TargetHash
+                 FROM ValueNodeReference r
+                 JOIN reachable x
+                   ON r.SourceHash = x.Hash
+             )
+             SELECT n.Hash, n.Payload
+             FROM reachable x
+             JOIN ValueNode n
+               ON n.Hash = x.Hash
+             """,
+            parameters
         );
         
-        ValueNodeEntity[] nodes = query.ToArray();
-
         EfeuValueSerializationResult result = new EfeuValueSerializationResult()
         {
             Hashes = hashes,
@@ -71,7 +71,7 @@ public class ValueNodeQueries : IValueNodeQueries
         return result;
     }
 
-    public Task CleanupAsync()
+    public async Task CleanupAsync()
     {
         throw new System.NotImplementedException();
     }
