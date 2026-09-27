@@ -14,26 +14,31 @@ public class EfeuValueDeserializer
 {
     private IEfeuValueReader reader;
     private Dictionary<string, EfeuValue> cache = new Dictionary<string, EfeuValue>();
-    private Dictionary<string, ValueNodeEntity> nodes;
+    private Dictionary<string, ValueNodeEntity> nodes = new Dictionary<string, ValueNodeEntity>();
     
-    private EfeuValueDeserializer(EfeuValueSerializationResult result, EfeuValueDeserializerOptions options)
+    private EfeuValueDeserializer(EfeuValueDeserializerOptions options)
     {
         this.reader = options.Reader;
-        this.nodes = result.Nodes;
     }
     
     public static EfeuValue[] Deserialize(EfeuValueSerializationResult result, EfeuValueDeserializerOptions options)
     {
-        EfeuValueDeserializer deserializer = new EfeuValueDeserializer(result, options);
-        return deserializer.Deserialize(result.Hashes);
+        EfeuValueDeserializer deserializer = new EfeuValueDeserializer(options);
+        return deserializer.Deserialize(result);
     }
 
-    private EfeuValue[] Deserialize(string[] hashes)
+    public static EfeuValueDeserializer Begin(EfeuValueDeserializerOptions options)
     {
-        EfeuValue[] results = new EfeuValue[hashes.Length];
-        for (int i = 0; i < hashes.Length; i++)
+        return new EfeuValueDeserializer(options);
+    }
+
+    public EfeuValue[] Deserialize(EfeuValueSerializationResult result)
+    {
+        EfeuValue[] results = new EfeuValue[result.Hashes.Length];
+        nodes = result.Nodes;
+        for (int i = 0; i < result.Hashes.Length; i++)
         {
-            results[i] = Deserialize(hashes[i]);
+            results[i] = Deserialize(result.Hashes[i]);
         }
         return results;
     }

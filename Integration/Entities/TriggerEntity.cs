@@ -14,8 +14,6 @@ public class TriggerEntity
 
     public DateTimeOffset CreationTime;
 
-    public EfeuValue Input;
-
     public Guid CorrelationId;
 
     public Guid BehaviourVersionId;
@@ -25,6 +23,14 @@ public class TriggerEntity
     public string Type = "";
 
     public EfeuMessageTag Tag;
+
+    public EfeuValue Input = "";
+
+    // public string Scope = "";
+
+    // public string LoopbackPosition = "";
+    
+    // public string LoopbackScope = "";
 
     public Guid Matter;
 

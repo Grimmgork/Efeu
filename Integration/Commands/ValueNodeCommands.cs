@@ -20,7 +20,7 @@ public class ValueNodeCommands
         this.unitOfWork = unitOfWork;
         this.valueNodeQueries = valueNodeQueries;
     }
-
+    
     public async Task<string[]> WriteAsync(EfeuValue[] values)
     {
         await unitOfWork.BeginAsync();

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Efeu.Integration.Utils.Serialization;
 
 namespace Efeu.Integration.Commands;
 
@@ -165,7 +166,7 @@ internal class EffectCommands : IEffectCommands
         }
 
         BehaviourScopeEntity[] createdScopeEntities = context.CreatedTriggers.MapToBehaviourScopeEntities();
-
+        
         await triggerCommands.ResolveMattersAsync(context.ResolvedMatters.ToArray());
         await triggerCommands.CompleteGroupsAsync(context.CompletedGroups.ToArray());
         await triggerCommands.CreateBulkAsync(context.CreatedTriggers.ToArray());

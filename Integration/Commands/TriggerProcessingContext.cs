@@ -97,11 +97,9 @@ internal class TriggerProcessingContext
         {
             return scopeEntity.MapToEfeuRuntimeScope();
         }
-        else
-        {
-            EfeuRuntimeScope loopbackScope = GetScopeFromCache(scopeEntity.LoopbackScopeId, behaviourVersionEntity);
-            EfeuBehaviourStep loopbackStep = behaviourVersionEntity.GetPosition(scopeEntity.LoopbackPosition);
-            return scopeEntity.MapToEfeuRuntimeScope(loopbackStep, loopbackScope);
-        }
+        
+        EfeuRuntimeScope loopbackScope = GetScopeFromCache(scopeEntity.LoopbackScopeId, behaviourVersionEntity);
+        EfeuBehaviourStep loopbackStep = behaviourVersionEntity.GetPosition(scopeEntity.LoopbackPosition);
+        return scopeEntity.MapToEfeuRuntimeScope(loopbackStep, loopbackScope);
     }
 }

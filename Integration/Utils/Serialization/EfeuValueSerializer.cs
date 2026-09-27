@@ -28,12 +28,21 @@ public class EfeuValueSerializer
     public static EfeuValueSerializationResult Serialize(EfeuValue[] roots, EfeuValueSerializerOptions options)
     {
         EfeuValueSerializer serializer = new EfeuValueSerializer(options);
-        string[] hashes = serializer.Serialize(roots);
+        serializer.Serialize(roots);
+        return serializer.End();
+    }
+
+    public static EfeuValueSerializer Begin(EfeuValueSerializerOptions options)
+    {
+        return new EfeuValueSerializer(options);
+    }
+
+    public EfeuValueSerializationResult End()
+    {
         return new EfeuValueSerializationResult()
         {
-            Hashes = hashes,
-            Nodes = serializer.nodes,
-            References = serializer.references
+            Nodes = nodes,
+            References = references
         };
     }
 
@@ -64,7 +73,7 @@ public class EfeuValueSerializer
         throw new InvalidOperationException();
     }
 
-    private string[] Serialize(EfeuValue[] roots)
+    public string[] Serialize(EfeuValue[] roots)
     {
         string[] results = new string[roots.Length];
         for (int i = 0; i < roots.Length; i++)
