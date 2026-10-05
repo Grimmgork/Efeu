@@ -24,21 +24,23 @@ public class TriggerEntity
 
     public EfeuMessageTag Tag;
 
-    public EfeuValue Input = "";
+    // public EfeuValue Input = "";
 
-    // public string Scope = "";
-
-    // public string LoopbackPosition = "";
+    public string Input = "";
     
-    // public string LoopbackScope = "";
+    public string Scope = "";
+
+    public string LoopbackPosition = "";
+    
+    public string LoopbackScope = "";
 
     public Guid Matter;
 
     public Guid Group;
 
-    public Guid ScopeId;
+    // public Guid ScopeId;
 
-    public Guid LoopbackScopeId;
+    // public Guid LoopbackScopeId;
 
-    public bool IsDetatched;
+    // public bool IsDetatched;
 }

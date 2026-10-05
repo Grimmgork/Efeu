@@ -20,7 +20,7 @@ internal class TriggerProcessingContext
     private readonly List<TriggerEntity> triggerEntities = [];
 
     private readonly CachedLookup<Guid, BehaviourVersionEntity> behaviourVersionEntityCache;
-    private readonly CachedLookup<Guid, BehaviourScopeEntity> behaviourScopeEntityCache;
+    // private readonly CachedLookup<Guid, BehaviourScopeEntity> behaviourScopeEntityCache;
 
     public TriggerProcessingContext(TriggerEntity[] triggerEntities, IBehaviourQueries behaviourQueries, IBehaviourScopeQueries behaviourScopeQueries, EfeuTrigger[] createdTriggers)
     {
@@ -30,7 +30,7 @@ internal class TriggerProcessingContext
         BehaviourScopeEntity[] createdBehaviourScopeEntities = createdTriggers.Select(i => i.Scope.MapToBehaviourScopeEntity(0)).ToArray();
 
         this.behaviourVersionEntityCache = new CachedLookup<Guid, BehaviourVersionEntity>(behaviourQueries.GetVersionsByIdsAsync, i => i.Id);
-        this.behaviourScopeEntityCache = new CachedLookup<Guid, BehaviourScopeEntity>(createdBehaviourScopeEntities, behaviourScopeQueries.GetByIdsAsync, i => i.Id);
+        // this.behaviourScopeEntityCache = new CachedLookup<Guid, BehaviourScopeEntity>(createdBehaviourScopeEntities, behaviourScopeQueries.GetByIdsAsync, i => i.Id);
 
         foreach (EfeuTrigger trigger in createdTriggers)
         {
@@ -62,7 +62,7 @@ internal class TriggerProcessingContext
         {
             CreatedTriggers.Add(trigger);
             triggerEntities.Add(trigger.MapToTriggerEntity());
-            behaviourScopeEntityCache.Inject(trigger.Id, trigger.Scope.MapToBehaviourScopeEntity(0));
+            // behaviourScopeEntityCache.Inject(trigger.Id, trigger.Scope.MapToBehaviourScopeEntity(0));
         }
     }
 
@@ -75,7 +75,7 @@ internal class TriggerProcessingContext
                 i.CreationTime <= message.Timestamp)
                 .ToArray();
 
-        await behaviourScopeEntityCache.GetAsync(triggerEntities.Select(i => i.ScopeId).ToArray());
+        // await behaviourScopeEntityCache.GetAsync(triggerEntities.Select(i => i.Scope).ToArray());
         await behaviourVersionEntityCache.GetAsync(triggerEntities.Select(i => i.BehaviourVersionId).ToArray());
 
         List<EfeuTrigger> result = new List<EfeuTrigger>();

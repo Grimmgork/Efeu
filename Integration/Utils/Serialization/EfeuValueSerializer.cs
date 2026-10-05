@@ -1,6 +1,7 @@
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -31,7 +32,13 @@ public class EfeuValueSerializer
         serializer.Serialize(roots);
         return serializer.End();
     }
-
+    
+    private EfeuValueSerializer(EfeuValueSerializerOptions options)
+    {
+        this.writer = options.Writer;
+        this.hasher = options.Hasher;
+    }
+    
     public static EfeuValueSerializer Begin(EfeuValueSerializerOptions options)
     {
         return new EfeuValueSerializer(options);
@@ -44,12 +51,6 @@ public class EfeuValueSerializer
             Nodes = nodes,
             References = references
         };
-    }
-
-    private EfeuValueSerializer(EfeuValueSerializerOptions options)
-    {
-        this.writer = options.Writer;
-        this.hasher = options.Hasher;
     }
 
     public static Type GetEfeuObjectType(byte code)
@@ -83,7 +84,7 @@ public class EfeuValueSerializer
         return results;
     }
     
-    private string Serialize(EfeuValue value)
+    public string Serialize(EfeuValue value)
     {
         IEnumerable<string> children = [];
         

@@ -171,6 +171,6 @@ internal class EffectCommands : IEffectCommands
         await triggerCommands.CompleteGroupsAsync(context.CompletedGroups.ToArray());
         await triggerCommands.CreateBulkAsync(context.CreatedTriggers.ToArray());
         await effectQueries.CreateBulkAsync(createdEffects.ToArray());
-        await behaviourScopeCommands.CreateBulkAsync(createdScopeEntities.ToArray());
+        // await behaviourScopeCommands.CreateBulkAsync(createdScopeEntities.ToArray());
     }
 }
