@@ -25,7 +25,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ValueNodeCommands>();
         services.AddHostedService<DeduplicationKeyCleanupService>();
         services.AddHostedService<EffectExecutionService>();
-        services.AddHostedService<TriggerCleanupService>();
     }
 
     public static void AddEfeuDefaultEffects(this IServiceCollection services)

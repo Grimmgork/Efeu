@@ -1,4 +1,5 @@
-﻿using Efeu.Integration.Utils.Serialization;
+﻿using System.Collections.Immutable;
+using Efeu.Integration.Utils.Serialization;
 
 namespace Efeu.Integration;
 
@@ -24,25 +25,48 @@ public static class MappingExtensions
             Matter = model.Matter,
             Position = model.Position,
             Scope = serializer.Serialize(new EfeuHash(model.Scope.Constants)),
-            LoopbackScope = serializer.Serialize(new EfeuHash(model.Scope.Constants)),
+            LoopbackScope = model.Scope.Loopback == null ? 
+                "" : serializer.Serialize(new EfeuHash(model.Scope.Loopback.Scope.Constants)),
             LoopbackPosition = model.Scope.Loopback?.Position ?? "",
             Tag = model.Tag,
             Type = model.Type
         };
     }
 
-    public static EfeuTrigger MapToEfeuTrigger(this TriggerEntity entity, EfeuBehaviourStep step)
+    public static EfeuTrigger MapToEfeuTrigger(this TriggerEntity entity, EfeuBehaviourStep step, EfeuValue inputValue, EfeuValue scopeValue)
     {
+        EfeuRuntimeScope runtimeScope = new EfeuRuntimeScope(scopeValue.AsHash().Hash);
         return new EfeuTrigger()
         {
             Id = entity.Id,
             CorrelationId = entity.CorrelationId,
             CreationTime = entity.CreationTime,
             Group = entity.Group,
-            Input = entity.Input,
+            Input = inputValue,
             Matter = entity.Matter,
             Position = entity.Position,
-            Scope = new EfeuRuntimeScope(Guid.NewGuid(), ),
+            Scope = runtimeScope,
+            Tag = entity.Tag,
+            Step = step,
+            Type = entity.Type
+        };
+    }
+
+    public static EfeuTrigger MapToEfeuTrigger(this TriggerEntity entity, EfeuBehaviourStep step, EfeuValue inputValue, EfeuValue scopeValue, EfeuBehaviourStep loopbackStep, EfeuValue loopbackScopeValue)
+    {
+        EfeuRuntimeLoopback loopback = new EfeuRuntimeLoopback(entity.LoopbackPosition, loopbackStep, new EfeuRuntimeScope(loopbackScopeValue.AsHash().Hash));
+        EfeuRuntimeScope runtimeScope = new EfeuRuntimeScope(scopeValue.AsHash().Hash, loopback);
+        
+        return new EfeuTrigger()
+        {
+            Id = entity.Id,
+            CorrelationId = entity.CorrelationId,
+            CreationTime = entity.CreationTime,
+            Group = entity.Group,
+            Input = inputValue,
+            Matter = entity.Matter,
+            Position = entity.Position,
+            Scope = runtimeScope,
             Tag = entity.Tag,
             Step = step,
             Type = entity.Type
@@ -63,72 +87,17 @@ public static class MappingExtensions
         };
     }
 
-    public static EffectEntity MapToEffectEntity(this EfeuMessage model)
+    public static EffectEntity MapToEffectEntity(this EfeuMessage model, EfeuValueSerializer serializer)
     {
         return new EffectEntity()
         {
             Id = model.Id,
             Type = model.Type,
             Tag = model.Tag,
-            Input = model.Payload,
+            Input = serializer.Serialize(model.Payload),
             CorrelationId = model.CorrelationId,
             CreationTime = model.Timestamp,
             Matter = model.Matter,
         };
-    }
-
-    public static BehaviourScopeEntity MapToBehaviourScopeEntity(this EfeuRuntimeScope scope, uint referenceCount)
-    {
-        return new BehaviourScopeEntity()
-        {
-            Constants = scope.Constants,
-            ReferenceCount = referenceCount,
-            LoopbackPosition = scope.Loopback?.Position ?? ""
-        };
-    }
-
-    public static EfeuRuntimeScope MapToEfeuRuntimeScope(this BehaviourScopeEntity scopeEntity, EfeuBehaviourStep loopbackStep, EfeuRuntimeScope loopbackScope)
-    {
-        EfeuRuntimeLoopback loopback = new EfeuRuntimeLoopback(scopeEntity.LoopbackPosition, loopbackStep, loopbackScope);
-        return new EfeuRuntimeScope(scopeEntity.Constants, loopback);
-    }
-
-    public static EfeuRuntimeScope MapToEfeuRuntimeScope(this BehaviourScopeEntity scopeEntity)
-    {
-        return new EfeuRuntimeScope(scopeEntity.Constants);
-    }
-
-    public static BehaviourScopeEntity[] MapToBehaviourScopeEntities(this IEnumerable<EfeuTrigger> triggers)
-    {
-        HashSet<EfeuRuntimeScope> scopes = new HashSet<EfeuRuntimeScope>();
-        Dictionary<EfeuRuntimeScope, uint> scopeReferenceCount = new Dictionary<EfeuRuntimeScope, uint>();
-        foreach (EfeuTrigger trigger in triggers)
-        {
-            if (scopes.Add(trigger.Scope))
-            {
-                scopeReferenceCount.Add(trigger.Scope, 1);
-            }
-            else
-            {
-                scopeReferenceCount[trigger.Scope]++;
-            }
-
-            if (trigger.Scope.Loopback != null)
-            {
-                if (trigger.Scope.Loopback.Scope != trigger.Scope)
-                {
-                    if (scopes.Add(trigger.Scope.Loopback.Scope))
-                    {
-                        scopeReferenceCount.Add(trigger.Scope.Loopback.Scope, 1);
-                    }
-                    else
-                    {
-                        scopeReferenceCount[trigger.Scope.Loopback.Scope]++;
-                    }
-                }
-            }
-        }
-
-        return scopes.Select(i => i.MapToBehaviourScopeEntity(scopeReferenceCount[i])).ToArray();
     }
 }

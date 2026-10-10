@@ -34,18 +34,16 @@ internal class TriggerQueries : ITriggerQueries
             return Task.CompletedTask;
 
         return connection.GetTable<TriggerEntity>()
-            .Where(i => ids.AsEnumerable().Contains(i.Id) && !i.IsDetatched)
-            .Set(u => u.IsDetatched, true)
-            .UpdateAsync();
+            .Where(i => ids.AsEnumerable().Contains(i.Id))
+            .DeleteAsync();
     }
 
     public Task DetatchStaticAsync(Guid definitionVersionId)
     {
         return connection.GetTable<TriggerEntity>()
-            .Where(i => i.BehaviourVersionId == definitionVersionId
-                           && i.CorrelationId == Guid.Empty && !i.IsDetatched)
-            .Set(u => u.IsDetatched, true)
-            .UpdateAsync();
+            .Where(i => i.BehaviourVersionId == definitionVersionId 
+                          && i.CorrelationId == Guid.Empty)
+            .DeleteAsync();
     }
 
     public Task DetatchByMatterBulkAsync(Guid[] matters)
@@ -54,9 +52,8 @@ internal class TriggerQueries : ITriggerQueries
             return Task.CompletedTask;
 
         return connection.GetTable<TriggerEntity>()
-            .Where(i => matters.AsEnumerable().Contains(i.Matter) && !i.IsDetatched)
-            .Set(u => u.IsDetatched, true)
-            .UpdateAsync();
+            .Where(i => matters.AsEnumerable().Contains(i.Matter))
+            .DeleteAsync();
     }
 
     public Task DetatchByGroupBulkAsync(Guid[] groups)
@@ -65,15 +62,13 @@ internal class TriggerQueries : ITriggerQueries
             return Task.CompletedTask;
 
         return connection.GetTable<TriggerEntity>()
-            .Where(i => groups.AsEnumerable().Contains(i.Group) && !i.IsDetatched)
-            .Set(u => u.IsDetatched, true)
-            .UpdateAsync();
+            .Where(i => groups.AsEnumerable().Contains(i.Group))
+            .DeleteAsync();
     }
 
     public Task<TriggerEntity[]> GetAllAsync()
     {
         return connection.GetTable<TriggerEntity>()
-           .Where(i => !i.IsDetatched)
            .ToArrayAsync();
     }
 
@@ -81,15 +76,14 @@ internal class TriggerQueries : ITriggerQueries
     {
         return connection.GetTable<TriggerEntity>()
             .Where(i => i.BehaviourVersionId == definitionVersionId
-                     && i.CorrelationId == Guid.Empty
-                     && !i.IsDetatched)
+                     && i.CorrelationId == Guid.Empty)
             .ToArrayAsync();
     }
 
     public Task<TriggerEntity?> GetByIdAsync(Guid id)
     {
         return connection.GetTable<TriggerEntity>()
-            .FirstOrDefaultAsync(i => i.Id == id && !i.IsDetatched);
+            .FirstOrDefaultAsync(i => i.Id == id);
     }
 
     public async Task<TriggerEntity[]> GetByIdsAsync(params Guid[] ids)
@@ -113,22 +107,8 @@ internal class TriggerQueries : ITriggerQueries
         else
         {
             return await connection.GetTable<TriggerEntity>()
-                .Where(i => ids.AsEnumerable().Contains(i.Id) && !i.IsDetatched)
+                .Where(i => ids.AsEnumerable().Contains(i.Id))
                 .ToArrayAsync();
         }
-    }
-
-    public Task<TriggerEntity[]> GetDetatchedAsync(int limit)
-    {
-        return connection.GetTable<TriggerEntity>()
-                .Where(i => i.IsDetatched)
-                .Take(limit)
-                .ToArrayAsync();
-    }
-
-    public Task DeleteAsync(Guid[] ids)
-    {
-        return connection.GetTable<TriggerEntity>()
-                .DeleteAsync(i => ids.AsEnumerable().Contains(i.Id) && i.IsDetatched);
     }
 }

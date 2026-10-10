@@ -24,8 +24,6 @@ public class TriggerEntity
 
     public EfeuMessageTag Tag;
 
-    // public EfeuValue Input = "";
-
     public string Input = "";
     
     public string Scope = "";
@@ -37,10 +35,4 @@ public class TriggerEntity
     public Guid Matter;
 
     public Guid Group;
-
-    // public Guid ScopeId;
-
-    // public Guid LoopbackScopeId;
-
-    // public bool IsDetatched;
 }

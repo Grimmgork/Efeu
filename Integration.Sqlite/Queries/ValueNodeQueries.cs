@@ -37,6 +37,15 @@ public class ValueNodeQueries : IValueNodeQueries
 
     public async Task<EfeuValueSerializationResult> ReadAsync(string[] hashes)
     {
+        if (hashes.Length == 0)
+        {
+            return new EfeuValueSerializationResult()
+            {
+                Hashes = [],
+                References = []
+            };
+        }
+        
         DataParameter[] parameters = hashes.Select((h, i) => new DataParameter($"@{i}", h)).ToArray();
         IEnumerable<ValueNodeEntity> nodes = await connection.QueryAsync<ValueNodeEntity>(
             $"""

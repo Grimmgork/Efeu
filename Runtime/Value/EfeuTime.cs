@@ -11,11 +11,6 @@ public class EfeuTime : EfeuObject
 {
     public readonly DateTimeOffset Value;
 
-    public EfeuTime(long seconds, int milliseconds = 0)
-    {
-        Value = DateTimeOffset.FromUnixTimeSeconds(seconds).AddMilliseconds(milliseconds);
-    }
-
     public EfeuTime()
     {
         Value = DateTimeOffset.MinValue;

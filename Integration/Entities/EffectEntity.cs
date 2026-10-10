@@ -19,9 +19,9 @@ public class EffectEntity
 
     public Guid CorrelationId; // from wich it came
 
-    public EfeuValue Data;
+    public string Data;
 
-    public EfeuValue Input;
+    public string Input;
 
     public string Fault = "";
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Efeu.Integration.Entities;
 using Efeu.Runtime.Value;
 
@@ -20,6 +21,11 @@ public class EfeuValueDeserializer
     {
         this.reader = options.Reader;
     }
+
+    public string[] GetNotDeserialized(IEnumerable<string> hashes)
+    {
+        return hashes.Where(i => i.Length < 64 || cache.ContainsKey(i)).ToArray();
+    }
     
     public static EfeuValue[] Deserialize(EfeuValueSerializationResult result, EfeuValueDeserializerOptions options)
     {
@@ -39,6 +45,16 @@ public class EfeuValueDeserializer
         for (int i = 0; i < result.Hashes.Length; i++)
         {
             results[i] = Deserialize(result.Hashes[i]);
+        }
+        return results;
+    }
+
+    public EfeuValue[] Resolve(string[] hashes)
+    {
+        EfeuValue[] results = new EfeuValue[hashes.Length];
+        for (int i = 0; i < hashes.Length; i++)
+        {
+            results[i] = Deserialize(hashes[i]);
         }
         return results;
     }
@@ -84,7 +100,7 @@ public class EfeuValueDeserializer
         else
         {
             Type type = EfeuValueSerializer.GetEfeuObjectType((byte)tag);
-            result = DeserializeObject(type, payload);
+            result = DeserializeObject(type);
         }
         
         reader.Pop();
@@ -92,7 +108,7 @@ public class EfeuValueDeserializer
         return result;
     }
 
-    private EfeuObject DeserializeObject(Type type, byte[] payload)
+    private EfeuObject DeserializeObject(Type type)
     {
         if (type == typeof(EfeuString))
         {
@@ -102,7 +118,7 @@ public class EfeuValueDeserializer
         
         if (type == typeof(EfeuDecimal))
         {
-            string str = reader.ReadString();
+            string str = reader.ReadShortString();
             decimal dec = decimal.Parse(str);
             return new EfeuDecimal(dec);
         }
@@ -113,7 +129,7 @@ public class EfeuValueDeserializer
             EfeuValue[] items = new EfeuValue[length];
             for (int i = 0; i < length; i++)
             {
-                string hash = reader.ReadString();
+                string hash = reader.ReadShortString();
                 items[i] = Deserialize(hash);
             }
             
@@ -126,12 +142,18 @@ public class EfeuValueDeserializer
             KeyValuePair<string, EfeuValue>[] entries = new KeyValuePair<string, EfeuValue>[length];
             for (int i = 0; i < length; i++)
             {
-                string key = reader.ReadString();
-                string hash = reader.ReadString();
+                string key = reader.ReadShortString();
+                string hash = reader.ReadShortString();
                 EfeuValue value = Deserialize(hash);
                 entries[i] = new KeyValuePair<string, EfeuValue>(key, value);
             }
             return new EfeuHash(entries);
+        }
+
+        if (type == typeof(EfeuTime))
+        {
+            Int64 time = reader.ReadInt64();
+            return new EfeuTime(DateTimeOffset.FromUnixTimeMilliseconds(time));
         }
 
         throw new InvalidOperationException();

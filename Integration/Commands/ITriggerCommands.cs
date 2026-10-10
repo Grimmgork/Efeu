@@ -9,13 +9,7 @@ namespace Efeu.Integration.Commands;
 
 public interface ITriggerCommands
 {
-    public Task CreateBulkAsync(EfeuTrigger[] triggers);
-
     public Task DeleteStaticAsync(Guid behaviourVersionId);
 
     public Task DeleteAsync(Guid[] ids);
-
-    public Task ResolveMattersAsync(Guid[] matters);
-
-    public Task CompleteGroupsAsync(Guid[] groups);
 }

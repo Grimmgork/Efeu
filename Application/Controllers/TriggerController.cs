@@ -7,7 +7,9 @@ using System.Threading.Tasks;
 using System;
 using Efeu.Application.Models;
 using Efeu.Integration;
+using Efeu.Integration.Utils.Serialization;
 using Efeu.Runtime;
+using Efeu.Runtime.Value;
 
 namespace Efeu.Application.Controllers;
 
@@ -17,14 +19,14 @@ public class TriggerController : Controller
     private readonly ITriggerQueries triggerQueries;
     private readonly ITriggerCommands triggerCommands;
     private readonly IBehaviourQueries behaviourQueries;
-    private readonly IBehaviourScopeQueries behaviourScopeQueries;
+    private readonly ValueNodeCommands valueNodeCommands;
 
-    public TriggerController(ITriggerQueries triggerQueries, ITriggerCommands triggerCommands, IBehaviourQueries behaviourQueries, IBehaviourScopeQueries behaviourScopeQueries)
+    public TriggerController(ITriggerQueries triggerQueries, ITriggerCommands triggerCommands, IBehaviourQueries behaviourQueries, IBehaviourScopeQueries behaviourScopeQueries, ValueNodeCommands valueNodeCommands)
     {
         this.triggerQueries = triggerQueries;
         this.triggerCommands = triggerCommands;
         this.behaviourQueries = behaviourQueries;
-        this.behaviourScopeQueries = behaviourScopeQueries;
+        this.valueNodeCommands = valueNodeCommands;
     }
 
     public async Task<IActionResult> Index()
@@ -58,13 +60,10 @@ public class TriggerController : Controller
             return NotFound();
         }
 
-        BehaviourScopeEntity? behaviourScopeEntity = await behaviourScopeQueries.GetByIdAsync(triggerEntity.ScopeId);
-        if (behaviourScopeEntity == null)
-        {
-            return NotFound();
-        }
-
-        EfeuTrigger trigger = triggerEntity.MapToEfeuTrigger(behaviourVersionEntity.GetPosition(triggerEntity.Position), behaviourScopeEntity.MapToEfeuRuntimeScope());
+        EfeuValue[] values = await valueNodeCommands.ReadAsync([triggerEntity.Input, triggerEntity.Scope]);
+        EfeuBehaviourStep step = behaviourVersionEntity.GetPosition(triggerEntity.Position);
+        
+        EfeuTrigger trigger = triggerEntity.MapToEfeuTrigger(step, values[0], values[1]);
         TriggerDetailsViewModel viewModel = new TriggerDetailsViewModel()
         {
             Trigger = trigger,

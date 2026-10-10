@@ -44,8 +44,13 @@ public interface IEfeuValueWriter
 
     void WriteString(string value)
     {
-        ArgumentNullException.ThrowIfNull(value);
         WriteInt32(value.Length);
+        WriteBytes(Encoding.UTF8.GetBytes(value));
+    }
+
+    void WriteShortString(string value)
+    {
+        WriteByte((byte)value.Length);
         WriteBytes(Encoding.UTF8.GetBytes(value));
     }
 

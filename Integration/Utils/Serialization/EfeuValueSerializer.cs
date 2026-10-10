@@ -25,6 +25,7 @@ public class EfeuValueSerializer
 
     private Dictionary<string, ValueNodeEntity> nodes = new ();
     private List<ValueNodeReferenceEntity> references = [];
+    private List<string> rootHashes = [];
     
     public static EfeuValueSerializationResult Serialize(EfeuValue[] roots, EfeuValueSerializerOptions options)
     {
@@ -48,6 +49,7 @@ public class EfeuValueSerializer
     {
         return new EfeuValueSerializationResult()
         {
+            Hashes = rootHashes.ToArray(),
             Nodes = nodes,
             References = references
         };
@@ -61,6 +63,7 @@ public class EfeuValueSerializer
             6 => typeof(EfeuDecimal),
             7 => typeof(EfeuArray),
             8 => typeof(EfeuHash),
+            9 => typeof(EfeuTime),
             _ => throw new InvalidOperationException()
         };
     }
@@ -71,6 +74,7 @@ public class EfeuValueSerializer
         if (type == typeof(EfeuDecimal)) return 6;
         if (type == typeof(EfeuArray)) return 7;
         if (type == typeof(EfeuHash)) return 8;
+        if (type == typeof(EfeuTime)) return 9;
         throw new InvalidOperationException();
     }
 
@@ -79,7 +83,9 @@ public class EfeuValueSerializer
         string[] results = new string[roots.Length];
         for (int i = 0; i < roots.Length; i++)
         {
-            results[i] = Serialize(roots[i]);
+            string hash = Serialize(roots[i]);
+            results[i] = hash;
+            rootHashes.Add(hash);
         }
         return results;
     }
@@ -154,7 +160,7 @@ public class EfeuValueSerializer
         }
         else if (obj is EfeuDecimal efeuDecimal)
         {
-            writer.WriteString(efeuDecimal.ToString());
+            writer.WriteShortString(efeuDecimal.ToString());
         }
         else if (obj is EfeuArray efeuArray)
         {
@@ -164,7 +170,7 @@ public class EfeuValueSerializer
             {
                 string hash = Serialize(value);
                 childrenHashes.Add(hash);
-                writer.WriteString(hash);
+                writer.WriteShortString(hash);
             }
             children = childrenHashes;
         }
@@ -174,12 +180,16 @@ public class EfeuValueSerializer
             writer.WriteInt32(efeuHash.Count());
             foreach (KeyValuePair<string, EfeuValue> entry in efeuHash)
             {
-                writer.WriteString(entry.Key);
+                writer.WriteShortString(entry.Key);
                 string hash = Serialize(entry.Value);
                 childrenHashes.Add(hash);
-                writer.WriteString(hash);
+                writer.WriteShortString(hash);
             }
             children = childrenHashes;
+        }
+        else if (obj is EfeuTime efeuTime)
+        {
+            writer.WriteInt64(efeuTime.Value.ToUnixTimeMilliseconds());
         }
     }
 }

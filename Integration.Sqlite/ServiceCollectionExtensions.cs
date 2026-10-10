@@ -59,7 +59,6 @@ public static class ServiceCollectionExtensions
         jsonOptions.IncludeFields = true;
         jsonOptions.Converters.Add(new EfeuValueJsonConverter());
         jsonOptions.Converters.Add(new JsonStringEnumConverter());
-        jsonOptions.Converters.Add(new EfeuRuntimeScopeJsonConverter());
         
         FluentMappingBuilder builder = new FluentMappingBuilder();
 
@@ -67,7 +66,6 @@ public static class ServiceCollectionExtensions
         RegisterJsonConversion<Dictionary<int, EfeuValue>>(builder.MappingSchema, jsonOptions);
         RegisterJsonConversion<Stack<int>>(builder.MappingSchema, jsonOptions);
         RegisterJsonConversion<EfeuBehaviourStep[]>(builder.MappingSchema, jsonOptions);
-        RegisterJsonConversion<EfeuRuntimeScope>(builder.MappingSchema, jsonOptions);
         RegisterJsonConversion<ImmutableDictionary<string, EfeuValue>>(builder.MappingSchema, jsonOptions);
         
         builder.MappingSchema.AddScalarType(typeof(DateTimeOffset), DataType.Int64);
@@ -109,10 +107,8 @@ public static class ServiceCollectionExtensions
             .Property(p => p.Type)
             .Property(p => p.Tag)
             .Property(p => p.Position)
-            .Property(p => p.ScopeId)
             .Property(p => p.Matter)
-            .Property(p => p.Group)
-            .Property(p => p.IsDetatched);
+            .Property(p => p.Group);
 
         builder.Entity<EffectEntity>()
             .HasTableName("Effect")

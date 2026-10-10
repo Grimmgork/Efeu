@@ -30,5 +30,8 @@ public interface IEfeuValueReader
     public string ReadString()
         => Encoding.UTF8.GetString(ReadBytes(ReadInt32()));
     
+    public string ReadShortString()
+        => Encoding.UTF8.GetString(ReadBytes(ReadByte()));
+    
     public void Pop();
 }

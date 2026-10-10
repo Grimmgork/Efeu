@@ -22,10 +22,9 @@ internal class EffectCommands : IEffectCommands
     private readonly ITriggerQueries triggerQueries;
     private readonly IBehaviourQueries behaviourQueries;
     private readonly IDeduplicationKeyCommands dedupicationKeyCommands;
-    private readonly IBehaviourScopeQueries behaviourScopeQueries;
-    private readonly IBehaviourScopeCommands behaviourScopeCommands;
+    private readonly IValueNodeQueries valueNodeQueries;
 
-    public EffectCommands(IEffectQueries effectQueries, IEfeuUnitOfWork unitOfWork, ITriggerCommands triggerCommands, ITriggerQueries triggerQueries, IBehaviourQueries behaviourQueries, IDeduplicationKeyCommands deduplicationKeyCommands, IBehaviourScopeQueries behaviourScopeQueries, IBehaviourScopeCommands behaviourScopeCommands)
+    public EffectCommands(IEffectQueries effectQueries, IEfeuUnitOfWork unitOfWork, ITriggerCommands triggerCommands, ITriggerQueries triggerQueries, IBehaviourQueries behaviourQueries, IDeduplicationKeyCommands deduplicationKeyCommands, IValueNodeQueries valueNodeQueries)
     {
         this.effectQueries = effectQueries;
         this.unitOfWork = unitOfWork;
@@ -33,13 +32,26 @@ internal class EffectCommands : IEffectCommands
         this.triggerQueries = triggerQueries;
         this.behaviourQueries = behaviourQueries;
         this.dedupicationKeyCommands = deduplicationKeyCommands;
-        this.behaviourScopeQueries = behaviourScopeQueries;
-        this.behaviourScopeCommands = behaviourScopeCommands;
+        this.valueNodeQueries = valueNodeQueries;
     }
 
-    public Task CreateEffect(EfeuMessage message)
+    public async Task CreateEffect(EfeuMessage message)
     {
-        return effectQueries.CreateAsync(message.MapToEffectEntity());
+        await unitOfWork.BeginAsync();
+        EfeuValueSerializerOptions serializerOptions = new ()
+        {
+            Hasher = new Sha256EfeuValueHasher(),
+            Writer = new EfeuValueBinaryWriter()
+        };
+        
+        EfeuValueSerializer efeuValueSerializer = EfeuValueSerializer.Begin(serializerOptions);
+
+        EffectEntity effectEntity = message.MapToEffectEntity(efeuValueSerializer);
+        await effectQueries.CreateAsync(effectEntity);
+
+        EfeuValueSerializationResult serializationResult = efeuValueSerializer.End();
+        await valueNodeQueries.WriteAsync(serializationResult);
+        await unitOfWork.CompleteAsync();
     }
 
     public Task NudgeEffect(Guid id)
@@ -122,7 +134,7 @@ internal class EffectCommands : IEffectCommands
         await unitOfWork.LockAsync("Trigger");
         if (message.Tag == EfeuMessageTag.Effect)
         {
-            await effectQueries.CreateAsync(message.MapToEffectEntity());
+            await CreateEffect(message);
         }
         else
         {
@@ -135,17 +147,17 @@ internal class EffectCommands : IEffectCommands
     private async Task ProcessMessagesAsync(EfeuMessage[] messages, EfeuTrigger[] additionalTriggers)
     {
         TriggerEntity[] allTriggerEntities = await triggerQueries.GetAllAsync();
-        TriggerProcessingContext context = new TriggerProcessingContext(allTriggerEntities, behaviourQueries, behaviourScopeQueries, additionalTriggers);
+        TriggerProcessingContext context = new TriggerProcessingContext(allTriggerEntities, behaviourQueries, valueNodeQueries, additionalTriggers);
 
         int iterations = 0;
         Stack<EfeuMessage> messageStack = new Stack<EfeuMessage>(messages);
-        List<EffectEntity> createdEffects = new List<EffectEntity>();
+        List<EfeuMessage> effects = new List<EfeuMessage>();
 
         while (messageStack.TryPop(out EfeuMessage? message))
         {
             if (message.Tag == EfeuMessageTag.Effect)
             {
-                createdEffects.Add(message.MapToEffectEntity());
+                effects.Add(message);
             }
             else
             {
@@ -165,12 +177,36 @@ internal class EffectCommands : IEffectCommands
             }
         }
 
-        BehaviourScopeEntity[] createdScopeEntities = context.CreatedTriggers.MapToBehaviourScopeEntities();
+        EfeuValueSerializerOptions serializerOptions = new ()
+        {
+            Hasher = new Sha256EfeuValueHasher(),
+            Writer = new EfeuValueBinaryWriter()
+        };
         
-        await triggerCommands.ResolveMattersAsync(context.ResolvedMatters.ToArray());
-        await triggerCommands.CompleteGroupsAsync(context.CompletedGroups.ToArray());
-        await triggerCommands.CreateBulkAsync(context.CreatedTriggers.ToArray());
-        await effectQueries.CreateBulkAsync(createdEffects.ToArray());
-        // await behaviourScopeCommands.CreateBulkAsync(createdScopeEntities.ToArray());
+        EfeuValueSerializer efeuValueSerializer = EfeuValueSerializer.Begin(serializerOptions);
+        
+        int i = 0;
+        TriggerEntity[] createdTriggers = new TriggerEntity[context.CreatedTriggers.Count];
+        foreach (EfeuTrigger trigger in context.CreatedTriggers)
+        {
+            createdTriggers[i] = trigger.MapToTriggerEntity(efeuValueSerializer);
+            i++;
+        }
+
+        i = 0;
+        EffectEntity[] createdEffects = new EffectEntity[effects.Count];
+        foreach (EfeuMessage message in effects)
+        {
+            createdEffects[i] = message.MapToEffectEntity(efeuValueSerializer);
+            i++;
+        }
+        
+        EfeuValueSerializationResult serializationResult = efeuValueSerializer.End();
+        
+        await triggerQueries.DetatchByMatterBulkAsync(context.ResolvedMatters.ToArray());
+        await triggerQueries.DetatchByGroupBulkAsync(context.CompletedGroups.ToArray());
+        await valueNodeQueries.WriteAsync(serializationResult);
+        await triggerQueries.CreateBulkAsync(createdTriggers);
+        await effectQueries.CreateBulkAsync(createdEffects);
     }
 }

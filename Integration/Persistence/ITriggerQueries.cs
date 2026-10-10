@@ -29,8 +29,4 @@ public interface ITriggerQueries
     public Task DetatchByGroupBulkAsync(Guid[] groups);
 
     public Task<TriggerEntity[]> GetByIdsAsync(params Guid[] ids);
-
-    public Task<TriggerEntity[]> GetDetatchedAsync(int limit);
-
-    public Task DeleteAsync(Guid[] ids);
 }

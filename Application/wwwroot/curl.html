@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simple REST Client</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f5f5f5;
+    }
+    textarea, input, select, button {
+      width: 100%;
+      margin-top: 8px;
+      margin-bottom: 16px;
+      padding: 8px;
+      box-sizing: border-box;
+      font-family: monospace;
+    }
+    button {
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .section {
+      background: white;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    pre {
+      background: #111;
+      color: #0f0;
+      padding: 12px;
+      overflow: auto;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Simple REST Client</h1>
+<p>Use <code>{{guid}}</code> anywhere in headers or body.</p>
+
+<div class="section">
+  <label>Method</label>
+  <select id="method">
+    <option>GET</option>
+    <option>POST</option>
+    <option>PUT</option>
+    <option>PATCH</option>
+    <option>DELETE</option>
+  </select>
+
+  <label>URL</label>
+  <input id="url" placeholder="https://api.example.com/resource" />
+
+  <label>Headers (JSON)</label>
+  <textarea id="headers" rows="5" placeholder='{"Content-Type": "application/json"}'></textarea>
+
+  <label>Body</label>
+  <textarea id="body" rows="8" placeholder='{"id":"{{guid}}"}'></textarea>
+
+  <button onclick="sendRequest()">Send Request</button>
+</div>
+
+<div class="section">
+  <h3>Status</h3>
+  <div id="status"></div>
+
+  <h3>Response Headers</h3>
+  <pre id="responseHeaders"></pre>
+
+  <h3>Response Body</h3>
+  <pre id="responseBody"></pre>
+</div>
+
+<script>
+function generateGuid() {
+  return crypto.randomUUID();
+}
+
+function substitutePlaceholders(text) {
+  const guid = generateGuid();
+  return text.replace(/{{guid}}/g, guid);
+}
+
+async function sendRequest() {
+  const method = document.getElementById('method').value;
+  const url = document.getElementById('url').value;
+  const headersInput = document.getElementById('headers').value;
+  const bodyInput = document.getElementById('body').value;
+
+  let headersText = substitutePlaceholders(headersInput);
+  let bodyText = substitutePlaceholders(bodyInput);
+
+  let headers = {};
+  try {
+    headers = headersText ? JSON.parse(headersText) : {};
+  } catch (e) {
+    alert("Invalid headers JSON");
+    return;
+  }
+
+  document.getElementById('status').textContent = "Loading...";
+  document.getElementById('responseHeaders').textContent = "";
+  document.getElementById('responseBody').textContent = "";
+
+  try {
+    const response = await fetch(url, {
+      method,
+      headers,
+      body: method === "GET" || method === "DELETE" ? undefined : bodyText
+    });
+
+    document.getElementById('status').textContent =
+      response.status + " " + response.statusText;
+
+    let headersOut = "";
+    response.headers.forEach((value, key) => {
+      headersOut += key + ": " + value + "\n";
+    });
+    document.getElementById('responseHeaders').textContent = headersOut;
+
+    const text = await response.text();
+    document.getElementById('responseBody').textContent = text;
+
+  } catch (err) {
+    document.getElementById('status').textContent = "Error: " + err.message;
+  }
+}
+</script>
+
+</body>
+</html>

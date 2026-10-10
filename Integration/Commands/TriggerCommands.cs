@@ -21,19 +21,10 @@ internal class TriggerCommands : ITriggerCommands
         this.triggerQueries = triggerQueries;
     }
 
-    public async Task CreateBulkAsync(EfeuTrigger[] triggers)
-    {
-        await unitOfWork.BeginAsync();
-        TriggerEntity[] triggerEntities = triggers.Select(i => i.MapToTriggerEntity()).ToArray();
-        await triggerQueries.CreateBulkAsync(triggerEntities);
-        await unitOfWork.CompleteAsync();
-    }
-
     public async Task DeleteStaticAsync(Guid definitionVersionId)
     {
         await unitOfWork.BeginAsync();
         await unitOfWork.LockAsync("Trigger");
-        // TriggerEntity[] triggers = await behaviourTriggerRepository.GetStaticAsync(definitionVersionId);
         await triggerQueries.DetatchStaticAsync(definitionVersionId);
         await unitOfWork.CompleteAsync();
     }
@@ -41,15 +32,5 @@ internal class TriggerCommands : ITriggerCommands
     public Task DeleteAsync(Guid[] ids)
     {
         return triggerQueries.DetatchAsync(ids);
-    }
-
-    public Task ResolveMattersAsync(Guid[] matters)
-    {
-        return triggerQueries.DetatchByMatterBulkAsync(matters);
-    }
-
-    public Task CompleteGroupsAsync(Guid[] groups)
-    {
-        return triggerQueries.DetatchByGroupBulkAsync(groups);
     }
 }

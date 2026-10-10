@@ -10,7 +10,7 @@ namespace Efeu.Runtime.Value;
 
 public class EfeuHash : EfeuObject, IEnumerable<KeyValuePair<string, EfeuValue>>
 {
-    public readonly IImmutableDictionary<string, EfeuValue> Hash = ImmutableDictionary<string, EfeuValue>.Empty;
+    public readonly ImmutableDictionary<string, EfeuValue> Hash = ImmutableDictionary<string, EfeuValue>.Empty;
 
     public static EfeuHash Empty = new EfeuHash();
 
