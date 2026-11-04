@@ -5,9 +5,9 @@ namespace Efeu.Integration.Utils.Serialization;
 
 public class EfeuValueSerializationResult
 {
-    public string[] Hashes = [];
+    public EfeuValueHash[] Hashes = [];
     
-    public Dictionary<string, ValueNodeEntity> Nodes = new ();
+    public Dictionary<EfeuValueHash, ValueNodeEntity> Nodes = new ();
 
     public List<ValueNodeReferenceEntity> References = [];
 }

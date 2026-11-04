@@ -35,7 +35,7 @@ public class ValueNodeQueries : IValueNodeQueries
             }, serialization.References);
     }
 
-    public async Task<EfeuValueSerializationResult> ReadAsync(string[] hashes)
+    public async Task<EfeuValueSerializationResult> ReadAsync(EfeuValueHash[] hashes)
     {
         if (hashes.Length == 0)
         {

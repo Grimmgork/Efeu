@@ -21,7 +21,7 @@ public class ValueNodeCommands
         this.valueNodeQueries = valueNodeQueries;
     }
     
-    public async Task<string[]> WriteAsync(EfeuValue[] values)
+    public async Task<EfeuValueHash[]> WriteAsync(EfeuValue[] values)
     {
         await unitOfWork.BeginAsync();
         EfeuValueSerializerOptions serializerOptions = new()
@@ -37,7 +37,7 @@ public class ValueNodeCommands
         return result.Hashes;
     }
     
-    public async Task<EfeuValue[]> ReadAsync(string[] hashes)
+    public async Task<EfeuValue[]> ReadAsync(EfeuValueHash[] hashes)
     {
         EfeuValueSerializationResult result = await valueNodeQueries.ReadAsync(hashes);
         EfeuValueDeserializerOptions deserializerOptions = new EfeuValueDeserializerOptions()

@@ -23,9 +23,9 @@ public class EfeuValueSerializer
     private IEfeuValueWriter writer;
     private IEfeuValueHasher hasher;
 
-    private Dictionary<string, ValueNodeEntity> nodes = new ();
+    private Dictionary<EfeuValueHash, ValueNodeEntity> nodes = new ();
     private List<ValueNodeReferenceEntity> references = [];
-    private List<string> rootHashes = [];
+    private List<EfeuValueHash> rootHashes = [];
     
     public static EfeuValueSerializationResult Serialize(EfeuValue[] roots, EfeuValueSerializerOptions options)
     {
@@ -78,21 +78,21 @@ public class EfeuValueSerializer
         throw new InvalidOperationException();
     }
 
-    public string[] Serialize(EfeuValue[] roots)
+    public EfeuValueHash[] Serialize(EfeuValue[] roots)
     {
-        string[] results = new string[roots.Length];
+        EfeuValueHash[] results = new EfeuValueHash[roots.Length];
         for (int i = 0; i < roots.Length; i++)
         {
-            string hash = Serialize(roots[i]);
+            EfeuValueHash hash = Serialize(roots[i]);
             results[i] = hash;
             rootHashes.Add(hash);
         }
         return results;
     }
     
-    public string Serialize(EfeuValue value)
+    public EfeuValueHash Serialize(EfeuValue value)
     {
-        IEnumerable<string> children = [];
+        IEnumerable<EfeuValueHash> children = [];
         
         writer.Push();
         if (value.Tag == EfeuValueTag.Nil)
@@ -121,11 +121,11 @@ public class EfeuValueSerializer
         byte[] payload = writer.Pop();
         if (payload.Length < 32)
         {
-            return Convert.ToHexString(payload);
+            return (EfeuValueHash) Convert.ToHexString(payload);
         }
         else
         {
-            string hash = Convert.ToHexString(hasher.Hash(payload));
+            EfeuValueHash hash = (EfeuValueHash) Convert.ToHexString(hasher.Hash(payload));
             if (!nodes.ContainsKey(hash))
             {
                 nodes.Add(hash, new ValueNodeEntity()
@@ -150,7 +150,7 @@ public class EfeuValueSerializer
         }
     }
 
-    private void SerializeEfeuObject(EfeuObject obj, out IEnumerable<string> children)
+    private void SerializeEfeuObject(EfeuObject obj, out IEnumerable<EfeuValueHash> children)
     {
         children = [];
         
@@ -164,11 +164,11 @@ public class EfeuValueSerializer
         }
         else if (obj is EfeuArray efeuArray)
         {
-            List<string> childrenHashes = [];
+            List<EfeuValueHash> childrenHashes = [];
             writer.WriteInt32(efeuArray.Count);
             foreach (EfeuValue value in efeuArray)
             {
-                string hash = Serialize(value);
+                EfeuValueHash hash = Serialize(value);
                 childrenHashes.Add(hash);
                 writer.WriteShortString(hash);
             }
@@ -176,12 +176,12 @@ public class EfeuValueSerializer
         }
         else if (obj is EfeuHash efeuHash)
         {
-            List<string> childrenHashes = [];
+            List<EfeuValueHash> childrenHashes = [];
             writer.WriteInt32(efeuHash.Count());
             foreach (KeyValuePair<string, EfeuValue> entry in efeuHash)
             {
                 writer.WriteShortString(entry.Key);
-                string hash = Serialize(entry.Value);
+                EfeuValueHash hash = Serialize(entry.Value);
                 childrenHashes.Add(hash);
                 writer.WriteShortString(hash);
             }

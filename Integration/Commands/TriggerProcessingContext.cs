@@ -95,7 +95,7 @@ internal class TriggerProcessingContext
         entities = partition.NonMatches.ToArray();
         
         int i = 0;
-        string[] hashesToLoad = new string[entities.Length*3];
+        EfeuValueHash[] hashesToLoad = new EfeuValueHash[entities.Length*3];
         foreach (TriggerEntity triggerEntity in entities)
         {
             hashesToLoad[i * 3 + 0] = triggerEntity.Input;

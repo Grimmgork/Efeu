@@ -1,8 +1,10 @@
+using Efeu.Integration.Utils.Serialization;
+
 namespace Efeu.Integration.Entities;
 
 public class ValueNodeEntity
 {
-    public string Hash = "";
+    public EfeuValueHash Hash;
     
     public byte[] Payload = [];
 }

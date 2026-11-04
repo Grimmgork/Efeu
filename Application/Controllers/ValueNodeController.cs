@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Threading.Tasks;
 using Efeu.Integration.Commands;
+using Efeu.Integration.Utils.Serialization;
 using Efeu.Runtime.Value;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -23,7 +24,7 @@ public class ValueNodeController : Controller
     public async Task<ActionResult> Add([FromBody] JsonElement json)
     {
         EfeuValue value = JsonSerializer.Deserialize<EfeuValue>(json, jsonOptions.JsonSerializerOptions)!;
-        string[] hashes = await valueNodeCommands.WriteAsync([value]);
+        EfeuValueHash[] hashes = await valueNodeCommands.WriteAsync([value]);
         return Ok(hashes[0]);
     }
 
@@ -39,7 +40,7 @@ public class ValueNodeController : Controller
     [Route("{hash}")]
     public async Task<ActionResult> Get(string hash)
     {
-        EfeuValue[] values = await valueNodeCommands.ReadAsync([hash]);
+        EfeuValue[] values = await valueNodeCommands.ReadAsync([(EfeuValueHash)hash]);
         JsonElement json = JsonSerializer.SerializeToElement(values[0], jsonOptions.JsonSerializerOptions);
         return Ok(json);
     }

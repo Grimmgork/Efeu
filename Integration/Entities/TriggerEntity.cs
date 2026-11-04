@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Efeu.Integration.Utils.Serialization;
 
 namespace Efeu.Integration.Entities;
 
@@ -24,13 +25,13 @@ public class TriggerEntity
 
     public EfeuMessageTag Tag;
 
-    public string Input = "";
+    public EfeuValueHash Input;
     
-    public string Scope = "";
+    public EfeuValueHash Scope;
 
     public string LoopbackPosition = "";
     
-    public string LoopbackScope = "";
+    public EfeuValueHash LoopbackScope;
 
     public Guid Matter;
 

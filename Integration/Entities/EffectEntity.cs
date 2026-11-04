@@ -1,6 +1,7 @@
 ﻿using Efeu.Runtime;
 using Efeu.Runtime.Value;
 using System;
+using Efeu.Integration.Utils.Serialization;
 
 namespace Efeu.Integration.Entities;
 
@@ -19,9 +20,9 @@ public class EffectEntity
 
     public Guid CorrelationId; // from wich it came
 
-    public string Data;
+    public EfeuValueHash Data;
 
-    public string Input;
+    public EfeuValueHash Input;
 
     public string Fault = "";
 

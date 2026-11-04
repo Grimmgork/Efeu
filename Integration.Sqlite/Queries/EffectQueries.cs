@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Efeu.Integration.Utils.Serialization;
 using LinqToDB.Async;
 
 namespace Efeu.Integration.Sqlite.Queries;
@@ -129,7 +130,7 @@ internal class EffectQueries : IEffectQueries
             .UpdateAsync();
     }
 
-    public Task CompleteEffectWithResultAndUnlockAsync(Guid lockId, Guid id, DateTimeOffset timestamp, EfeuValue output)
+    public Task CompleteEffectWithResultAndUnlockAsync(Guid lockId, Guid id, DateTimeOffset timestamp, EfeuValueHash output)
     {
         return connection.GetTable<EffectEntity>()
             .Where(u => u.Id == id
@@ -145,7 +146,7 @@ internal class EffectQueries : IEffectQueries
             .UpdateAsync();
     }
 
-    public Task CompleteSuspendedEffectAsync(Guid id, DateTimeOffset timestamp, EfeuValue output)
+    public Task CompleteSuspendedEffectAsync(Guid id, DateTimeOffset timestamp, EfeuValueHash output)
     {
         return connection.GetTable<EffectEntity>()
             .Where(u => u.Id == id

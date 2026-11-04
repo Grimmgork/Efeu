@@ -21,7 +21,7 @@ internal class EffectCommands : IEffectCommands
     private readonly ITriggerCommands triggerCommands;
     private readonly ITriggerQueries triggerQueries;
     private readonly IBehaviourQueries behaviourQueries;
-    private readonly IDeduplicationKeyCommands dedupicationKeyCommands;
+    private readonly IDeduplicationKeyCommands deduplicationKeyCommands;
     private readonly IValueNodeQueries valueNodeQueries;
 
     public EffectCommands(IEffectQueries effectQueries, IEfeuUnitOfWork unitOfWork, ITriggerCommands triggerCommands, ITriggerQueries triggerQueries, IBehaviourQueries behaviourQueries, IDeduplicationKeyCommands deduplicationKeyCommands, IValueNodeQueries valueNodeQueries)
@@ -31,7 +31,7 @@ internal class EffectCommands : IEffectCommands
         this.triggerCommands = triggerCommands;
         this.triggerQueries = triggerQueries;
         this.behaviourQueries = behaviourQueries;
-        this.dedupicationKeyCommands = deduplicationKeyCommands;
+        this.deduplicationKeyCommands = deduplicationKeyCommands;
         this.valueNodeQueries = valueNodeQueries;
     }
 
@@ -64,9 +64,18 @@ internal class EffectCommands : IEffectCommands
         return effectQueries.SuspendEffectAsync(id, timestamp);
     }
 
-    public Task SkipEffect(Guid id, DateTimeOffset timestamp, EfeuValue output = default)
+    public async Task SkipEffect(Guid id, DateTimeOffset timestamp, EfeuValue output = default)
     {
-        return effectQueries.CompleteSuspendedEffectAsync(id, timestamp, output);
+        EfeuValueSerializerOptions serializerOptions = new EfeuValueSerializerOptions()
+        {
+            Writer = new EfeuValueBinaryWriter(),
+            Hasher = new Sha256EfeuValueHasher()
+        };
+        
+        EfeuValueSerializationResult serializationResult = EfeuValueSerializer.Serialize([output], serializerOptions);
+        
+        await valueNodeQueries.WriteAsync(serializationResult);
+        await effectQueries.CompleteSuspendedEffectAsync(id, timestamp, serializationResult.Hashes[0]); 
     }
 
     public Task AbortEffect(Guid id)
@@ -103,7 +112,7 @@ internal class EffectCommands : IEffectCommands
         await unitOfWork.BeginAsync();
         await unitOfWork.LockAsync("Trigger");
 
-        if (!await dedupicationKeyCommands.TryInsertAsync(message.Id, message.Timestamp))
+        if (!await deduplicationKeyCommands.TryInsertAsync(message.Id, message.Timestamp))
         {
             await unitOfWork.CompleteAsync();
             return;

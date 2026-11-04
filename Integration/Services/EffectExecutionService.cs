@@ -9,6 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Efeu.Integration.Utils.Serialization;
+using Efeu.Runtime.Value;
 
 namespace Efeu.Integration.Services;
 
@@ -73,12 +75,19 @@ internal class EffectExecutionService : IHostedService
         IEffectCommands effectCommands = services.GetRequiredService<IEffectCommands>();
         IEfeuUnitOfWork unitOfWork = services.GetRequiredService<IEfeuUnitOfWork>();
         IEfeuEffectProvider effectProvider = services.GetRequiredService<IEfeuEffectProvider>();
+        IValueNodeQueries valueNodeQueries = services.GetRequiredService<IValueNodeQueries>();
 
         EffectEntity? effect = await FindAndLockEffect(effectQueries, workerId, token);
         if (effect is null)
             return 0;
-
-        await unitOfWork.ResetAsync();
+        
+        EfeuValueDeserializerOptions deserializerOptions = new EfeuValueDeserializerOptions()
+        {
+            Reader = new EfeuValueBinaryReader()
+        };
+                
+        EfeuValueSerializationResult deserializationResult = await valueNodeQueries.ReadAsync([effect.Input]);
+        EfeuValue[] deserialized = EfeuValueDeserializer.Deserialize(deserializationResult, deserializerOptions);
 
         DateTimeOffset executionTime = DateTime.Now;
         try
@@ -88,16 +97,26 @@ internal class EffectExecutionService : IHostedService
                 IEfeuEffect? effectInstance = effectProvider.TryGetEffect(effect.Type);
                 if (effectInstance is null)
                     throw new Exception($"Unknown effect '{effect.Type}'.");
-
-                EfeuEffectExecutionContext context = new EfeuEffectExecutionContext(effect.Id, effect.CorrelationId, executionTime, effect.Times, effect.Input);
+                
+                EfeuEffectExecutionContext context = new EfeuEffectExecutionContext(effect.Id, effect.CorrelationId, executionTime, effect.Times, deserialized[0]);
 
                 await effectInstance.RunAsync(context, token);
-                await effectQueries.CompleteEffectWithResultAndUnlockAsync(workerId, effect.Id, DateTime.Now, default);
+
+                EfeuValueSerializerOptions serializerOptions = new EfeuValueSerializerOptions()
+                {
+                    Writer = new EfeuValueBinaryWriter(),
+                    Hasher = new Sha256EfeuValueHasher()
+                };
+                
+                EfeuValueSerializationResult serializationResult = EfeuValueSerializer.Serialize([context.Output], serializerOptions);
+                await valueNodeQueries.WriteAsync(serializationResult);
+                await effectQueries.CompleteEffectWithResultAndUnlockAsync(workerId, effect.Id, DateTime.Now, serializationResult.Hashes[0]);
             }
             else
             {
                 await unitOfWork.BeginAsync();
-                EfeuMessage message = effect.MapToEfeuMessage();
+                
+                EfeuMessage message = effect.MapToEfeuMessage(deserialized[0]);
 
                 await effectCommands.SendMessageDeduplicatedAsync(message);
                 await effectQueries.CompleteEffectAndUnlockAsync(workerId, effect.Id, executionTime);

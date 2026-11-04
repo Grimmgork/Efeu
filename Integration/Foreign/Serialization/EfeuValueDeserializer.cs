@@ -14,15 +14,15 @@ public class EfeuValueDeserializerOptions
 public class EfeuValueDeserializer
 {
     private IEfeuValueReader reader;
-    private Dictionary<string, EfeuValue> cache = new Dictionary<string, EfeuValue>();
-    private Dictionary<string, ValueNodeEntity> nodes = new Dictionary<string, ValueNodeEntity>();
+    private Dictionary<EfeuValueHash, EfeuValue> cache = new Dictionary<EfeuValueHash, EfeuValue>();
+    private Dictionary<EfeuValueHash, ValueNodeEntity> nodes = new Dictionary<EfeuValueHash, ValueNodeEntity>();
     
     private EfeuValueDeserializer(EfeuValueDeserializerOptions options)
     {
         this.reader = options.Reader;
     }
 
-    public string[] GetNotDeserialized(IEnumerable<string> hashes)
+    public EfeuValueHash[] GetNotDeserialized(IEnumerable<EfeuValueHash> hashes)
     {
         return hashes.Where(i => i.Length < 64 || cache.ContainsKey(i)).ToArray();
     }
@@ -49,7 +49,7 @@ public class EfeuValueDeserializer
         return results;
     }
 
-    public EfeuValue[] Resolve(string[] hashes)
+    public EfeuValue[] Resolve(EfeuValueHash[] hashes)
     {
         EfeuValue[] results = new EfeuValue[hashes.Length];
         for (int i = 0; i < hashes.Length; i++)
@@ -59,7 +59,7 @@ public class EfeuValueDeserializer
         return results;
     }
     
-    private EfeuValue Deserialize(string hash)
+    private EfeuValue Deserialize(EfeuValueHash hash)
     {
         if (cache.TryGetValue(hash, out var value))
         {
@@ -75,7 +75,7 @@ public class EfeuValueDeserializer
         {
             payload = nodes[hash].Payload;
         }
-        
+
         EfeuValue result = EfeuValue.Nil();
         
         reader.Push(payload);
@@ -129,7 +129,7 @@ public class EfeuValueDeserializer
             EfeuValue[] items = new EfeuValue[length];
             for (int i = 0; i < length; i++)
             {
-                string hash = reader.ReadShortString();
+                EfeuValueHash hash = (EfeuValueHash)reader.ReadShortString();
                 items[i] = Deserialize(hash);
             }
             
@@ -143,7 +143,7 @@ public class EfeuValueDeserializer
             for (int i = 0; i < length; i++)
             {
                 string key = reader.ReadShortString();
-                string hash = reader.ReadShortString();
+                EfeuValueHash hash = (EfeuValueHash) reader.ReadShortString();
                 EfeuValue value = Deserialize(hash);
                 entries[i] = new KeyValuePair<string, EfeuValue>(key, value);
             }

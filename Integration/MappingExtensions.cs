@@ -26,7 +26,7 @@ public static class MappingExtensions
             Position = model.Position,
             Scope = serializer.Serialize(new EfeuHash(model.Scope.Constants)),
             LoopbackScope = model.Scope.Loopback == null ? 
-                "" : serializer.Serialize(new EfeuHash(model.Scope.Loopback.Scope.Constants)),
+                EfeuValueHash.Empty : serializer.Serialize(new EfeuHash(model.Scope.Loopback.Scope.Constants)),
             LoopbackPosition = model.Scope.Loopback?.Position ?? "",
             Tag = model.Tag,
             Type = model.Type
@@ -73,14 +73,14 @@ public static class MappingExtensions
         };
     }
 
-    public static EfeuMessage MapToEfeuMessage(this EffectEntity entity)
+    public static EfeuMessage MapToEfeuMessage(this EffectEntity entity, EfeuValue payload)
     {
         return new EfeuMessage()
         {
             Id = entity.Id,
             Tag = entity.Tag,
             Type = entity.Type,
-            Payload = entity.Data,
+            Payload = payload,
             Timestamp = entity.CreationTime,
             Matter = entity.Matter,
             CorrelationId = entity.CorrelationId,

@@ -2,6 +2,7 @@
 using Efeu.Runtime.Value;
 using System;
 using System.Threading.Tasks;
+using Efeu.Integration.Utils.Serialization;
 
 namespace Efeu.Integration.Persistence;
 
@@ -29,11 +30,11 @@ public interface IEffectQueries
 
     public Task FaultEffectAndUnlockAsync(Guid lockId, Guid id, DateTimeOffset timestamp, string fault);
 
-    public Task CompleteEffectWithResultAndUnlockAsync(Guid lockId, Guid id, DateTimeOffset timestamp, EfeuValue output);
+    public Task CompleteEffectWithResultAndUnlockAsync(Guid lockId, Guid id, DateTimeOffset timestamp, EfeuValueHash output);
 
     public Task CompleteEffectAndUnlockAsync(Guid lockId, Guid id, DateTimeOffset timestamp);
 
     public Task<int> SuspendEffectAsync(Guid id, DateTimeOffset timestamp);
 
-    public Task CompleteSuspendedEffectAsync(Guid id, DateTimeOffset timestamp, EfeuValue output);
+    public Task CompleteSuspendedEffectAsync(Guid id, DateTimeOffset timestamp, EfeuValueHash output);
 }
