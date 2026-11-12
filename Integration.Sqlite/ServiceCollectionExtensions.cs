@@ -19,6 +19,7 @@ using System.Data.Common;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Efeu.Integration.Utils.Serialization;
 using Microsoft.Extensions.Primitives;
 
 namespace Efeu.Integration.Sqlite;
@@ -75,6 +76,14 @@ public static class ServiceCollectionExtensions
             value => DataParameter.Int64(
                 null,
                 value.ToUnixTimeMilliseconds()));
+        
+        builder.MappingSchema.AddScalarType(typeof(EfeuValueHash), DataType.Text);
+        builder.MappingSchema.SetConverter<EfeuValueHash, string>(c => c.ToString());
+        builder.MappingSchema.SetConverter<string, EfeuValueHash>((s) => EfeuValueHash.Parse(s));
+        builder.MappingSchema.SetConvertExpression<EfeuValueHash, DataParameter>(
+            value => DataParameter.Text(
+                null,
+                value.ToString()));
         
         builder.Entity<BehaviourEntity>()
             .HasTableName("Behaviour")

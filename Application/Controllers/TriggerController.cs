@@ -57,7 +57,7 @@ public class TriggerController : Controller
         BehaviourVersionEntity? behaviourVersionEntity = await behaviourQueries.GetVersionByIdAsync(triggerEntity.BehaviourVersionId);
         if (behaviourVersionEntity == null)
         {
-            return NotFound();
+            throw new Exception("Missing behaviour version");
         }
 
         EfeuValue[] values = await valueNodeCommands.ReadAsync([triggerEntity.Input, triggerEntity.Scope]);

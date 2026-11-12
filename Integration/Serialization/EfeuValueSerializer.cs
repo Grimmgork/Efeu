@@ -121,11 +121,11 @@ public class EfeuValueSerializer
         byte[] payload = writer.Pop();
         if (payload.Length < 32)
         {
-            return (EfeuValueHash) Convert.ToHexString(payload);
+            return new EfeuValueHash(payload);
         }
         else
         {
-            EfeuValueHash hash = (EfeuValueHash) Convert.ToHexString(hasher.Hash(payload));
+            EfeuValueHash hash = new EfeuValueHash(hasher.Hash(payload).ToArray());
             if (!nodes.ContainsKey(hash))
             {
                 nodes.Add(hash, new ValueNodeEntity()
@@ -134,9 +134,9 @@ public class EfeuValueSerializer
                     Payload = payload
                 });
 
-                foreach (string child in children)
+                foreach (EfeuValueHash child in children)
                 {
-                    if (child.Length >= 64)
+                    if (child.Length >= 32)
                     {
                         this.references.Add(new ValueNodeReferenceEntity()
                         {
@@ -170,7 +170,7 @@ public class EfeuValueSerializer
             {
                 EfeuValueHash hash = Serialize(value);
                 childrenHashes.Add(hash);
-                writer.WriteShortString(hash);
+                writer.WriteShortString(hash.ToString());
             }
             children = childrenHashes;
         }
@@ -183,7 +183,7 @@ public class EfeuValueSerializer
                 writer.WriteShortString(entry.Key);
                 EfeuValueHash hash = Serialize(entry.Value);
                 childrenHashes.Add(hash);
-                writer.WriteShortString(hash);
+                writer.WriteShortString(hash.ToString());
             }
             children = childrenHashes;
         }

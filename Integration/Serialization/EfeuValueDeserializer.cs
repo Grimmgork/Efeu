@@ -67,9 +67,9 @@ public class EfeuValueDeserializer
         }
 
         byte[] payload;
-        if (hash.Length < 64)
+        if (hash.Length < 32)
         {
-            payload = Convert.FromHexString(hash);
+            payload = Convert.FromHexString(hash.ToString());
         }
         else
         {
@@ -129,7 +129,7 @@ public class EfeuValueDeserializer
             EfeuValue[] items = new EfeuValue[length];
             for (int i = 0; i < length; i++)
             {
-                EfeuValueHash hash = (EfeuValueHash)reader.ReadShortString();
+                EfeuValueHash hash = EfeuValueHash.Parse(reader.ReadShortString());
                 items[i] = Deserialize(hash);
             }
             
@@ -143,7 +143,7 @@ public class EfeuValueDeserializer
             for (int i = 0; i < length; i++)
             {
                 string key = reader.ReadShortString();
-                EfeuValueHash hash = (EfeuValueHash) reader.ReadShortString();
+                EfeuValueHash hash = EfeuValueHash.Parse(reader.ReadShortString());
                 EfeuValue value = Deserialize(hash);
                 entries[i] = new KeyValuePair<string, EfeuValue>(key, value);
             }

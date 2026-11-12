@@ -40,7 +40,7 @@ public class ValueNodeController : Controller
     [Route("{hash}")]
     public async Task<ActionResult> Get(string hash)
     {
-        EfeuValue[] values = await valueNodeCommands.ReadAsync([(EfeuValueHash)hash]);
+        EfeuValue[] values = await valueNodeCommands.ReadAsync([EfeuValueHash.Parse(hash)]);
         JsonElement json = JsonSerializer.SerializeToElement(values[0], jsonOptions.JsonSerializerOptions);
         return Ok(json);
     }

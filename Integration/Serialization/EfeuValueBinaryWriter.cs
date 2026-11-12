@@ -41,14 +41,4 @@ public class EfeuValueBinaryWriter : IEfeuValueWriter
         span[0] = value;
         top.Write(span);
     }
-
-    public byte[] ReadBytes(int length)
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public byte ReadByte()
-    {
-        throw new System.NotImplementedException();
-    }
 }

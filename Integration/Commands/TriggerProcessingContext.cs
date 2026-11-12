@@ -119,7 +119,7 @@ internal class TriggerProcessingContext
             EfeuBehaviourStep behaviourStep = behaviourVersionEntity.GetPosition(triggerEntity.Position);
 
             EfeuTrigger trigger;
-            if (string.IsNullOrEmpty(triggerEntity.LoopbackScope))
+            if (triggerEntity.LoopbackScope.IsEmpty)
             {
                 trigger = triggerEntity.MapToEfeuTrigger(behaviourStep, values[i*3], values[i*3+1]);
             }

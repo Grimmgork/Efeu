@@ -1,8 +1,10 @@
+using Efeu.Integration.Utils.Serialization;
+
 namespace Efeu.Integration.Entities;
 
 public class ValueNodeReferenceEntity
 {
-    public string SourceHash = "";
+    public EfeuValueHash SourceHash;
     
-    public string TargetHash = "";
+    public EfeuValueHash TargetHash;
 }
